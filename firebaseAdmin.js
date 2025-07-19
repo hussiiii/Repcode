@@ -6,8 +6,8 @@ if (!admin.apps.length) {
       credential: admin.credential.cert({
         // Your Firebase project's admin SDK configuration
         // Replace these with your actual config values
-        projectId: "flashcode-6cb10",
-        clientEmail: "firebase-adminsdk-xns55@flashcode-6cb10.iam.gserviceaccount.com",
+        projectId: "repcode-84a8f",
+        clientEmail: "firebase-adminsdk-fbsvc@repcode-84a8f.iam.gserviceaccount.com",
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
       }),
       // databaseURL: "https://your-database-url.firebaseio.com", // If you are using Firebase Realtime Database
@@ -16,4 +16,4 @@ if (!admin.apps.length) {
     console.log('Firebase admin initialization error', error.stack);
   }
 }
-export default admin;
+export default admin; 

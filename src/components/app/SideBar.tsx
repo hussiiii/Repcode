@@ -337,21 +337,24 @@ const SideBar = () => {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={logOut}
-                    className="p-1.5 rounded-lg text-[#8A94A6] hover:text-[#ef4444] hover:bg-[#3F475A] transition-colors"
-                    aria-label="Logout"
-                    data-tooltip-id="sidebar-tooltip"
-                    data-tooltip-content="Logout"
-                  >
-                    <LogOutIcon size={16} />
-                  </button>
                 </div>
                 <p className="text-sm text-[#B0B7C3] truncate">{userEmail}</p>
               </div>
             ) : null /* No content for collapsed state - just showing the avatar */}
           </div>
         </div>
+
+        {isExpanded && (
+          <div className="mt-3">
+            <button
+              onClick={logOut}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-transparent border border-[#ef4444]/30 text-[#ef4444] hover:bg-[#ef4444]/10 hover:border-[#ef4444]/50 hover:text-[#f87171] transition-all duration-200 text-sm font-medium"
+            >
+              <LogOutIcon size={16} />
+              Sign out
+            </button>
+          </div>
+        )}
       </div>
 
       <ReactTooltip
