@@ -44,3 +44,8 @@ next-env.d.ts
 /prisma/migrations/
 /prisma/schema.prisma
 /prisma/migrations/migration_lock.toml
+
+
+/prisma
+firebaseAdmin.js
+firebaseConfig.js
