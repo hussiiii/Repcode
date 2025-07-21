@@ -176,9 +176,9 @@ function merge(left, right) {
                 rel="noopener noreferrer"
                 className="group relative overflow-hidden bg-[#2A303C] backdrop-blur-sm hover:bg-black/90 text-[#ffffff] font-semibold px-8 py-3 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 ease-out hover:scale-105 border border-[#ffffff]/10 w-full sm:w-auto flex items-center justify-center"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {stars !== null && (
-                    <span className="ml-2 text-sm bg-white/10 px-2 py-0.5 rounded-lg">
+                    <span className="text-sm bg-white/10 px-2 py-0.5 rounded-lg">
                       <span className="flex items-center justify-center gap-2">
                         <Star className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 text-learning fill-learning" />{" "}
                         {stars}
