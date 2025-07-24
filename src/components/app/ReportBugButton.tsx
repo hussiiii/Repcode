@@ -24,5 +24,6 @@ const ReportBugButton = forwardRef<HTMLButtonElement, React.ComponentPropsWithou
     </>
   );
 });
+ReportBugButton.displayName = 'ReportBugButton';
 
 export default ReportBugButton;
