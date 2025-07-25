@@ -28,5 +28,3 @@ ReportBugButton.displayName = 'ReportBugButton';
 
 export default ReportBugButton;
 
-
-

@@ -148,4 +148,3 @@ const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
 
 export default ReportBugModal;
 
-
