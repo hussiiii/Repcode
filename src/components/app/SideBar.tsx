@@ -18,8 +18,11 @@ import {
   HelpCircle as HelpCircleIcon,
   LogOut as LogOutIcon,
   ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  Bug as BugIcon,
 } from 'lucide-react';
+import ReportBugButton from './ReportBugButton';
+import ReportBugModal from './ReportBugModal';
 
 // SidebarItem component
 interface SidebarItemProps {
@@ -83,6 +86,7 @@ function SidebarItem({
 }
 
 const SideBar = () => {
+  const [showReportBug, setShowReportBug] = useState(false);
   // const [colorTheme, setTheme] = useDarkMode() as any; 
   const router = useRouter();
   const { isExpanded, setIsExpanded } = useSidebar() as any;
@@ -278,7 +282,20 @@ const SideBar = () => {
             expanded={isExpanded}
             onClick={goGuide}
           />
+
+          
+
+        <SidebarItem
+          icon={<BugIcon size={20} />}
+          text="Report Bug"
+          expanded={isExpanded}
+          onClick={() => setShowReportBug(true)}
+        />
+        {showReportBug && <ReportBugModal isOpen={showReportBug} onClose={() => setShowReportBug(false)} />}
+
+      {showReportBug && <ReportBugModal isOpen={showReportBug} onClose={() => setShowReportBug(false)} />}
         </ul>
+
       </nav>
 
       <div className="p-3 border-t border-[#3A4253] mt-auto overflow-hidden">
