@@ -414,6 +414,42 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
       queryClient.invalidateQueries(['collectionDetails']); // for updating ProblemList
     }
 
+    // Skip function to move current problem to end of queue
+    const skipProblem = async () => {
+        setIsLoading(true);
+        
+        // Get the latest due date among current problems and add 1 minute to it
+        const latestDueDate = dueProblems.reduce((latest: Date, problem: any) => {
+            const problemDueDate = new Date(problem.dueDate);
+            return problemDueDate > latest ? problemDueDate : latest;
+        }, new Date());
+        
+        // Set the skipped problem's due date to 1 minute after the latest due date
+        const newDueDate = new Date(latestDueDate.getTime() + 60000); // 1 minute later
+        
+        const updates = {
+            dueDate: newDueDate,
+        };
+        
+        updateProblemMutation.mutate({ problemId: dueProblems[0].id, updates }, {
+            onSuccess: async () => {
+                // Remove the skipped problem from the front and add it to the end
+                const skippedProblem = { ...dueProblems[0], dueDate: newDueDate };
+                const remainingProblems = dueProblems.slice(1);
+                setDueProblems([...remainingProblems, skippedProblem]);
+                
+                await refetchProblems();
+                setIsLoading(false);
+                setContent('question');
+                setEditorContent('');
+            },
+            onError: (error) => {
+                console.error('Error skipping problem:', error);
+                setIsLoading(false);
+            },
+        });
+    };
+
     // handles the logic of what happens to the problem depeneding on the feedback button pressed 
     const Algorithm = async(buttonValue:any) => {
         console.log(`Button clicked: ${buttonValue}`); 
@@ -1053,6 +1089,23 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             },
           }}
         />
+
+        {/* Skip button - positioned to the left of AI Help */}
+        {dueProblems.length > 0 && (
+          <button 
+            onClick={skipProblem}
+            className="fixed bottom-6 right-36 flex items-center px-4 py-3 bg-gradient-to-r from-[#f59e0b] to-[#f97316] hover:from-[#d97706] hover:to-[#ea580c] text-white rounded-full transition-all duration-200 z-10 group"
+            style={{ 
+              boxShadow: '0 10px 15px -3px rgba(249, 115, 22, 0.2), 0 4px 6px -4px rgba(249, 115, 22, 0.2)'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(249, 115, 22, 0.3), 0 4px 6px -4px rgba(249, 115, 22, 0.3)'}
+            onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(249, 115, 22, 0.2), 0 4px 6px -4px rgba(249, 115, 22, 0.2)'}
+          >
+            <span className="material-icons mr-2" style={{ fontSize: '20px' }}>skip_next</span>
+            <span className="font-medium">Skip</span>
+            <div className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          </button>
+        )}
 
         {/* Floating AI Help button with matching gradient and shadow */}
         <button 
