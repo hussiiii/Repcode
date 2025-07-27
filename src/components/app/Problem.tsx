@@ -427,6 +427,11 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           problem={problem} 
           editorContent={editorContent} 
           apiKey={data?.apiKey}
+          baseUrl={data?.baseUrl}
+          llmApiKey={data?.llmApiKey}
+          llmModel={data?.llmModel}
+          llmTemperature={data?.llmTemperature}
+          llmTopP={data?.llmTopP}
           onClose={() => setShowChat(false)}
           buttonPosition={buttonPosition}
         />

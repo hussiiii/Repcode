@@ -18,6 +18,11 @@ model User {
   subscriptionStart       DateTime?   
   subscriptionEnd         DateTime?  
   apiKey                  String?     @default("null")
+  baseUrl                 String?     @default("https://api.openai.com/v1")
+  llmApiKey               String?     @default("null")
+  llmModel                String?     @default("gpt-4o")
+  llmTemperature          Float?      @default(0.7)
+  llmTopP                 Float?      @default(1.0)
   collections             Collection[]
   learnSteps              String      @default("10m 1d")
   relearnSteps            String      @default("10m") 
