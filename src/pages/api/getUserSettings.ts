@@ -28,6 +28,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           maximumInterval: true,
           maximumNewPerDay: true,
           apiKey: true,
+          baseUrl: true,
+          llmApiKey: true,
+          llmModel: true,
+          llmTemperature: true,
+          llmTopP: true,
           contributionHistory: true,
         },
       });

@@ -9,7 +9,8 @@ import {
   Key as KeyIcon, 
   Cog as CogIcon, 
   Brain as BrainIcon, 
-  RefreshCw as RefreshIcon
+  RefreshCw as RefreshIcon,
+  Globe as GlobeIcon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -119,6 +120,16 @@ const Settings = () => {
       ),
       // API Settings
       apiKey: (document.getElementById('apiKey') as HTMLInputElement)?.value,
+      // LLM API Settings
+      baseUrl: (document.getElementById('baseUrl') as HTMLInputElement)?.value,
+      llmApiKey: (document.getElementById('llmApiKey') as HTMLInputElement)?.value,
+      llmModel: (document.getElementById('llmModel') as HTMLInputElement)?.value,
+      llmTemperature: parseFloat(
+        (document.getElementById('llmTemperature') as HTMLInputElement)?.value
+      ),
+      llmTopP: parseFloat(
+        (document.getElementById('llmTopP') as HTMLInputElement)?.value
+      ),
     };
 
     // Validations (same as before)
@@ -140,9 +151,11 @@ const Settings = () => {
     if (
       !validateDecimal(newSettings.startingEase) ||
       !validateDecimal(newSettings.easyBonus) ||
-      !validateDecimal(newSettings.intervalModifier)
+      !validateDecimal(newSettings.intervalModifier) ||
+      isNaN(newSettings.llmTemperature) ||
+      isNaN(newSettings.llmTopP)
     ) {
-      showToast("Starting Ease, Easy Bonus, and Interval Modifier must be decimal numbers.");
+      showToast("Starting Ease, Easy Bonus, Interval Modifier, LLM Temperature, and LLM Top P must be valid numbers.");
       return;
     }
 
@@ -374,6 +387,66 @@ const Settings = () => {
               <p className="text-xs text-[#8A94A6]">
                 Enter your OpenAI API key to enable AI-based features.
               </p>
+            </div>
+
+            {/* New LLM API Settings Fields */}
+            <div className="border-t border-[#3A4150] pt-4 mt-4">
+              <div className="flex items-center mb-4">
+                <GlobeIcon className="w-5 h-5 mr-2" style={{ color: '#4f46e5' }} />
+                <h2 className="text-lg font-medium text-[#ffffff]">LLM API Settings</h2>
+              </div>
+              
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label htmlFor="baseUrl" className="block text-sm font-medium text-[#B0B7C3]">
+                    API Endpoint URL
+                  </label>
+                  <StyledInput id="baseUrl" defaultValue={data.baseUrl} />
+                  <p className="text-xs text-[#8A94A6]">
+                    The base URL for the LLM API (e.g., https://api.openai.com/v1)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="llmApiKey" className="block text-sm font-medium text-[#B0B7C3]">
+                    LLM API Key
+                  </label>
+                  <StyledInput id="llmApiKey" defaultValue={data.llmApiKey} />
+                  <p className="text-xs text-[#8A94A6]">
+                    Your API key for the LLM service.
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="llmModel" className="block text-sm font-medium text-[#B0B7C3]">
+                    LLM Model
+                  </label>
+                  <StyledInput id="llmModel" defaultValue={data.llmModel} />
+                  <p className="text-xs text-[#8A94A6]">
+                    The model of the LLM to use.
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="llmTemperature" className="block text-sm font-medium text-[#B0B7C3]">
+                    LLM Temperature
+                  </label>
+                  <StyledInput id="llmTemperature" defaultValue={data.llmTemperature} type="number" />
+                  <p className="text-xs text-[#8A94A6]">
+                    Controls the randomness of the output. Higher values mean more randomness.
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="llmTopP" className="block text-sm font-medium text-[#B0B7C3]">
+                    LLM Top P
+                  </label>
+                  <StyledInput id="llmTopP" defaultValue={data.llmTopP} type="number" />
+                  <p className="text-xs text-[#8A94A6]">
+                    Controls the diversity of the output. 0.9 means only the top 90% most likely tokens are considered.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

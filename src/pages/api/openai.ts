@@ -2,10 +2,25 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { question, solution, userSolution, userMessage, apiKey, mode = "chat" } = req.body;
+  const { 
+    question, 
+    solution, 
+    userSolution, 
+    userMessage, 
+    apiKey, 
+    baseUrl = "https://api.openai.com/v1",
+    llmApiKey,
+    llmModel = "gpt-4o",
+    llmTemperature = 0.7,
+    mode = "chat" 
+  } = req.body;
+
+  // Use LLM API key if provided, otherwise fall back to regular API key
+  const finalApiKey = llmApiKey || apiKey;
 
   const openai = new OpenAI({
-    apiKey: apiKey,
+    apiKey: finalApiKey,
+    baseURL: baseUrl
   });
 
   let messages: any = [];
@@ -45,9 +60,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
     
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: llmModel,
       messages,
-      max_tokens: 300, 
+      max_tokens: 300,
+      temperature: llmTemperature
     });
 
     if (completion.choices && completion.choices.length > 0) {
