@@ -148,3 +148,6 @@ const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
 
 export default ReportBugModal;
 
+
+
+// This component renders a modal for reporting bugs, allowing users to submit their email and a description of the bug.

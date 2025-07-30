@@ -28,3 +28,7 @@ ReportBugButton.displayName = 'ReportBugButton';
 
 export default ReportBugButton;
 
+
+
+
+// This component renders a button that opens a modal for reporting bugs.
