@@ -2,78 +2,131 @@ import React, { useState, useEffect, useRef } from 'react';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark-reasonable.css';
 
-const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }: { 
+const ChatWindow = ({ 
+  problem, 
+  editorContent, 
+  apiKey, 
+  isTab = false,
+  externalMessages,
+  setExternalMessages,
+  externalInput,
+  setExternalInput,
+  externalIsAnalyzing,
+  setExternalIsAnalyzing,
+  externalIsTyping,
+  setExternalIsTyping,
+  externalShowQuickQuestions,
+  setExternalShowQuickQuestions
+}: { 
   problem: any, 
   editorContent: string, 
   apiKey: any, 
-  onClose: () => void,
-  buttonPosition: { x: number, y: number } | null 
+  isTab?: boolean,
+  externalMessages?: Array<{ text: string, sender: string }>,
+  setExternalMessages?: React.Dispatch<React.SetStateAction<Array<{ text: string, sender: string }>>>,
+  externalInput?: string,
+  setExternalInput?: React.Dispatch<React.SetStateAction<string>>,
+  externalIsAnalyzing?: boolean,
+  setExternalIsAnalyzing?: React.Dispatch<React.SetStateAction<boolean>>,
+  externalIsTyping?: boolean,
+  setExternalIsTyping?: React.Dispatch<React.SetStateAction<boolean>>,
+  externalShowQuickQuestions?: boolean,
+  setExternalShowQuickQuestions?: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
-  const [messages, setMessages] = useState<Array<{ text: string, sender: string }>>([]);
-  const [input, setInput] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
-  const [showQuickQuestions, setShowQuickQuestions] = useState(true);
+  // Use local state if external state is not provided
+  const [localMessages, setLocalMessages] = useState<Array<{ text: string, sender: string }>>([]);
+  const [localInput, setLocalInput] = useState("");
+  const [localIsAnalyzing, setLocalIsAnalyzing] = useState(true);
+  const [localIsTyping, setLocalIsTyping] = useState(false);
+  const [localShowQuickQuestions, setLocalShowQuickQuestions] = useState(true);
+  
+  // Use either external or local state
+  // External State is used to persist chat window data across tab switches
+  // Internal State is used to provide default values incase external state data is absent
+  const messages = externalMessages !== undefined ? externalMessages : localMessages;
+  const setMessages = setExternalMessages || setLocalMessages;
+  const input = externalInput !== undefined ? externalInput : localInput;
+  const setInput = setExternalInput || setLocalInput;
+  const isAnalyzing = externalIsAnalyzing !== undefined ? externalIsAnalyzing : localIsAnalyzing;
+  const setIsAnalyzing = setExternalIsAnalyzing || setLocalIsAnalyzing;
+  const isTyping = externalIsTyping !== undefined ? externalIsTyping : localIsTyping;
+  const setIsTyping = setExternalIsTyping || setLocalIsTyping;
+  const showQuickQuestions = externalShowQuickQuestions !== undefined ? externalShowQuickQuestions : localShowQuickQuestions;
+  const setShowQuickQuestions = setExternalShowQuickQuestions || setLocalShowQuickQuestions;
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  // Reference to track if we're already analyzing to prevent duplicate calls
+  const analysisInProgress = useRef(false);
+  
   // Initial analysis when component mounts
   useEffect(() => {
-    const analyzeCode = async () => {
-      try {
-        const response = await fetch('/api/openai', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            question: problem.question,
-            solution: problem.solution,
-            userSolution: editorContent,
-            userMessage: "analyze", // Special flag to just analyze the code
-            apiKey: apiKey,
-            mode: "analyze" // Tell the API we're just loading context
-          }),
-        });
-        
-        setIsAnalyzing(false);
-        
-        if (response.ok) {
-          // After analysis is complete, show the greeting message
-          setMessages([{ text: "How can I help you with this problem?", sender: "ai" }]);
-        } else {
+
+    // Only run analysis if:
+    // 1. We're using local state (no external state provided) AND local messages are empty
+    // 2. External messages array is empty AND external analyzing state is true
+    // 3. We're not already in the middle of analyzing
+    const shouldAnalyze = 
+      ((externalMessages === undefined && localMessages.length === 0) || 
+       (externalMessages !== undefined && externalMessages.length === 0 && externalIsAnalyzing === true)) &&
+      !analysisInProgress.current;
+    
+    if (shouldAnalyze) {
+      analysisInProgress.current = true;
+      
+      const analyzeCode = async () => {
+        try {
+          const response = await fetch('/api/openai', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              question: problem.question,
+              solution: problem.solution,
+              userSolution: editorContent,
+              userMessage: "analyze", // Special flag to just analyze the code
+              apiKey: apiKey,
+              mode: "analyze" // Tell the API we're just loading context
+            }),
+          });
+          
+          setIsAnalyzing(false);
+          
+          if (response.ok) {
+            // After analysis is complete, show the greeting message
+            setMessages([{ text: "How can I help you with this problem?", sender: "ai" }]);
+          } else {
+            setMessages([{ 
+              text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
+              sender: "ai" 
+            }]);
+            setShowQuickQuestions(false);
+          }
+        } catch (error) {
+          setIsAnalyzing(false);
           setMessages([{ 
             text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
             sender: "ai" 
           }]);
           setShowQuickQuestions(false);
+        } finally {
+          analysisInProgress.current = false;
         }
-      } catch (error) {
-        setIsAnalyzing(false);
-        setMessages([{ 
-          text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
-          sender: "ai" 
-        }]);
-        setShowQuickQuestions(false);
-      }
-    };
-    
-    analyzeCode();
-  }, [problem, editorContent, apiKey]);
+      };
+      
+      analyzeCode();
+    } else if (externalMessages !== undefined && externalMessages.length > 0 && externalIsAnalyzing) {
+      // If we have external messages but external analyzing is still true, set it to false
+      setIsAnalyzing(false);
+    }
+  }, [problem, editorContent, apiKey, externalMessages, externalIsAnalyzing, localMessages.length, setIsAnalyzing, setMessages, setShowQuickQuestions]);
 
   useEffect(() => {
     hljs.highlightAll();
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  // Handle escape key to close chat
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
 
   // Hide quick questions after first user message
   useEffect(() => {
@@ -127,7 +180,7 @@ const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }:
     const parts = msg.text.split(codeRegex);
 
     return (
-      <div key={index} className={`message ${msg.sender} animate-fade-in my-2 p-3 rounded-lg ${
+      <div key={index} className={`message ${msg.sender} animate-fade-in my-2 p-3 rounded-lg w-full ${
         msg.sender === "ai" 
           ? "bg-[#343B4A] text-primary border-l-2 border-blue-400" 
           : "bg-gradient-to-r from-[#0891b2] to-[#2563eb] text-primary"
@@ -136,12 +189,14 @@ const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }:
           if (i % 3 === 2) {
             const language = parts[i - 1] || 'plaintext';
             return (
-              <pre key={i} className="mt-2 rounded-md p-0 overflow-auto">
-                <code className={`language-${language} p-2 block`}>{part}</code>
-              </pre>
+              <div key={i} className="mt-2 rounded-md bg-[#1E2430] overflow-hidden w-full">
+                <pre className="overflow-x-auto max-w-full">
+                  <code className={`language-${language} p-3 block text-sm`}>{part}</code>
+                </pre>
+              </div>
             );
           }
-          return part && <p key={i} className="whitespace-pre-wrap">{part}</p>;
+          return part && <p key={i} className="whitespace-pre-wrap break-words mb-2">{part}</p>;
         })}
       </div>
     );
@@ -160,22 +215,12 @@ const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }:
     "Are there edge cases my code is missing?"
   ];
 
-  // Calculate position based on button location
-  const chatStyle = buttonPosition ? {
-    bottom: `calc(100vh - ${buttonPosition.y}px + 16px)`,
-    right: '16px',
-    transform: 'translateY(0)',
-    opacity: 1
-  } : {};
-
   return (
     <div 
       ref={chatContainerRef}
-      className="fixed z-30 w-96 h-[450px] rounded-lg shadow-2xl flex flex-col overflow-hidden chat-animation"
+      className={`${isTab ? 'w-full h-full min-h-[800px]' : 'fixed z-30 w-96 h-[450px] chat-animation'} rounded-lg ${!isTab && 'shadow-2xl'} flex flex-col overflow-hidden`}
       style={{
-        ...chatStyle,
         background: 'linear-gradient(to bottom, #343B4A, #2A303C)',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
       }}
     >
       {/* Chat header */}
@@ -187,7 +232,7 @@ const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }:
       </div>
 
       {/* Chat messages */}
-      <div className="flex-1 overflow-auto p-4 bg-[#2A303C]/60">
+      <div className={`flex-1 overflow-y-auto p-4 bg-[#2A303C]/60 ${isTab ? 'mt-4' : ''} scrollbar-thin scrollbar-thumb-[#4A5267] scrollbar-track-transparent`}>
         {isAnalyzing ? (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="analysis-animation mb-4">
@@ -207,7 +252,9 @@ const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }:
           </div>
         ) : (
           <>
-            {messages.map((msg, index) => renderMessage(msg, index))}
+            <div className="messages-container space-y-3 w-full">
+              {messages.map((msg, index) => renderMessage(msg, index))}
+            </div>
             
             {/* Quick question buttons */}
             {showQuickQuestions && messages.length === 1 && messages[0].sender === 'ai' && (
@@ -252,7 +299,7 @@ const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }:
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your code..."
-            className="flex-1 px-4 py-2 bg-transparent text-primary outline-none placeholder:text-[#B0B7C3]"
+            className="flex-1 px-4 py-2 bg-transparent text-base_100 outline-none placeholder:text-[#B0B7C3]"
             disabled={isAnalyzing || isTyping}
           />
           <button
@@ -264,7 +311,7 @@ const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }:
                 : 'text-[#B0B7C3] cursor-not-allowed'
             } transition-colors`}
           >
-            <span className="material-icons transform rotate-90">send</span>
+            <span className="material-icons transform">send</span>
           </button>
         </div>
       </form>
@@ -293,6 +340,35 @@ const ChatWindow = ({ problem, editorContent, apiKey, onClose, buttonPosition }:
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .messages-container {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .message pre {
+          max-width: 100%;
+        }
+        
+        .message code {
+          white-space: pre-wrap;
+          word-break: break-word;
+        }
+        
+        /* Custom scrollbar styling */
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background-color: #4A5267;
+          border-radius: 3px;
         }
         
         .typing-indicator {

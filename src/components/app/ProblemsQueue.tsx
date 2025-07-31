@@ -12,7 +12,7 @@ import "ace-builds/src-noconflict/mode-c_cpp";
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark-reasonable.css'; // or any other style of your choice
 import { AuthContext } from '@/auth/AuthContext';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import ChatWindow from './ChatWindow';
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import ProblemModal from './ProblemModal';
@@ -82,7 +82,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const [isLoading, setIsLoading] = useState(false); // while we transition from current problem to next in queue   
     const [editorContent, setEditorContent] = useState<any>('');  
     const queryClient = useQueryClient();
-    const [showChat, setShowChat] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
@@ -90,6 +89,13 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const [whiteboardElements, setWhiteboardElements] = useState<DrawingElement[]>([]);
     const [whiteboardHistory, setWhiteboardHistory] = useState<DrawingElement[][]>([]);
     const [whiteboardHistoryIndex, setWhiteboardHistoryIndex] = useState(-1);
+    
+    // State for preserving ChatWindow content
+    const [chatMessages, setChatMessages] = useState<Array<{ text: string, sender: string }>>([]);
+    const [chatInput, setChatInput] = useState("");
+    const [isAnalyzing, setIsAnalyzing] = useState(true);
+    const [isTyping, setIsTyping] = useState(false);
+    const [showQuickQuestions, setShowQuickQuestions] = useState(true);
 
     // Joyride tour state
     const [runTour, setRunTour] = useState(false);
@@ -135,8 +141,92 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     // For resizable panels
     const [panelWidth, setPanelWidth] = useState(50);
     const [isDragging, setIsDragging] = useState(false);
-    const [buttonPosition, setButtonPosition] = useState<{ x: number, y: number } | null>(null);
-    const aiButtonRef = useRef<HTMLButtonElement>(null);
+    
+    // Effect to handle tab switching to AI assistant
+    useEffect(() => {
+      // When switching to AI assistant tab, make sure we're not stuck in analyzing state
+      if (content === 'ai-assistant' && chatMessages.length > 0) {
+        setIsAnalyzing(false);
+      }
+    }, [content, chatMessages.length]);
+
+  const fetchUserSettings = async () => {
+    if (!user) throw new Error("No user found");
+    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    if (!response.ok) throw new Error("Failed to fetch user settings");
+    return response.json();
+  };
+
+    const { data } = useQuery(['userSettings', user?.email], fetchUserSettings, {
+    enabled: !!user, 
+    });
+    
+    // Initialize chat only once per problem
+    const currentProblemId = useRef<string | null>(null);
+    
+    // Effect for resetting chat when the problem changes
+    useEffect(() => {
+      if (dueProblems.length > 0) {
+        const newProblemId = dueProblems[0].id;
+        
+        // If this is a new problem, reset chat state
+        if (currentProblemId.current !== newProblemId) {
+          currentProblemId.current = newProblemId;
+          
+          // Only initialize if we need to (empty messages)
+          if (chatMessages.length === 0) {
+            setIsAnalyzing(true); // Set to analyzing state
+          }
+        }
+      }
+    }, [dueProblems]);
+    
+    // Separate effect for actual API call, depending on analyzing state
+    useEffect(() => {
+      // Only proceed if we're in analyzing state and have a problem and API key
+      if (isAnalyzing && dueProblems.length > 0 && data?.apiKey) {
+        const analyzeCode = async () => {
+          try {
+            const response = await fetch('/api/openai', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                question: dueProblems[0].question,
+                solution: dueProblems[0].solution,
+                userSolution: editorContent,
+                userMessage: "analyze",
+                apiKey: data?.apiKey,
+                mode: "analyze"
+              }),
+            });
+            
+            setIsAnalyzing(false);
+            
+            if (response.ok) {
+              // After analysis is complete, show the greeting message
+              setChatMessages([{ text: "How can I help you with this problem?", sender: "ai" }]);
+            } else {
+              setChatMessages([{ 
+                text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
+                sender: "ai" 
+              }]);
+              setShowQuickQuestions(false);
+            }
+          } catch (error) {
+            setIsAnalyzing(false);
+            setChatMessages([{ 
+              text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
+              sender: "ai" 
+            }]);
+            setShowQuickQuestions(false);
+          }
+        };
+        
+        analyzeCode();
+      }
+    }, [isAnalyzing, dueProblems, data?.apiKey, editorContent]);
 
     const handleMouseDown = () => {
       setIsDragging(true);
@@ -709,22 +799,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     setTimeout(() => setIsToastVisible(false), 3000);
   };
 
-  // Function to toggle chat open/closed
-  const handleToggleChat = () => {
-    if (showChat) {
-      setShowChat(false);
-    } else {
-      if (aiButtonRef.current) {
-        const rect = aiButtonRef.current.getBoundingClientRect();
-        setButtonPosition({ 
-          x: rect.left + rect.width / 2, 
-          y: rect.top 
-        });
-        setShowChat(true);
-      }
-    }
-  };
-
   // Tab button component to match Problem.tsx
   const TabButton = ({ active, label, onClick, icon }: { active: boolean, label: string, onClick: () => void, icon?: string }) => {
     return (
@@ -854,6 +928,12 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                       icon="code"
                     />
                   </div>
+                  <TabButton
+                    active={content=== 'ai-assistant'}
+                    label="Repcode AI"
+                    onClick={() => setContent('ai-assistant')}
+                    icon="bolt"
+                  />
                   
                   {/* Vertical divider */}
                   {dueProblems.length > 0 && (
@@ -958,7 +1038,25 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                         historyIndex={whiteboardHistoryIndex}
                         setHistoryIndex={setWhiteboardHistoryIndex}
                       />
-                    ) :(
+                    ) : content === 'ai-assistant' ? (
+                      <ChatWindow
+                          problem={dueProblems[0]} 
+                          editorContent={editorContent} 
+                          apiKey={data?.apiKey}
+                          isTab={true}
+                          externalMessages={chatMessages}
+                          setExternalMessages={setChatMessages}
+                          externalInput={chatInput}
+                          setExternalInput={setChatInput}
+                          externalIsAnalyzing={isAnalyzing}
+                          setExternalIsAnalyzing={setIsAnalyzing}
+                          externalIsTyping={isTyping}
+                          setExternalIsTyping={setIsTyping}
+                          externalShowQuickQuestions={showQuickQuestions}
+                          setExternalShowQuickQuestions={setShowQuickQuestions}
+                      />
+                    ) :
+                    (
                       <pre className="wrap-text overflow-auto"><code className={`language-${dueProblems[0].language} mr-5`}>{dueProblems[0].solution}</code></pre>
                     )}
                   </div>
@@ -1025,16 +1123,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             )}
           </div>
         </div>
-
-        {showChat && dueProblems[0] && (
-          <ChatWindow 
-            problem={dueProblems[0]} 
-            editorContent={editorContent} 
-            apiKey={userSettings?.apiKey}
-            onClose={() => setShowChat(false)}
-            buttonPosition={buttonPosition}
-          />
-        )}
         
         <ReactTooltip
           id="my-tooltip-1"
@@ -1110,9 +1198,9 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           }}
         />
 
-        {/* Skip button - positioned to the left of AI Help */}
+        {/* Skip button */}
         {dueProblems.length > 0 && (
-          <div className="fixed bottom-6 right-36 z-10 group">
+          <div className="fixed bottom-6 right-[1rem] z-10">
             <button 
               onClick={skipProblem}
               className="flex items-center px-4 py-3 bg-gradient-to-r from-[#f59e0b] to-[#f97316] hover:from-[#d97706] hover:to-[#ea580c] text-white rounded-full transition-all duration-200"
@@ -1138,26 +1226,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             </div>
           </div>
         )}
-
-        {/* Floating AI Help button with matching gradient and shadow */}
-        <button 
-          ref={aiButtonRef}
-          onClick={handleToggleChat} 
-          className={`fixed bottom-6 right-6 flex items-center px-4 py-3 bg-gradient-to-r ${
-            showChat 
-              ? "from-[#0891b2] to-[#2563eb]" // Slightly different gradient when active
-              : "from-[#06b6d4] to-[#3b82f6]"
-          } hover:from-[#0891b2] hover:to-[#2563eb] text-primary rounded-full transition-all duration-200 z-10 group`}
-          style={{ 
-            boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.2), 0 4px 6px -4px rgba(59, 130, 246, 0.2)'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -4px rgba(59, 130, 246, 0.3)'}
-          onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(59, 130, 246, 0.2), 0 4px 6px -4px rgba(59, 130, 246, 0.2)'}
-        >
-          <span className="material-icons mr-2" style={{ fontSize: '20px' }}>auto_awesome</span>
-          <span className="font-medium">{showChat ? "Close AI" : "AI Help"}</span>
-          <div className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-        </button>
       </div>
     );
   };
