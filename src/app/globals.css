@@ -8,7 +8,12 @@ body {
   overflow-x: hidden;
 }
 
-/*For ladning page transitions */
+/* Add scroll margin to section headings for better anchor links positioning */
+[id] {
+  scroll-margin-top: 113px; 
+}
+
+/*For landing page transitions */
 @keyframes fadeInUp {
   from {
     opacity: 0;
