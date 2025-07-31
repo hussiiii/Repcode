@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bug as BugIcon } from 'lucide-react';
+import { useForm } from '@formspree/react';
 import Toast from './Toast';
 
 interface ReportBugModalProps {
@@ -10,9 +11,12 @@ interface ReportBugModalProps {
 const GITHUB_ISSUES_URL = 'https://github.com/hussiiii/Repcode/issues/';
 
 const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
-  const [email, setEmail] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [state, handleSubmit] = useForm("xkndvdrp"); // Using same Formspree form as ContactForm
+  const [formData, setFormData] = useState({
+    email: '',
+    description: '',
+    type: 'bug'
+  });
   const [toastMessage, setToastMessage] = useState('');
   const [isToastVisible, setIsToastVisible] = useState(false);
 
@@ -22,30 +26,32 @@ const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
     setTimeout(() => setIsToastVisible(false), 5000);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      const response = await fetch('/api/forminator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          description,
-          type: 'bug',
-        }),
-      });
-      if (!response.ok) throw new Error('Failed to submit bug report');
-      showToast('Bug report submitted! Thank you.');
-      setEmail('');
-      setDescription('');
-      onClose();
-    } catch (error: any) {
-      showToast(error.message || 'Submission failed');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Reset form after success and show toast
+  useEffect(() => {
+    if (state.succeeded) {
+      setFormData({
+        email: '',
+        description: '',
+        type: 'bug'
+      });
+      showToast('Bug report submitted! Thank you.');
+      setTimeout(() => {
+        onClose();
+      }, 2000); // Close modal after showing success message
+    }
+  }, [state.succeeded, onClose]);
+
+  // Show error toast if submission fails
+  useEffect(() => {
+    if (state.errors) {
+      showToast('Submission failed. Please try again.');
+    }
+  }, [state.errors]);
 
   return (
     <>
@@ -83,10 +89,11 @@ const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
                 <input
                   type="email"
                   id="email"
+                  name="email"
                   className="w-full px-3 py-2 bg-[#1E232C] rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 text-primary h-11"
                   placeholder="you@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={handleChange}
                   autoComplete="email"
                 />
               </div>
@@ -94,20 +101,25 @@ const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
                 <label htmlFor="description" className="block text-sm font-medium text-gray-300">Bug Description <span className="text-hard">*</span></label>
                 <textarea
                   id="description"
+                  name="description"
                   className="w-full px-3 py-2 bg-[#1E232C] rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 text-primary min-h-[80px]"
                   placeholder="Describe the bug in detail..."
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
+                  value={formData.description}
+                  onChange={handleChange}
                   required
                 />
               </div>
+              
+              {/* Hidden field to identify this as a bug report */}
+              <input type="hidden" name="type" value={formData.type} />
+              
               <div className="flex justify-end pt-4">
                 <button
                   type="submit"
-                  disabled={!description.trim() || isSubmitting}
-                  className={`relative overflow-hidden bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0ea5c4] hover:to-[#2d74e7] text-primary shadow-md transition-all duration-200 py-2 px-6 rounded-md ${(!description.trim() || isSubmitting) ? "opacity-50 cursor-not-allowed" : ""}`}
+                  disabled={!formData.description.trim() || state.submitting}
+                  className={`relative overflow-hidden bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0ea5c4] hover:to-[#2d74e7] text-primary shadow-md transition-all duration-200 py-2 px-6 rounded-md ${(!formData.description.trim() || state.submitting) ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  {isSubmitting ? (
+                  {state.submitting ? (
                     <>
                       <svg
                         className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary inline-block"
