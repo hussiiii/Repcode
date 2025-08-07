@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { question, solution, userSolution, userMessage, apiKey, mode = "chat" } = req.body;
+  const { question, solution, userSolution, userMessage, apiKey, mode = "chat", language, editorContent } = req.body;
 
   const openai = new OpenAI({
     apiKey: apiKey,
@@ -20,6 +20,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       { 
         role: "user", 
         content: `Problem: ${question}\nExpected Solution: ${solution}\nUser's Current Code: ${userSolution}\n\nPlease prepare to help with this code. No response needed right now.` 
+      }
+    ];
+  } else if (mode === "generate") {
+    // Generate a solution for the problem
+    messages = [
+      {
+        role: "system",
+        content: "You are an expert coding assistant. The user is working on a programming problem and needs you to generate a complete solution with clear explanations. If provided, use the code template as a starting point and follow its structure, class names, and method signatures. Format your response using proper markdown with headings, code blocks, and explanations. The response should consist of only 3 headings - Code, Code Breakdown and Edge cases. No filler texts or texts that do not match these headings must be used. Maintain a formal tone and keep it simple."
+      },
+      {
+        role: "user",
+        content: `Problem: ${question}\n\n${editorContent ? `Code Template:\n\`\`\`${language}\n${editorContent}\n\`\`\`\n\n` : ''}Please generate a complete solution in ${language} programming language with detailed comments explaining the approach and key steps. ${editorContent ? 'Use the provided code template as a starting point if appropriate.' : ''} Use markdown formatting with:\n- A heading for the solution title\n- Code blocks using triple backticks and language specifier (e.g. \`\`\`${language})\n- Clear step-by-step explanations before and after code segments`
       }
     ];
   } else {
@@ -47,7 +59,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages,
-      max_tokens: 300, 
+      max_tokens: mode === "generate" ? 1500 : 300, // Increase token limit for solution generation
     });
 
     if (completion.choices && completion.choices.length > 0) {
