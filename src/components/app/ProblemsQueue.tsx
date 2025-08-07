@@ -21,6 +21,7 @@ import Toast from './Toast';
 import Badge from '@/components/ui/Badge';
 import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { Whiteboard, DrawingElement } from './WhiteBoard';
+import { marked } from 'marked'; 
 
 // If there's ever a <code> nested within a <pre>, it breaks everything, so we need to check for this and remove it 
 const sanitizeCodeBlocks = (html: string) => {
@@ -41,7 +42,38 @@ const sanitizeCodeBlocks = (html: string) => {
   return div.innerHTML;
 };
 
-// Update the CSS block with styling for <code> elements
+// Function to detect if the content is likely markdown
+const isMarkdown = (text: string): boolean => {
+  if (!text) return false;
+  
+  // Check for common markdown indicators
+  const markdownIndicators = [
+    /^#+ /, // Headers
+    /\*\*.+\*\*/, // Bold text
+    /`.+`/, // Inline code
+    /```[\s\S]+```/, // Code blocks
+    /^\s*-\s+/, // List items
+    /^\s*\d+\.\s+/, // Numbered lists
+    /\[.+\]\(.+\)/, // Links
+  ];
+  
+  return markdownIndicators.some(pattern => pattern.test(text));
+};
+
+// Function to convert markdown to HTML with proper code highlighting
+const convertMarkdownToHtml = (markdown: string): string => {
+  if (!markdown) return '';
+  
+  // Convert markdown to HTML
+  try {
+    // Use marked.parse which returns a string synchronously 
+    return marked.parse(markdown) as unknown as string;
+  } catch (e) {
+    console.error('Error parsing markdown:', e);
+    return markdown; // Return the original text if parsing fails
+  }
+};
+
 const preBlockStyles = `
   .problem-content pre {
     background-color: #343B4A !important;
@@ -68,7 +100,72 @@ const preBlockStyles = `
     font-size: 0.9em !important;
     border: 1px solid #4A5267 !important;
   }
-
+  
+  .solution-markdown {
+    color: #E2E8F0 !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+    padding: 1rem !important;
+  }
+  
+  .solution-markdown h1, 
+  .solution-markdown h2, 
+  .solution-markdown h3, 
+  .solution-markdown h4 {
+    color: #FFFFFF !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    font-weight: 600 !important;
+  }
+  
+  .solution-markdown h1 {
+    font-size: 1.5rem !important;
+    border-bottom: 1px solid #3A4253 !important;
+    padding-bottom: 0.5rem !important;
+  }
+  
+  .solution-markdown h2 {
+    font-size: 1.3rem !important;
+  }
+  
+  .solution-markdown pre {
+    background-color: #343B4A !important;
+    border: 1px solid #3A4253 !important;
+    border-radius: 6px !important;
+    padding: 12px !important;
+    margin: 12px 0 !important;
+    overflow-x: auto !important;
+  }
+  
+  .solution-markdown code {
+    background-color: #3A4253 !important;
+    color: #FFFFFF !important;
+    padding: 2px 5px !important;
+    border-radius: 4px !important;
+    font-family: monospace !important;
+    font-size: 0.9em !important;
+  }
+  
+  .solution-markdown pre code {
+    background-color: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  
+  .solution-markdown p {
+    margin: 1rem 0 !important;
+  }
+  
+  .solution-markdown ul, 
+  .solution-markdown ol {
+    margin-left: 1.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .solution-markdown li {
+    margin: 0.5rem 0 !important;
+  }
 `;
 
 const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:any, userSettings:any, refetchProblems: any}) => {
@@ -89,6 +186,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const [whiteboardElements, setWhiteboardElements] = useState<DrawingElement[]>([]);
     const [whiteboardHistory, setWhiteboardHistory] = useState<DrawingElement[][]>([]);
     const [whiteboardHistoryIndex, setWhiteboardHistoryIndex] = useState(-1);
+    
+    // State for solution generation
+    const [isGeneratingSolution, setIsGeneratingSolution] = useState(false);
+    const [generatedSolution, setGeneratedSolution] = useState<string | null>(null);
+    const [isSavingSolution, setIsSavingSolution] = useState(false);
     
     // State for preserving ChatWindow content
     const [chatMessages, setChatMessages] = useState<Array<{ text: string, sender: string }>>([]);
@@ -442,6 +544,81 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
       return response.json();
     });
 
+    // Mutation to save the solution directly to the database
+    const updateSolutionMutation = useMutation(
+      async (newSolution: string) => {
+        if (dueProblems.length === 0) return null;
+        
+        // Get authentication token
+        const token = await user?.getIdToken();
+        if (!token) {
+          throw new Error('Authentication token is not available');
+        }
+        
+        const response = await fetch(`/api/updateProblem?problemId=${dueProblems[0].id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: dueProblems[0].name,
+            question: dueProblems[0].question,
+            solution: newSolution,
+            difficulty: dueProblems[0].difficulty,
+            collectionId: Number(dueProblems[0].collectionId),
+            functionSignature: dueProblems[0].functionSignature,
+            language: dueProblems[0].language,
+            link: dueProblems[0].link,
+            notes: dueProblems[0].notes
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API Error:', response.status, errorData);
+          throw new Error(`Failed to update solution: ${response.status} ${errorData.error || ''}`);
+        }
+        
+        return response.json();
+      },
+      {
+        onSuccess: (data) => {
+          showToast('Solution saved successfully!');
+          
+          // Refresh the problem list to show updated solution
+          refetchProblems();
+          
+          // Update the problem object with the new solution
+          if (data && typeof data === 'object' && dueProblems.length > 0) {
+            // Update the solution in the current problem
+            const updatedProblems = [...dueProblems];
+            updatedProblems[0] = { ...updatedProblems[0], solution: data.solution || generatedSolution };
+            setDueProblems(updatedProblems);
+          }
+          
+          // Reset the generated solution state since it's now the actual solution
+          setGeneratedSolution(null);
+        },
+        onError: (error) => {
+          console.error('Error saving solution:', error);
+          
+          if (error instanceof Error) {
+            if (error.message.includes('Authentication token')) {
+              showToast('Please sign in again to save your solution.');
+            } else {
+              showToast(`Failed to save solution: ${error.message}`);
+            }
+          } else {
+            showToast('Failed to save solution. Please try again.');
+          }
+        },
+        onSettled: () => {
+          setIsSavingSolution(false);
+        }
+      }
+    );
+
     // handles the repeated logic of updating the problem's due date, updating the problem in the database, updating the collection counts, and handling the resultant changes in the array of problems
     async function Helper(problem: any) {
       setIsLoading(true);
@@ -756,6 +933,65 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         queryClient.invalidateQueries(['collectionProblems']);
     };
 
+    // Function to save the generated solution
+  const saveSolution = async () => {
+    if (!generatedSolution) return;
+    if (dueProblems.length === 0) {
+      showToast('No problem is currently available.');
+      return;
+    }
+    
+    if (!user) {
+      showToast('Please sign in to save your solution.');
+      return;
+    }
+    
+    setIsSavingSolution(true);
+    updateSolutionMutation.mutate(generatedSolution);
+  };
+
+  const generateSolution = async () => {
+    if (dueProblems.length === 0) {
+      showToast('No problem is currently available.');
+      return;
+    }
+    
+    if (!data?.apiKey) {
+      showToast('API key is required. Please add it in Settings.');
+      return;
+    }
+    
+    setIsGeneratingSolution(true);
+    
+    try {
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: dueProblems[0].question,
+          language: dueProblems[0].language,
+          apiKey: data.apiKey,
+          mode: "generate",
+          editorContent: dueProblems[0].functionSignature || editorContent // Use function signature or current editor content
+        }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setGeneratedSolution(result.message);
+        showToast('Solution generated successfully!');
+      } else {
+        showToast('Failed to generate solution. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error generating solution:', error);
+      showToast('Error generating solution. Please try again.');
+    } finally {
+      setIsGeneratingSolution(false);
+    }
+  };
   
     if (isLoading) {
       return (
@@ -1055,8 +1291,90 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                           externalShowQuickQuestions={showQuickQuestions}
                           setExternalShowQuickQuestions={setShowQuickQuestions}
                       />
-                    ) :
-                    (
+                    ) : content === 'solution' ? (
+                      <div className="bg-base_100">
+                        {/* Always display the "Generate Solution" or "Regenerate Solution" button */}
+                        {!generatedSolution && (
+                          <div className="flex justify-end mb-4">
+                            <button
+                              onClick={generateSolution}
+                              disabled={isGeneratingSolution}
+                              className={`
+                                px-4 py-2 text-sm font-medium rounded-lg flex items-center
+                                transition-all duration-200
+                                ${isGeneratingSolution ? 'bg-[#3A4253] text-[#B0B7C3] cursor-not-allowed' : 'bg-[#2A303C] text-primary hover:bg-[#3A4253]'}
+                              `}
+                            >
+                              <span className="material-icons mr-1" style={{ fontSize: '18px' }}>
+                                {isGeneratingSolution ? 'hourglass_empty' : 'auto_fix_high'}
+                              </span>
+                              {isGeneratingSolution ? 'Generating...' : 
+                                (!dueProblems[0].solution || dueProblems[0].solution.includes("# TODO")) ? 'Generate with AI' : 'Regenerate Solution'}
+                            </button>
+                          </div>
+                        )}
+                        
+                        {/* Show save button if solution was generated but not saved yet */}
+                        {generatedSolution && !isGeneratingSolution && generatedSolution !== dueProblems[0].solution && (
+                          <div className="flex justify-end mb-4">
+                            <button
+                              onClick={saveSolution}
+                              disabled={isSavingSolution}
+                              className={`
+                                px-4 py-2 text-sm font-medium rounded-lg flex items-center
+                                transition-all duration-200 mr-2
+                                ${isSavingSolution ? 'bg-[#3A4253] text-[#B0B7C3] cursor-not-allowed' : 'bg-[#10B981] text-white hover:bg-[#0D9668]'}
+                              `}
+                            >
+                              <span className="material-icons mr-1" style={{ fontSize: '18px' }}>
+                                {isSavingSolution ? 'hourglass_empty' : 'save'}
+                              </span>
+                              {isSavingSolution ? 'Saving...' : 'Save Solution'}
+                            </button>
+                            <button
+                              onClick={() => setIsEditModalOpen(true)}
+                              className="px-4 py-2 text-sm font-medium rounded-lg flex items-center
+                                bg-[#2A303C] text-primary hover:bg-[#3A4253] transition-all duration-200"
+                            >
+                              <span className="material-icons mr-1" style={{ fontSize: '18px' }}>edit</span>
+                              Edit Problem
+                            </button>
+                          </div>
+                        )}
+                        
+                        {isGeneratingSolution ? (
+                          <div className="flex items-center justify-center p-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                            <span className="ml-3 text-primary">Generating solution...</span>
+                          </div>
+                        ) : (
+                          <>
+                            {generatedSolution && generatedSolution !== dueProblems[0].solution && (
+                              <div className="flex items-center mb-4 p-2 bg-[#3A4253] rounded-lg text-sm text-[#B0B7C3]">
+                                <span className="material-icons mr-1" style={{ fontSize: '18px' }}>auto_fix_high</span>
+                                <span>
+                                  {isSavingSolution 
+                                    ? "Saving AI-generated solution to the database..."
+                                    : "This solution was generated by AI and has not been saved yet."
+                                  }
+                                </span>
+                              </div>
+                            )}
+                            
+                            {isMarkdown(generatedSolution || dueProblems[0].solution) ? (
+                              <div 
+                                className="solution-markdown prose prose-invert max-w-none wrap-text bg-base_100"
+                                dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(generatedSolution || dueProblems[0].solution) }}
+                              />
+                            ) : (
+                              <pre className="wrap-text bg-base_100 whitespace-pre-wrap overflow-auto">
+                                <code className={`language-${dueProblems[0].language} mr-5`}>{generatedSolution || dueProblems[0].solution}</code>
+                              </pre>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    ) : (
                       <pre className="wrap-text overflow-auto"><code className={`language-${dueProblems[0].language} mr-5`}>{dueProblems[0].solution}</code></pre>
                     )}
                   </div>
