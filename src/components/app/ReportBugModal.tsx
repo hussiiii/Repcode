@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bug as BugIcon } from 'lucide-react';
 import { useForm } from '@formspree/react';
+import { useAuth } from '../../auth/useAuth';
 import Toast from './Toast';
 
 interface ReportBugModalProps {
@@ -12,8 +13,8 @@ const GITHUB_ISSUES_URL = 'https://github.com/hussiiii/Repcode/issues/';
 
 const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
   const [state, handleSubmit] = useForm("xkndvdrp"); // Using same Formspree form as ContactForm
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
     description: '',
     type: 'bug'
   });
@@ -31,11 +32,28 @@ const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Custom form submission handler to include user email
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    const submitData = {
+      ...formData,
+      email: user?.email || ""
+    };
+    
+    const formDataToSubmit = new FormData();
+    
+    Object.entries(submitData).forEach(([key, value]) => {
+      formDataToSubmit.append(key, value);
+    });
+    
+    handleSubmit(submitData);
+  };
+
   // Reset form after success and show toast
   useEffect(() => {
     if (state.succeeded) {
       setFormData({
-        email: '',
         description: '',
         type: 'bug'
       });
@@ -83,22 +101,12 @@ const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
             <p className="text-gray-300 text-sm">
               Please describe the bug you encountered. You can also check the <a href={GITHUB_ISSUES_URL} target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] underline">GitHub Issues page</a> to see if it has already been reported.
             </p>
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <p className="text-gray-400 text-xs">
+              Your email ({user?.email}) will be included automatically so we can follow up with you.
+            </p>
+            <form className="space-y-4" onSubmit={handleFormSubmit}>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300">Your Email (optional)</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="w-full px-3 py-2 bg-[#1E232C] rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 text-primary h-11"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  autoComplete="email"
-                />
-              </div>
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-300">Bug Description <span className="text-hard">*</span></label>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">Bug Description <span className="text-hard">*</span></label>
                 <textarea
                   id="description"
                   name="description"
