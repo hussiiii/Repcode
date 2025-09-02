@@ -90,6 +90,7 @@ const ReportBugModal = ({ isOpen, onClose }: ReportBugModalProps) => {
                   type="email"
                   id="email"
                   name="email"
+                  required
                   className="w-full px-3 py-2 bg-[#1E232C] rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 text-primary h-11"
                   placeholder="you@example.com"
                   value={formData.email}
