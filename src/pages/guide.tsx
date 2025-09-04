@@ -19,10 +19,10 @@ export default function Guide() {
         <div className="relative flex flex-col min-h-screen bg-base_100">
             <NavBar />
             
-            <div className="relative max-w-screen-xl mx-auto">
+            <div className="relative max-w-screen-xl mx-auto px-2 sm:px-4">
                 {/* Fixed Table of Contents - Desktop */}
-                <div className="hidden lg:block fixed right-4 xl:right-8 top-28 w-96 z-10 max-h-[80vh] overflow-y-auto">
-                    <div className="bg-gradient-to-r from-primary/10 to-blue/10 rounded-xl px-6 py-4 border border-primary/20 shadow-md">
+                <div className="hidden lg:block fixed right-2 xl:right-8 top-28 w-80 xl:w-96 z-10 max-h-[80vh] overflow-y-auto">
+                    <div className="bg-gradient-to-r from-primary/10 to-blue/10 rounded-xl px-4 xl:px-6 py-4 border border-primary/20 shadow-md">
                         <div className="flex items-center mb-4">
                             <div className="flex items-center justify-center rounded-full bg-primary/20 w-12 h-12 mr-3 p-2">
                                 <span className="text-xl">📌</span>
@@ -83,7 +83,7 @@ export default function Guide() {
                 </div>
                 
                 {/* Main Content */}
-                <div className="p-4 pt-24 sm:pt-8 max-w-3xl mx-auto lg:mr-72">
+                <div className="bg-base_100 p-2 sm:p-4 pt-24 sm:pt-8 max-w-3xl mx-auto lg:mr-72 xl:mr-80">
                     {/* Mobile Table of Contents */}
                     <div className="lg:hidden mt-16 mb-8">
                         <div className="bg-gradient-to-r from-primary/10 to-blue/10 rounded-xl p-4 border border-primary/20 shadow-md">
@@ -223,8 +223,8 @@ export default function Guide() {
                     
                     <p className="text-secondary mb-6 text-lg">Mastering Leetcode requires solving problems in patterns, progressing from fundamental concepts to more complex ones. Roadmaps like the <Link className="text-blue underline hover:text-blue/80 transition-colors" href="https://neetcode.io/" target="_blank" rel="noopener noreferrer">Neetcode 150</Link> guide you through this process by organizing problems into patterns. Once you grasp the patterns, you&apos;re better equipped to solve a wide variety of new, unseen problems.</p>
                     
-                    <div className="flex flex-col items-center gap-3 my-8 bg-base_100/50 p-4 rounded-lg shadow-sm">
-                        <img src="/guide/neetcode.png" alt="Neetcode 150 roadmap" className="w-full max-w-2xl rounded-lg shadow-md" />
+                    <div className="flex flex-col items-center gap-3 my-8 bg-base_100/50 p-4 rounded-lg shadow-sm overflow-hidden">
+                        <img src="/guide/neetcode.png" alt="Neetcode 150 roadmap" className="w-full max-w-2xl rounded-lg shadow-md object-contain" />
                         <p className="text-secondary text-sm italic">The top part of the Neetcode 150 roadmap</p>
                     </div>
 
@@ -362,8 +362,8 @@ export default function Guide() {
                         </p>
                     </div>
                     
-                    <div className="flex flex-col items-center my-10 bg-base_100/50 p-4 rounded-lg shadow-sm">
-                        <img src="/guide/collections.png" alt="Collections dashboard" className="w-full max-w-2xl rounded-lg shadow-md" />
+                    <div className="flex flex-col items-center my-10 bg-base_100/50 p-4 rounded-lg shadow-sm overflow-hidden">
+                        <img src="/guide/collections.png" alt="Collections dashboard" className="w-full max-w-2xl rounded-lg shadow-md object-contain" />
                         <p className="text-secondary text-sm mt-3 italic">An example dashboard showing some collections</p>
                     </div>
                     <p className="text-secondary mb-8 text-lg">
@@ -372,7 +372,7 @@ export default function Guide() {
                     <p className="text-secondary mb-8 text-lg">
                         When creating a new problem in a collection, you will be prompted to fill out a form with all sorts of information about the problem. You can enter the Leetcode problem number and click Autofill to automatically scrape these details from Leetcode directly, or you can manually fill out the details yourself. These include: 
                     </p>
-                    <div className="overflow-hidden rounded-lg border border-divide shadow-sm mb-8">
+                    <div className="overflow-x-auto overflow-hidden rounded-lg border border-divide shadow-sm mb-8">
                         <table className="min-w-full bg-base_100 divide-y divide-divide">
                             <thead className="bg-base_100/70">
                                 <tr>
@@ -420,8 +420,8 @@ export default function Guide() {
                     <p className="text-secondary mb-8 text-lg">
                     And that&apos;s it — <span className="text-primary">organizing your problems is that simple</span>! Once a problem is logged into a collection, you can easily return to it at any time to re-solve it, view your solution, and receive feedback all within the platform. No need to maintain Excel spreadsheets or juggle multiple browser tabs—Repcode keeps everything organized in one place for you.
                     </p>
-                    <div className="flex flex-col items-center mb-8">
-                        <img src="/guide/problemview.png" alt="collections image" />
+                    <div className="flex flex-col items-center mb-8 overflow-hidden">
+                        <img src="/guide/problemview.png" alt="collections image" className="w-full max-w-2xl rounded-lg shadow-md object-contain" />
                         <p className="text-secondary text-sm">What the problem view looks like</p>
                     </div>
 
@@ -539,7 +539,7 @@ export default function Guide() {
                     </div>
 
                     <p className="text-secondary mb-8 text-lg">If certain buttons aren&apos;t available for a problem, don&apos;t worry — this is intentional. Based on factors such as the problem&apos;s difficulty and current type, the algorithm may restrict some options to ensure more accurate feedback. Here&apos;s a quick guide on when to choose each option: </p>
-                    <div className="mb-8 flex justify-center items-center">
+                    <div className="mb-8 flex justify-center items-center overflow-x-auto">
                         <table className="min-w-full bg-base_100 border border-divide">
                             <thead>
                                 <tr>
@@ -568,13 +568,13 @@ export default function Guide() {
                         </table>
                     </div>
                     <p className="text-secondary mb-8 text-lg">Each day, the algorithm will assess the feedback you&apos;ve given on the problem and other factors to decide when you should review it again. </p>
-                    <div className="flex flex-col items-center mb-8">
-                        <img src="/guide/studydashboard.png" alt="collections image" className=" mb-2" />
+                    <div className="flex flex-col items-center mb-8 overflow-hidden">
+                        <img src="/guide/studydashboard.png" alt="collections image" className="w-full max-w-2xl rounded-lg shadow-md mb-2 object-contain" />
                         <p className="text-secondary text-sm">A bar graph showing future review session workloads</p>
                     </div>
                     <p className="text-secondary mb-8 text-lg">It is important to use Study Mode consistently — <span className="font-bold">daily practice </span> is ideal to keep your workload manageable. But don&apos;t worry if you miss a few days; the algorithm won&apos;t break. Problems you miss will simply be pushed to future days. However, keep in mind that delaying too many days will increase your workload in the future, so try to stay on top of your reviews to avoid falling behind. </p>
                     <p className="text-secondary mb-8 text-lg">You might also notice that each problem in Repcode has an associated <span className="font-bold">Type</span>. These types help the spatial repetition algorithm determine how often you should review each problem based on how well you know it. The types are: </p>
-                    <div className="mb-16 flex justify-center items-center">
+                    <div className="mb-16 flex justify-center items-center overflow-x-auto">
                         <table className="min-w-full bg-base_100 border border-divide">
                             <thead>
                                 <tr>
@@ -786,8 +786,8 @@ export default function Guide() {
                 <div className="mb-24" id="ai-feedback">
                     <h2 className="text-4xl font-bold mb-6 inline-block border-divide text-primary">Part 3: AI Feedback</h2>
                     <p className="text-secondary mb-8 text-lg">The final key feature of Repcode is its <span className="text-primary">AI-powered feedback system.</span> For every problem, you&apos;ll find an &quot;AI Feedback&quot; button that opens a chat window where the AI analyzes your solution. In a few sentences, the AI will determine if your solution is correct, and if not, it will highlight specific areas of your code that are flawed and explain why. </p>
-                    <div className="flex flex-col items-center mb-8">
-                        <img src="/guide/Aifeedback.png" alt="collections image" />
+                    <div className="flex flex-col items-center mb-8 overflow-hidden">
+                        <img src="/guide/Aifeedback.png" alt="collections image" className="w-full max-w-2xl rounded-lg shadow-md object-contain" />
                         <p className="text-secondary mt-4 text-sm">An example of the AI giving feedback on a classic Leetcode problem</p>
                     </div>
                     <p className="text-secondary mb-8 text-lg">Before generating feedback, the AI is provided with the problem statement and the optimal solution for context. It compares your solution to the optimal one and offers detailed feedback, including a comparison of runtimes between the two solutions. Additionally, the AI provides a brief explanation of the optimal approach to solving the problem. </p>
