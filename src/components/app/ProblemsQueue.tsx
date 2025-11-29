@@ -21,6 +21,7 @@ import Toast from './Toast';
 import Badge from '@/components/ui/Badge';
 import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { Whiteboard, DrawingElement } from './WhiteBoard';
+import { ClipboardPen, NotepadText, Lightbulb, BotMessageSquare, PenSquare, Edit3, BarChart2, ExternalLink } from "lucide-react";
 
 // If there's ever a <code> nested within a <pre>, it breaks everything, so we need to check for this and remove it 
 const sanitizeCodeBlocks = (html: string) => {
@@ -28,17 +29,18 @@ const sanitizeCodeBlocks = (html: string) => {
   div.innerHTML = html;
 
   const preTags = Array.from(div.getElementsByTagName('pre'));
-  
+
   for (const pre of preTags) {
     const nestedCodeTags = Array.from(pre.getElementsByTagName('code'));
-    
+
     for (const code of nestedCodeTags) {
       const textNode = document.createTextNode(code.textContent || '');
       code.parentNode?.replaceChild(textNode, code);
     }
+    pre.style.color = '#FFFFFF'; // Force white text for pre blocks
   }
 
-  return div.innerHTML;
+  return div.innerHTML.replace(/color:\s*[^;]+;/gi, 'color: #FFFFFF;');
 };
 
 // Update the CSS block with styling for <code> elements
@@ -52,12 +54,12 @@ const preBlockStyles = `
     overflow-x: auto !important;
     color: #E2E8F0 !important;
   }
-  
+
   .problem-content pre code {
     color: #E2E8F0 !important;
     font-family: monospace !important;
   }
-  
+
   /* Style for inline code elements (not inside pre) */
   .problem-content code:not(pre code) {
     background-color: #3A4253 !important;
@@ -67,6 +69,19 @@ const preBlockStyles = `
     font-family: monospace !important;
     font-size: 0.9em !important;
     border: 1px solid #4A5267 !important;
+  }
+  .prose-invert {
+    color: #FFFFFF !important; /* Force white text for prose content */
+  }
+  .prose-invert a {
+    color: #4CAF50 !important; /* Ensure links are green, not black */
+  }
+  /* Ensure AceEditor text is white */
+  .ace_editor {
+    color: #FFFFFF !important;
+  }
+  .ace_cursor {
+    color: #FFFFFF !important;
   }
 
 `;
@@ -112,7 +127,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               </div>
               <div className="flex items-start">
                 <span className="font-semibold mr-2" style={{ color: '#F6903C' }}>Hard:</span>
-                <span>You found a partial solution that passed some tests but was not optimal, and took you a while</span>
+                <span>You found a partial solution that passed some tests, OR you found the optimal solution but it took you a long time</span>
               </div>
               <div className="flex items-start">
                 <span className="font-semibold mr-2" style={{ color: '#34BF8F' }}>Good:</span>
@@ -127,6 +142,12 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         ),
         disableBeacon: true,
         placement: 'bottom',
+      },
+      {
+        target: '#skip-button',
+        content: "Press this button to skip the current problem and put it at the end of the queue, if you would rather solve it later",
+        disableBeacon: true,
+        placement: 'top',
       },
       {
         target: '#run-leetcode-button',
@@ -794,34 +815,67 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     setTimeout(() => setIsToastVisible(false), 3000);
   };
 
-  // Tab button component to match Problem.tsx
-  const TabButton = ({ active, label, onClick, icon }: { active: boolean, label: string, onClick: () => void, icon?: string }) => {
-    return (
-      <button
-        onClick={onClick}
-        className={`
-          px-4 py-2 text-sm font-medium rounded-lg flex items-center
-          transition-all duration-200
-          ${active ? 'bg-[#2A303C] text-primary shadow-sm' : 'text-[#B0B7C3] hover:text-primary hover:bg-[#2A303C]/50'}
-        `}
-      >
-        {icon && <span className="material-icons mr-1" style={{ fontSize: '18px' }}>{icon}</span>}
-        {label}
-      </button>
-    );
+  // Function to determine icon color based on label
+  const getIconColor = (label: string): string => {
+    switch (label.toLowerCase()) {
+      case 'description': return 'text-[#4CAF50]'; // Green
+      case 'notes': return 'text-[#FF9800]'; // Orange
+      case 'whiteboard': return 'text-[#2196F3]'; // Blue
+      case 'solution': return 'text-[#9C27B0]'; // Purple
+      case 'repcode ai': return 'text-[#FF5722]'; // Red
+      case 'edit': return 'text-[#FF9800]'; // Orange
+      case 'stats': return 'text-[#2196F3]'; // Blue
+      case 'run on leetcode': return 'text-[#4CAF50]'; // Green
+      default: return 'text-white'; // Default white
+    }
   };
 
-  const ActionButton = ({ onClick, icon, label }: { onClick: () => void, icon: string, label: string }) => {
-    return (
-      <button
-        onClick={onClick}
-        className="px-4 py-2 text-sm font-medium rounded-lg flex items-center text-[#B0B7C3] hover:text-primary hover:bg-[#2A303C]/50 transition-all duration-200"
-      >
-        <span className="material-icons mr-1" style={{ fontSize: '18px' }}>{icon}</span>
-        {label}
-      </button>
-    );
+  type TabButtonProps = {
+    active: boolean;
+    label: string;
+    onClick: () => void;
+    icon?: React.ReactElement;
   };
+
+  const TabButton: React.FC<TabButtonProps> = ({ active, label, onClick, icon }) => (
+    <button
+      onClick={onClick}
+      className={`
+        px-4 py-2 text-sm font-medium rounded-full flex items-center space-x-2
+        transition-all duration-200
+        ${active 
+          ? 'bg-[#3b82f6]/15 text-white' 
+          : 'text-white hover:text-white hover:bg-[#2A303C]/50'}
+      `}
+      style={{ color: '#FFFFFF' }} // Explicitly enforce white text
+    >
+      {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
+        className: `w-5 h-5 ${active ? 'text-white' : getIconColor(label)}`,
+        style: { transition: 'color 0.2s' }
+      })}
+      <span className={`text-white ${active ? 'font-semibold' : ''}`} style={{ color: '#FFFFFF' }}>{label}</span>
+    </button>
+  );
+
+  type ActionButtonProps = {
+    onClick: () => void;
+    icon?: React.ReactElement;
+    label: string;
+  };
+
+  const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => (
+    <button
+      onClick={onClick}
+      className="px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-2 text-white hover:text-white hover:bg-[#2A303C]/50 transition-all duration-200"
+      style={{ color: '#FFFFFF' }} // Explicitly enforce white text
+    >
+      {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
+        className: `w-5 h-5 ${getIconColor(label)}`,
+        style: { transition: 'color 0.2s' }
+      })}
+      <span className="text-white" style={{ color: '#FFFFFF' }}>{label}</span>
+    </button>
+  );
 
     return (
       <div className="h-screen bg-[#2A303C] flex flex-col">
@@ -895,72 +949,65 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             style={{ width: `${panelWidth}%` }}
           >
             <div className="h-full border-r border-[#3A4253] bg-base_100 flex flex-col">
-              <div className="p-4 border-b border-[#3A4253] flex-shrink-0">
-                <div className="flex flex-wrap gap-2 items-center mb-2">
+              <div className="border-b border-[#3A4253] bg-base_100 sticky top-0 z-10 p-2">
+                <div className="flex flex-wrap items-center gap-1 px-2">
                   <TabButton 
                     active={content === 'question'} 
                     label="Description" 
                     onClick={() => setContent('question')}
-                    icon="description"
+                    icon={<ClipboardPen />}
                   />
                   <TabButton 
                     active={content === 'notes'} 
                     label="Notes" 
                     onClick={() => setContent('notes')}
-                    icon="edit_note"
+                    icon={<NotepadText />}
                   />
                   <TabButton
                     active={content=== 'whiteboard'}
                     label="Whiteboard"
                     onClick={() => setContent('whiteboard')}
-                    icon="dataset"
+                    icon={<PenSquare />}
                   />
                   <div id="solution-tab">
                     <TabButton 
                       active={content === 'solution'} 
                       label="Solution" 
                       onClick={() => setContent('solution')}
-                      icon="code"
+                      icon={<Lightbulb />}
                     />
                   </div>
                   <TabButton
                     active={content=== 'ai-assistant'}
                     label="Repcode AI"
                     onClick={() => setContent('ai-assistant')}
-                    icon="bolt"
+                    icon={<BotMessageSquare />}
                   />
-                  
-                  {/* Vertical divider */}
-                  {dueProblems.length > 0 && (
-                    <>
-                      <div className="h-8 w-px bg-[#3A4253] mx-3"></div>
-                      
-                      {/* Action buttons */}
-                        <ActionButton 
-                          onClick={() => setIsEditModalOpen(true)}
-                          icon="edit"
-                          label="Edit"
-                        />
-                        <ActionButton 
-                          onClick={() => setIsStatsModalOpen(true)}
-                          icon="bar_chart"
-                          label="Stats"
-                        />
-                        {dueProblems[0]?.link && (
-                          <div id="run-leetcode-button">
-                            <ActionButton 
-                              onClick={() => window.open(dueProblems[0].link, '_blank')}
-                              icon="open_in_new"
-                              label="Run on Leetcode"
-                            />
-                          </div>
-                        )}
-                    </>
+                </div>
+                <div className="flex justify-start gap-2 px-2 mt-2">
+                  <ActionButton 
+                    onClick={() => setIsEditModalOpen(true)}
+                    icon={<Edit3 />}
+                    label="Edit"
+                  />
+                  <ActionButton 
+                    onClick={() => setIsStatsModalOpen(true)}
+                    icon={<BarChart2 />}
+                    label="Stats"
+                  />
+                  {dueProblems.length > 0 && dueProblems[0]?.link && (
+                    <div id="run-leetcode-button">
+                      <ActionButton 
+                        onClick={() => window.open(dueProblems[0].link, '_blank')}
+                        icon={<ExternalLink />}
+                        label="Run on Leetcode"
+                      />
+                    </div>
                   )}
                 </div>
               </div>
-              <div className="flex-1 overflow-auto">
-                <div className="p-6 bg-base_100">
+              {/* Content Area */}
+              <div className="flex-1 overflow-y-auto p-4 bg-base_100" style={{ color: '#FFFFFF' }}>
                 {content === 'solution' && buttons?.length > 0 && (
                   <div className="mb-4 flex flex-wrap gap-2">
                     {buttons.map((button: any, index: any) => {
@@ -1056,7 +1103,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                     )}
                   </div>
                 )}
-                </div>
               </div>
             </div>
           </div>
@@ -1195,7 +1241,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
 
         {/* Skip button */}
         {dueProblems.length > 0 && (
-          <div className="fixed bottom-6 right-[1rem] z-10">
+          <div className="fixed bottom-6 right-[1rem] z-10" id="skip-button">
             <button 
               onClick={skipProblem}
               className="flex items-center px-4 py-3 bg-gradient-to-r from-[#f59e0b] to-[#f97316] hover:from-[#d97706] hover:to-[#ea580c] text-white rounded-full transition-all duration-200"

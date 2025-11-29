@@ -50,9 +50,11 @@ const TabButton: React.FC<TabButtonProps> = ({ active, label, onClick, icon }) =
   <button
     onClick={onClick}
     className={`
-      px-4 py-2 text-sm font-medium rounded-t-lg flex items-center space-x-2
+      px-4 py-2 text-sm font-medium rounded-full flex items-center space-x-2
       transition-all duration-200
-      ${active ? 'bg-[#2A303C] text-white shadow-sm' : 'text-white hover:text-white hover:bg-[#2A303C]/50'}
+      ${active 
+        ? 'bg-[#3b82f6]/15 text-white' 
+        : 'text-white hover:text-white hover:bg-[#2A303C]/50'}
     `}
     style={{ color: '#FFFFFF' }} // Explicitly enforce white text
   >
@@ -60,7 +62,7 @@ const TabButton: React.FC<TabButtonProps> = ({ active, label, onClick, icon }) =
       className: `w-5 h-5 ${active ? 'text-white' : getIconColor(label)}`,
       style: { transition: 'color 0.2s' }
     })}
-    <span className={`text-white ${active ? 'font-bold' : ''}`} style={{ color: '#FFFFFF' }}>{label}</span>
+    <span className={`text-white ${active ? 'font-semibold' : ''}`} style={{ color: '#FFFFFF' }}>{label}</span>
   </button>
 );
 
@@ -351,39 +353,45 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
     if (contentActive === 'notes') 
       return <p className="text-white mt-4 whitespace-pre-wrap text-lg wrap-text bg-base_100">{problem.notes}</p>;
     if (contentActive === 'question') 
-      return 
-      <div 
-      className="text-white mt-4 problem-content prose prose-invert max-w-none bg-base_100" 
-      dangerouslySetInnerHTML={{ 
-        __html: sanitizeCodeBlocks(problem.question) 
-      }} 
-    />;
+      return (
+        <div 
+          className="text-white mt-4 problem-content prose prose-invert max-w-none bg-base_100" 
+          dangerouslySetInnerHTML={{ 
+            __html: sanitizeCodeBlocks(problem.question) 
+          }} 
+        />
+      );
     if (contentActive === 'whiteboard') 
-      return <Whiteboard 
-    className="mt-4 h-[600px]" 
-    elements={whiteboardElements} 
-    setElements={setWhiteboardElements} 
-    history={whiteboardHistory} 
-    setHistory={setWhiteboardHistory} 
-    historyIndex={whiteboardHistoryIndex} 
-    setHistoryIndex={setWhiteboardHistoryIndex} 
-  />;
+      return (
+        <Whiteboard 
+          className="mt-4 h-[600px]" 
+          elements={whiteboardElements} 
+          setElements={setWhiteboardElements} 
+          history={whiteboardHistory} 
+          setHistory={setWhiteboardHistory} 
+          historyIndex={whiteboardHistoryIndex} 
+          setHistoryIndex={setWhiteboardHistoryIndex} 
+        />
+      );
     if (contentActive === 'ai-assistant') 
-      return <ChatWindow problem={problem} 
-    editorContent={editorContent} 
-    apiKey={data?.apiKey} 
-    isTab={true} 
-    externalMessages={chatMessages} 
-    setExternalMessages={setChatMessages} 
-    externalInput={chatInput} 
-    setExternalInput={setChatInput} 
-    externalIsAnalyzing={isAnalyzing} 
-    setExternalIsAnalyzing={setIsAnalyzing} 
-    externalIsTyping={isTyping} 
-    setExternalIsTyping={setIsTyping} 
-    externalShowQuickQuestions={showQuickQuestions} 
-    setExternalShowQuickQuestions={setShowQuickQuestions} 
-  />;
+      return (
+        <ChatWindow 
+          problem={problem} 
+          editorContent={editorContent} 
+          apiKey={data?.apiKey} 
+          isTab={true} 
+          externalMessages={chatMessages} 
+          setExternalMessages={setChatMessages} 
+          externalInput={chatInput} 
+          setExternalInput={setChatInput} 
+          externalIsAnalyzing={isAnalyzing} 
+          setExternalIsAnalyzing={setIsAnalyzing} 
+          externalIsTyping={isTyping} 
+          setExternalIsTyping={setIsTyping} 
+          externalShowQuickQuestions={showQuickQuestions} 
+          setExternalShowQuickQuestions={setShowQuickQuestions} 
+        />
+      );
     return <pre className="wrap-text bg-base_100"><code className={`language-${problem.language} mr-5`}>{problem.solution}</code></pre>;
   };
 

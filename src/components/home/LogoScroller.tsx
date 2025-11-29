@@ -4,13 +4,16 @@ import Marquee from "react-fast-marquee"
 const LogoScroller = () => {
   const logos = [
     { name: "Google", src: "/logos/google.png?height=80&width=240" },
-    { name: "Solidigm", src: "/logos/solidigm.png?height=80&width=240" },
     { name: "Netflix", src: "/logos/Netflix.png?height=80&width=240" },
     { name: "Apple", src: "/logos/apple.png?height=80&width=240" },
+    { name: "Paypal", src: "/logos/paypal.png?height=80&width=240" },
     { name: "Microsoft", src: "/logos/microsoft.png?height=80&width=240" },
     { name: "Amazon", src: "/logos/amazon.png?height=80&width=240" },
+    { name: "LinkedIn", src: "/logos/linkedin.png?height=80&width=240" },
     { name: "Meta", src: "/logos/meta.png?height=80&width=240" },
     { name: "Slack", src: "/logos/slack.png?height=80&width=240" },
+    { name: "Spotify", src: "/logos/spotify.png?height=80&width=240" },
+    { name: "Tesla", src: "/logos/tesla.png?height=80&width=240" },
   ];
 
   return (
