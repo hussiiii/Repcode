@@ -6,6 +6,48 @@ import "../app/globals.css";
 export default function Changelog() {
     const changelogData = [
       {
+        month: "November 2025",
+        updates: [
+          {
+            date: "V 2.13 - November 5th, 2025",
+            changes: [
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/71" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #71</a> merged, credit @Ad4mlars </>,
+            ],
+          },
+        ],
+      },
+      {
+        month: "October 2025",
+        updates: [
+          {
+            date: "V 2.12 - October 31st, 2025",
+            changes: [
+              "🎃Happy Halloween!!",
+              "➕Added nothing, just wanted to wish yall a happy halloween :)",
+            ],
+          },
+        ],
+      },
+      {
+        month: "September 2025",
+        updates: [
+          {
+            date: "V 2.11 - September 5th, 2025",
+            changes: [
+              "⚙️Added button text styling",
+              "⚙️Adjusted study mode styling",
+            ],
+          },
+          {
+            date: "V 2.10 - September 1st, 2025",
+            changes: [
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/68" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #68</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/65" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #65</a> merged, credit @OmkarSathish </>,
+            ],
+          },
+        ],
+      },
+      {
         month: "August 2025",
         updates: [
           {
@@ -142,25 +184,6 @@ export default function Changelog() {
               "⚙️Adjusted landing page UI", 
               "⚙️Adjusted changelog page UI", 
               "⚙️Adjusted update endpoints to make the code clearer"
-            ],
-          },
-        ],
-      },
-      {
-        month: "January 2025",
-        updates: [
-          {
-            date: "V 1.13 - January 12th, 2025",
-            changes: [
-              "➕Added ability to actually see the problems due today by pressing the `Due Today:` text on the study dashboard",
-            ],
-          },
-          {
-            date: "V 1.12 - January 10th, 2025",
-            changes: [
-              "➕Added Edit and Stats button to problem view",
-              "⚙️Adjusted functionality of Autofilling leetcode problems so that how the question is formatted here on Repcode exactly matches how it looks on Leetcode",
-              "⚙️Adjusted problem modal UI/UX",
             ],
           },
         ],
@@ -524,18 +547,33 @@ export default function Changelog() {
                 <div className="flex flex-1 relative">
                   {/* Left sidebar (month navigation) */}
                   <div className="hidden md:block w-1/4 p-4 border-r border-divide overflow-auto">
-                      {changelogData.map((log) => (
-                          <div key={log.month} className="mb-4">
-                              <div className="py-2 px-4 w-full text-left text-primary font-bold">
-                                  {log.month}
+                      {changelogData.map((log, index) => {
+                          const currentYear = log.month.split(' ')[1];
+                          const prevYear = index > 0 ? changelogData[index - 1].month.split(' ')[1] : null;
+                          const showYearDivider = currentYear !== prevYear;
+                          
+                          return (
+                              <div key={log.month}>
+                                  {showYearDivider && (
+                                      <div className="flex items-center justify-center mb-6 mt-2">
+                                          <div className="flex-grow border-t border-divide"></div>
+                                          <span className="px-3 text-primary font-bold text-lg">{currentYear}</span>
+                                          <div className="flex-grow border-t border-divide"></div>
+                                      </div>
+                                  )}
+                                  <div className="mb-4">
+                                      <div className="py-2 px-4 w-full text-left text-primary font-bold">
+                                          {log.month}
+                                      </div>
+                                      <ul className="pl-4">
+                                          {log.updates.map((update) => (
+                                              <li key={update.date} className="list-disc text-secondary">{update.date}</li>
+                                          ))}
+                                      </ul>
+                                  </div>
                               </div>
-                              <ul className="pl-4">
-                                  {log.updates.map((update) => (
-                                      <li key={update.date} className="list-disc text-secondary">{update.date}</li>
-                                  ))}
-                              </ul>
-                          </div>
-                      ))}
+                          );
+                      })}
                   </div>
                   
                   {/* Main changelog content */}
