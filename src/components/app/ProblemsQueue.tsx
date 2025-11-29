@@ -780,23 +780,40 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
   
     if (isLoading) {
       return (
-        // Spinner Container
-          <div className="relative">
-            {/* Gradient ring */}
-            <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                            bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] opacity-20"></div>
+        <div className="flex justify-center items-center h-[80vh]">
+          <div className="relative flex flex-col items-center">
+            {/* Outer glow effect */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] blur-xl opacity-20 animate-pulse"></div>
             
-            {/* Spinning gradient arc */}
-            <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
-                            rounded-full animate-spin duration-1000" 
-                  style={{
-                    borderTopColor: '#06b6d4',
-                    borderRightColor: '#3b82f6',
-                    animationDuration: '1s'
-                  }}>
+            {/* Spinner container */}
+            <div className="relative">
+              {/* Gradient ring */}
+              <div className="w-16 h-16 rounded-full border-2 border-transparent 
+                              bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] opacity-20"></div>
+              
+              {/* Spinning gradient arc */}
+              <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
+                              rounded-full animate-spin duration-1000" 
+                    style={{
+                      borderTopColor: '#06b6d4',
+                      borderRightColor: '#3b82f6',
+                      animationDuration: '1s'
+                    }}>
+              </div>
+            </div>
+            
+            {/* Loading text with shimmer effect */}
+            <div className="mt-4 text-sm font-medium text-[#B0B7C3] relative overflow-hidden">
+              <span>Loading</span>
+              <span className="inline-flex overflow-hidden ml-1">
+                <span className="animate-ellipsis">.</span>
+                <span className="animate-ellipsis animation-delay-300">.</span>
+                <span className="animate-ellipsis animation-delay-600">.</span>
+              </span>
             </div>
           </div>
-        );
+        </div>
+      );
   }
 
   if (!isLoading && dueProblems.length === 0) {
