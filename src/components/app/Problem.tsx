@@ -1,12 +1,10 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { auth } from '../../firebaseConfig';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
-import '../../app/globals.css'; 
+import { useQuery, useQueryClient } from 'react-query';
+import '../../app/globals.css';
 import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/theme-chaos";
 import "ace-builds/src-noconflict/theme-one_dark";
-import "ace-builds/src-noconflict/theme-dracula";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/mode-java";
@@ -21,55 +19,86 @@ import ProblemStatsModal from './ProblemStatsModal';
 import Toast from './Toast';
 import Badge from '@/components/ui/Badge';
 import { Whiteboard, DrawingElement } from './WhiteBoard';
-
-// If there's ever a <code> nested within a <pre>, it breaks everything, so we need to check for this and remove it 
+import { ArrowLeft, Edit3, BarChart2, ExternalLink, ClipboardPen, NotepadText, Lightbulb, BotMessageSquare, PenSquare } from "lucide-react";
 const sanitizeCodeBlocks = (html: string) => {
   const div = document.createElement('div');
   div.innerHTML = html;
 
   const preTags = Array.from(div.getElementsByTagName('pre'));
-  
+
   for (const pre of preTags) {
     const nestedCodeTags = Array.from(pre.getElementsByTagName('code'));
-    
+
     for (const code of nestedCodeTags) {
       const textNode = document.createTextNode(code.textContent || '');
       code.parentNode?.replaceChild(textNode, code);
     }
+    pre.style.color = '#FFFFFF'; // Force white text for pre blocks
   }
 
-  return div.innerHTML;
+  return div.innerHTML.replace(/color:\s*[^;]+;/gi, 'color: #FFFFFF;');
 };
 
-const TabButton = ({ active, label, onClick, icon }: { active: boolean, label: string, onClick: () => void, icon?: string }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        px-4 py-2 text-sm font-medium rounded-lg flex items-center
-        transition-all duration-200
-        ${active ? 'bg-[#2A303C] text-primary shadow-sm' : 'text-[#B0B7C3] hover:text-primary hover:bg-[#2A303C]/50'}
-      `}
-    >
-      {icon && <span className="material-icons mr-1" style={{ fontSize: '18px' }}>{icon}</span>}
-      {label}
-    </button>
-  );
+type TabButtonProps = {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  icon?: React.ReactElement;
 };
 
-const ActionButton = ({ onClick, icon, label }: { onClick: () => void, icon: string, label: string }) => {
-  return (
-    <button
-      onClick={onClick}
-      className="px-4 py-2 text-sm font-medium rounded-lg flex items-center text-[#B0B7C3] hover:text-primary hover:bg-[#2A303C]/50 transition-all duration-200"
-    >
-      <span className="material-icons mr-1" style={{ fontSize: '18px' }}>{icon}</span>
-      {label}
-    </button>
-  );
+const TabButton: React.FC<TabButtonProps> = ({ active, label, onClick, icon }) => (
+  <button
+    onClick={onClick}
+    className={`
+      px-4 py-2 text-sm font-medium rounded-t-lg flex items-center space-x-2
+      transition-all duration-200
+      ${active ? 'bg-[#2A303C] text-white shadow-sm' : 'text-white hover:text-white hover:bg-[#2A303C]/50'}
+    `}
+    style={{ color: '#FFFFFF' }} // Explicitly enforce white text
+  >
+    {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
+      className: `w-5 h-5 ${active ? 'text-white' : getIconColor(label)}`,
+      style: { transition: 'color 0.2s' }
+    })}
+    <span className={`text-white ${active ? 'font-bold' : ''}`} style={{ color: '#FFFFFF' }}>{label}</span>
+  </button>
+);
+
+type ActionButtonProps = {
+  onClick: () => void;
+  icon?: React.ReactElement;
+  label: string;
 };
 
-// Add this CSS block (same as in ProblemsQueue.tsx)
+const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => (
+  <button
+    onClick={onClick}
+    className="px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-2 text-white hover:text-white hover:bg-[#2A303C]/50 transition-all duration-200"
+    style={{ color: '#FFFFFF' }} // Explicitly enforce white text
+  >
+    {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
+      className: `w-5 h-5 ${getIconColor(label)}`,
+      style: { transition: 'color 0.2s' }
+    })}
+    <span className="text-white" style={{ color: '#FFFFFF' }}>{label}</span>
+  </button>
+);
+
+// Function to determine icon color based on label
+const getIconColor = (label: string): string => {
+  switch (label.toLowerCase()) {
+    case 'description': return 'text-[#4CAF50]'; // Green
+    case 'notes': return 'text-[#FF9800]'; // Orange
+    case 'whiteboard': return 'text-[#2196F3]'; // Blue
+    case 'solution': return 'text-[#9C27B0]'; // Purple
+    case 'repcode ai': return 'text-[#FF5722]'; // Red
+    case 'edit': return 'text-[#FF9800]'; // Orange
+    case 'stats': return 'text-[#2196F3]'; // Blue
+    case 'run on leetcode': return 'text-[#4CAF50]'; // Green
+    default: return 'text-white'; // Default white
+  }
+};
+
 const preBlockStyles = `
   .problem-content pre {
     background-color: #343B4A !important;
@@ -80,12 +109,12 @@ const preBlockStyles = `
     overflow-x: auto !important;
     color: #E2E8F0 !important;
   }
-  
+
   .problem-content pre code {
     color: #E2E8F0 !important;
     font-family: monospace !important;
   }
-  
+
   /* Style for inline code elements (not inside pre) */
   .problem-content code:not(pre code) {
     background-color: #3A4253 !important;
@@ -96,7 +125,20 @@ const preBlockStyles = `
     font-size: 0.9em !important;
     border: 1px solid #4A5267 !important;
   }
-  
+  .prose-invert {
+    color: #FFFFFF !important; /* Force white text for prose content */
+  }
+  .prose-invert a {
+    color: #4CAF50 !important; /* Ensure links are green, not black */
+  }
+  /* Ensure AceEditor text is white */
+  .ace_editor {
+    color: #FFFFFF !important;
+  }
+  .ace_cursor {
+    color: #FFFFFF !important;
+  }
+
 `;
 
 const Problem = ({ problem, contentActive, setContentActive, editorContent, setEditorContent }: {problem:any, contentActive:any, setContentActive:any, editorContent:any, setEditorContent:any}) => {
@@ -108,19 +150,19 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   const [toastMessage, setToastMessage] = useState('');
   const [isToastVisible, setIsToastVisible] = useState(false);
   const queryClient = useQueryClient();
-  
+
   // Whiteboard state
   const [whiteboardElements, setWhiteboardElements] = useState<DrawingElement[]>([]);
   const [whiteboardHistory, setWhiteboardHistory] = useState<DrawingElement[][]>([]);
   const [whiteboardHistoryIndex, setWhiteboardHistoryIndex] = useState(-1);
-  
+
   // State for preserving ChatWindow content
   const [chatMessages, setChatMessages] = useState<Array<{ text: string, sender: string }>>([]);
   const [chatInput, setChatInput] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
-  
+
   // For resizable panels
   const [panelWidth, setPanelWidth] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -182,16 +224,16 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
 
   // Initialize chat when problem or apiKey changes
   const currentProblemId = useRef<string | null>(null);
-  
+    
   // Effect for resetting chat when the problem changes
   useEffect(() => {
     if (problem) {
       const newProblemId = problem.id;
-      
+            
       // If this is a new problem, reset chat state
       if (currentProblemId.current !== newProblemId) {
         currentProblemId.current = newProblemId;
-        
+                
         // Reset chat state for the new problem
         setChatMessages([]);
         setIsAnalyzing(true);
@@ -200,15 +242,15 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
       }
     }
   }, [problem]);
-  
-  // Effect for handling tab switching to AI assistant
+
+    // Effect for handling tab switching to AI assistant
   useEffect(() => {
     // When switching to AI assistant tab, make sure we're not stuck in analyzing state
     if (contentActive === 'ai-assistant' && chatMessages.length > 0) {
       setIsAnalyzing(false);
     }
   }, [contentActive, chatMessages.length]);
-  
+
   // Separate effect for actual API call, depending on analyzing state
   useEffect(() => {
     // Only proceed if we're in analyzing state and have a problem and API key
@@ -229,11 +271,11 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               mode: "analyze"
             }),
           });
-          
+
           setIsAnalyzing(false);
-          
+
           if (response.ok) {
-            // After analysis is complete, show the greeting message
+              // After analysis is complete, show the greeting message
             setChatMessages([{ text: "How can I help you with this problem?", sender: "ai" }]);
           } else {
             setChatMessages([{ 
@@ -251,7 +293,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           setShowQuickQuestions(false);
         }
       };
-      
+
       analyzeCode();
     }
   }, [isAnalyzing, problem, data?.apiKey, editorContent, contentActive]);
@@ -261,7 +303,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
     setIsToastVisible(true);
     setTimeout(() => setIsToastVisible(false), 3000);
   };
-
+  
   // Function for handling AI interactions - no longer needed for modal toggle
 
   if (!problem) {
@@ -306,107 +348,76 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   }
 
   const renderTabContent = () => {
-    if (contentActive === 'notes') {
-      return <p className="text-primary mt-4 whitespace-pre-wrap text-lg wrap-text bg-base_100">{problem.notes}</p>;
-    } else if (contentActive === 'question') {
-      return (
-        <div 
-          className="text-primary mt-4 problem-content prose prose-invert max-w-none bg-base_100"
-          dangerouslySetInnerHTML={{ 
-            __html: sanitizeCodeBlocks(problem.question)
-          }}
-        />
-      );
-    } else if (contentActive === 'whiteboard') {
+    if (contentActive === 'notes') 
+      return <p className="text-white mt-4 whitespace-pre-wrap text-lg wrap-text bg-base_100">{problem.notes}</p>;
+    if (contentActive === 'question') 
+      return 
+      <div 
+      className="text-white mt-4 problem-content prose prose-invert max-w-none bg-base_100" 
+      dangerouslySetInnerHTML={{ 
+        __html: sanitizeCodeBlocks(problem.question) 
+      }} 
+    />;
+    if (contentActive === 'whiteboard') 
       return <Whiteboard 
-        className="mt-4 h-[800px]"
-        elements={whiteboardElements}
-        setElements={setWhiteboardElements}
-        history={whiteboardHistory}
-        setHistory={setWhiteboardHistory}
-        historyIndex={whiteboardHistoryIndex}
-        setHistoryIndex={setWhiteboardHistoryIndex}
-      />
-    } else if (contentActive === 'ai-assistant') {
-      return <ChatWindow
-          problem={problem} 
-          editorContent={editorContent} 
-          apiKey={data?.apiKey}
-          isTab={true}
-          externalMessages={chatMessages}
-          setExternalMessages={setChatMessages}
-          externalInput={chatInput}
-          setExternalInput={setChatInput}
-          externalIsAnalyzing={isAnalyzing}
-          setExternalIsAnalyzing={setIsAnalyzing}
-          externalIsTyping={isTyping}
-          setExternalIsTyping={setIsTyping}
-          externalShowQuickQuestions={showQuickQuestions}
-          setExternalShowQuickQuestions={setShowQuickQuestions}
-      />
-    } else {
-      return <pre className="wrap-text bg-base_100"><code className={`language-${problem.language} mr-5`}>{problem.solution}</code></pre>;
-    }
+    className="mt-4 h-[600px]" 
+    elements={whiteboardElements} 
+    setElements={setWhiteboardElements} 
+    history={whiteboardHistory} 
+    setHistory={setWhiteboardHistory} 
+    historyIndex={whiteboardHistoryIndex} 
+    setHistoryIndex={setWhiteboardHistoryIndex} 
+  />;
+    if (contentActive === 'ai-assistant') 
+      return <ChatWindow problem={problem} 
+    editorContent={editorContent} 
+    apiKey={data?.apiKey} 
+    isTab={true} 
+    externalMessages={chatMessages} 
+    setExternalMessages={setChatMessages} 
+    externalInput={chatInput} 
+    setExternalInput={setChatInput} 
+    externalIsAnalyzing={isAnalyzing} 
+    setExternalIsAnalyzing={setIsAnalyzing} 
+    externalIsTyping={isTyping} 
+    setExternalIsTyping={setIsTyping} 
+    externalShowQuickQuestions={showQuickQuestions} 
+    setExternalShowQuickQuestions={setShowQuickQuestions} 
+  />;
+    return <pre className="wrap-text bg-base_100"><code className={`language-${problem.language} mr-5`}>{problem.solution}</code></pre>;
   };
 
   return (
     <div className="h-screen bg-[#2A303C] flex flex-col">
       {/* Add the style tag to include the CSS */}
       <style>{preBlockStyles}</style>
-      
+
       {/* Top Navigation */}
-      <div className="flex items-center justify-between px-6 h-16 border-b border-[#3A4253] bg-[#343B4A]">
+      <div className="flex items-center justify-between px-6 h-16 border-b border-[#3A4253] bg-[#343B4A]" style={{ color: '#FFFFFF' }}>
         <div className="flex items-center">
-          <button
-            onClick={handleGoBack}
-            className="flex items-center text-[#B0B7C3] hover:text-primary transition-colors mr-6 group"
-          >
-            <div className="p-2 rounded-lg group-hover:bg-[#2A303C] transition-colors">
-              <span className="material-icons">arrow_back</span>
-            </div>
+          <button 
+            onClick={handleGoBack} 
+            className="flex items-center text-white hover:text-[#2196F3] transition-colors mr-4" style={{ color: '#FFFFFF' }}>
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl font-semibold text-primary mr-4">
+          <h1 className="text-2xl font-semibold text-white mr-4" style={{ color: '#FFFFFF' }}>
             {problem.name}
           </h1>
-          <div className="flex gap-2 mr-4">
-            <Badge 
-              type="difficulty" 
-              value={problem.difficulty} 
-              className="text-sm py-1.5 px-4" 
-            />
-            <Badge 
-              type="problemType" 
-              value={problem.type} 
-              className="text-sm py-1.5 px-4"
-            />
-          </div>
+          <Badge 
+            type="difficulty" 
+            value={problem.difficulty} 
+            className="text-white text-sm py-1.5 px-4 bg-[#3A4253]" 
+          />
+          <Badge 
+            type="problemType" 
+            value={problem.type} 
+            className="text-white text-sm py-1.5 px-4 bg-[#3A4253]" 
+          />
         </div>
-        
-        {/* System status indicator moved to the right */}
-        <div className="flex items-center text-xs text-[#B0B7C3]">
+        <div className="flex items-center text-xs text-white" style={{ color: '#FFFFFF' }}>
           <div className="relative mr-2">
             <div className="w-2.5 h-2.5 bg-review rounded-full"></div>
-            <div 
-              className="absolute inset-0 w-2.5 h-2.5 bg-[#00FF00] rounded-full opacity-70"
-              style={{
-                animation: "breathe 3s ease-in-out infinite",
-                filter: "blur(1px)"
-              }}
-            ></div>
-            <style jsx>{`
-              @keyframes breathe {
-                0%, 100% {
-                  transform: scale(1);
-                  opacity: 0.3;
-                  filter: blur(0.5px);
-                }
-                50% {
-                  transform: scale(1.2);
-                  opacity: 0.7;
-                  filter: blur(2px);
-                }
-              }
-            `}</style>
+            <div className="absolute inset-0 w-2.5 h-2.5 bg-[#00FF00] rounded-full opacity-70 animate-pulse" style={{ filter: "blur(1px)" }}></div>
           </div>
           <span>all systems operational</span>
         </div>
@@ -414,72 +425,67 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
 
       {/* Main Content with Resizable Panels */}
       <div 
-        className="flex-1 flex overflow-hidden"
-        onMouseMove={handleMouseMove}
+        className="flex-1 flex overflow-hidden" 
+        onMouseMove={handleMouseMove} style={{ color: '#FFFFFF' }}
       >
         {/* Left Panel */}
         <div 
-          className="h-full overflow-auto bg-base_100"
-          style={{ width: `${panelWidth}%` }}
+          className="h-full overflow-auto bg-base_100" 
+          style={{ width: `${panelWidth}%`, color: '#FFFFFF' }}
         >
-          <div className="h-full border-r border-[#3A4253] bg-base_100">
-            <div className="p-4 border-b border-[#3A4253]">
-              <div className="flex flex-wrap gap-2 items-center mb-2">
+          <div className="h-full border-r border-[#3A4253] bg-base_100 flex flex-col" style={{ color: '#FFFFFF' }}>
+            <div className="border-b border-[#3A4253] bg-base_100 sticky top-0 z-10 p-2" style={{ color: '#FFFFFF' }}>
+              <div className="flex flex-wrap items-center gap-1 px-2">
                 <TabButton 
                   active={contentActive === 'question'} 
                   label="Description" 
-                  onClick={() => setContentActive('question')}
-                  icon="description"
+                  onClick={() => setContentActive('question')} 
+                  icon={<ClipboardPen />} 
                 />
                 <TabButton 
                   active={contentActive === 'notes'} 
                   label="Notes" 
-                  onClick={() => setContentActive('notes')}
-                  icon="edit_note"
+                  onClick={() => setContentActive('notes')} 
+                  icon={<NotepadText />} 
                 />
-                <TabButton
-                  active={contentActive==='whiteboard'}
-                  label="Whiteboard"
-                  onClick={() => setContentActive('whiteboard')}
-                  icon='dataset'
+                <TabButton 
+                  active={contentActive === 'whiteboard'} 
+                  label="Whiteboard" 
+                  onClick={() => setContentActive('whiteboard')} 
+                  icon={<PenSquare />} 
                 />
                 <TabButton 
                   active={contentActive === 'solution'} 
                   label="Solution" 
-                  onClick={() => setContentActive('solution')}
-                  icon="code"
+                  onClick={() => setContentActive('solution')} 
+                  icon={<Lightbulb />} 
                 />
-                <TabButton
-                  active={contentActive === 'ai-assistant'}
-                  label="Repcode AI"
-                  onClick={() => setContentActive('ai-assistant')}
-                  icon='bolt'
+                <TabButton 
+                  active={contentActive === 'ai-assistant'} 
+                  label="Repcode AI" 
+                  onClick={() => setContentActive('ai-assistant')} 
+                  icon={<BotMessageSquare />} 
                 />
-                
-                {/* Vertical divider */}
-                <div className="h-8 w-px bg-[#3A4253] mx-3"></div>
-                
-                                 {/* Action buttons */}
-                   <ActionButton 
-                     onClick={() => setIsEditModalOpen(true)}
-                     icon="edit"
-                     label="Edit"
-                   />
-                   <ActionButton 
-                     onClick={() => setIsStatsModalOpen(true)}
-                     icon="bar_chart"
-                     label="Stats"
-                   />
-                   <ActionButton 
-                     onClick={() => window.open(problem.link, '_blank')}
-                     icon="open_in_new"
-                     label="Run on Leetcode"
-                   />
+              </div>
+              <div className="flex justify-start gap-2 px-2 mt-2">
+                <ActionButton onClick={() => setIsEditModalOpen(true)} 
+                icon={<Edit3 />} 
+                label="Edit" 
+                />
+                <ActionButton 
+                onClick={() => setIsStatsModalOpen(true)} 
+                icon={<BarChart2 />} 
+                label="Stats" 
+                />
+                <ActionButton 
+                onClick={() => window.open(problem.link, '_blank')} 
+                icon={<ExternalLink />} 
+                label="Run on Leetcode" 
+                />
               </div>
             </div>
-            <div className="p-6 bg-base_100">
-              {renderTabContent()}
-            </div>
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-4 bg-base_100" style={{ color: '#FFFFFF' }}>{renderTabContent()}</div>
           </div>
         </div>
 
@@ -492,13 +498,11 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           `}
           onMouseDown={handleMouseDown}
         >
-          <div
-            className={`
-              absolute top-1/2 -translate-y-1/2
-              transition-all duration-200 opacity-0
-              ${isDragging || 'group-hover:opacity-100'}
-            `}
-          >
+          <div 
+          className="
+            absolute top-1/2 -translate-y-1/2 
+            transition-all duration-200 opacity-0 
+            group-hover:opacity-100">
             <div className="bg-[#4A5267] rounded-md p-1 -ml-3">
               <span className="material-icons text-[#B0B7C3]" style={{ fontSize: '16px' }}>chevron_left</span>
             </div>
@@ -534,11 +538,11 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               fadeFoldWidgets: false,
               scrollPastEnd: false,
             }}
-            style={{ height: '100%', width: '100%' }}  
+            style={{ height: '100%', width: '100%' }}
           />
         </div>
       </div>
-      
+
       <ReactTooltip
         id="my-tooltip-1"
         place="bottom"
