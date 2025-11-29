@@ -45,16 +45,19 @@ export default function Home() {
         {/* Floating Code Snippets */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -right-20 top-40 transform rotate-12 opacity-10">
-            <pre className="text-[#60a5fa] text-sm whitespace-pre-wrap">
-              {`function fibonacci(n) {
+            <div className="animate-float">
+              <pre className="text-[#60a5fa] text-sm whitespace-pre-wrap">
+                {`function fibonacci(n) {
   if (n <= 1) return n;
   return fibonacci(n - 1) + fibonacci(n - 2);
 }`}
-            </pre>
+              </pre>
+            </div>
           </div>
           <div className="absolute -left-20 bottom-40 transform -rotate-12 opacity-10">
-            <pre className="text-[#22d3ee] text-sm whitespace-pre-wrap">
-              {`function binarySearch(arr, target) {
+            <div className="animate-floatSlow" style={{ animationDelay: '1s' }}>
+              <pre className="text-[#22d3ee] text-sm whitespace-pre-wrap">
+                {`function binarySearch(arr, target) {
   let left = 0;
   let right = arr.length - 1;
   
@@ -67,11 +70,13 @@ export default function Home() {
   
   return -1;
 }`}
-            </pre>
+              </pre>
+            </div>
           </div>
           <div className="absolute right-10 bottom-20 transform rotate-6 opacity-10">
-            <pre className="text-[#4ade80] text-sm whitespace-pre-wrap">
-              {`function mergeSort(arr) {
+            <div className="animate-floatMedium" style={{ animationDelay: '2s' }}>
+              <pre className="text-[#4ade80] text-sm whitespace-pre-wrap">
+                {`function mergeSort(arr) {
   if (arr.length <= 1) return arr;
   
   const mid = Math.floor(arr.length / 2);
@@ -95,11 +100,13 @@ function merge(left, right) {
   
   return [...result, ...left.slice(i), ...right.slice(j)];
 }`}
-            </pre>
+              </pre>
+            </div>
           </div>
           <div className="absolute left-10 top-20 transform -rotate-6 opacity-10">
-            <pre className="text-[#a78bfa] text-sm whitespace-pre-wrap">
-              {`function dfs(graph, start, visited = new Set()) {
+            <div className="animate-floatSlow" style={{ animationDelay: '0.5s' }}>
+              <pre className="text-[#a78bfa] text-sm whitespace-pre-wrap">
+                {`function dfs(graph, start, visited = new Set()) {
   visited.add(start);
   console.log(start);
   
@@ -111,7 +118,8 @@ function merge(left, right) {
   
   return visited;
 }`}
-            </pre>
+              </pre>
+            </div>
           </div>
         </div>
 

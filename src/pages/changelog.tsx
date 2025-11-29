@@ -12,6 +12,7 @@ export default function Changelog() {
             date: "V 2.13 - November 5th, 2025",
             changes: [
               <>⭐<a href="https://github.com/hussiiii/Repcode/pull/71" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #71</a> merged, credit @Ad4mlars </>,
+              "⚙️Adjusted styling of floating code snippets in landing page",
             ],
           },
         ],

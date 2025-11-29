@@ -128,6 +128,25 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        floatSlow: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-15px)' },
+        },
+        floatMedium: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-25px)' },
+        },
+      },
+      animation: {
+        float: 'float 6s ease-in-out infinite',
+        floatSlow: 'floatSlow 8s ease-in-out infinite',
+        floatMedium: 'floatMedium 7s ease-in-out infinite',
+      },
     },
   },
   plugins: [require('preline/plugin')],
