@@ -9,6 +9,15 @@ export default function Changelog() {
         month: "November 2025",
         updates: [
           {
+            date: "V 2.14 - November 30th, 2025",
+            changes: [
+              "➕New feature: Solve Random Problem button with collection selection modal",
+              "➕Added year dividers to changelog sidebar for better navigation",
+              "⚙️Adjusted tab styling in Problem and Study Mode views",
+              "🛠️Fixed badge spacing issue in problem views",
+            ],
+          },
+          {
             date: "V 2.13 - November 5th, 2025",
             changes: [
               <>⭐<a href="https://github.com/hussiiii/Repcode/pull/71" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #71</a> merged, credit @Ad4mlars </>,

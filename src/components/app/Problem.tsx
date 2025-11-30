@@ -411,16 +411,18 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           <h1 className="text-2xl font-semibold text-white mr-4" style={{ color: '#FFFFFF' }}>
             {problem.name}
           </h1>
-          <Badge 
-            type="difficulty" 
-            value={problem.difficulty} 
-            className="text-white text-sm py-1.5 px-4 bg-[#3A4253]" 
-          />
-          <Badge 
-            type="problemType" 
-            value={problem.type} 
-            className="text-white text-sm py-1.5 px-4 bg-[#3A4253]" 
-          />
+          <div className="flex gap-2">
+            <Badge 
+              type="difficulty" 
+              value={problem.difficulty} 
+              className="text-white text-sm py-1.5 px-4 bg-[#3A4253]" 
+            />
+            <Badge 
+              type="problemType" 
+              value={problem.type} 
+              className="text-white text-sm py-1.5 px-4 bg-[#3A4253]" 
+            />
+          </div>
         </div>
         <div className="flex items-center text-xs text-white" style={{ color: '#FFFFFF' }}>
           <div className="relative mr-2">
