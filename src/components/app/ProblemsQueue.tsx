@@ -112,6 +112,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const [isTyping, setIsTyping] = useState(false);
     const [showQuickQuestions, setShowQuickQuestions] = useState(true);
 
+    // State for severely overdue problems
+    const [isSeverelyOverdue, setIsSeverelyOverdue] = useState(false);
+    const [monthsOverdue, setMonthsOverdue] = useState(0);
+
     // Joyride tour state
     const [runTour, setRunTour] = useState(false);
     const [tourSteps] = useState<Step[]>([
@@ -316,28 +320,59 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         console.log(dueProblems)
         setDueProblems(problems);
       }
-          // Set buttons based on the type of the first problem
-    if (dueProblems.length > 0) {
-      const firstProblemType = dueProblems[0].type;
-      const buttonsBasedOnType = firstProblemType === 'New' || firstProblemType === 'Learning' || firstProblemType === 'Relearning'
-          ? [
-              { label: 'Again', value: 'again' },
-              { label: 'Good', value: 'good' },
-              { label: 'Easy', value: 'easy' },
-          ]
-          : [
-              { label: 'Again', value: 'again' },
-              { label: 'Hard', value: 'hard' },
-              { label: 'Good', value: 'good' },
-              { label: 'Easy', value: 'easy' },
+      
+      if (dueProblems.length > 0) {
+        const firstProblemType = dueProblems[0].type;
+        
+        // Calculate if problem is severely overdue (only for Review cards)
+        let isSevereOverdue = false;
+        let monthsOver = 0;
+        
+        if (firstProblemType === 'Review') {
+          const dueDate = new Date(dueProblems[0].dueDate);
+          const now = new Date();
+          const msOverdue = now.getTime() - dueDate.getTime();
+          monthsOver = msOverdue / (1000 * 60 * 60 * 24 * 30); // Approximate months
+          isSevereOverdue = monthsOver >= userSettings?.overdueWarningThreshold;
+        }
+        
+        // Update state for UI warning display
+        setIsSeverelyOverdue(isSevereOverdue);
+        setMonthsOverdue(isSevereOverdue ? Math.floor(monthsOver) : 0);
+        
+        // Set buttons based on problem type and overdue status
+        let buttonsBasedOnType;
+        if (isSevereOverdue) {
+          // Severely overdue - only show Lapse (renamed Again) and Good
+          buttonsBasedOnType = [
+            { label: 'Lapse', value: 'again' },
+            { label: 'Good', value: 'good' },
           ];
-      setButtons(buttonsBasedOnType);
+        } else if (firstProblemType === 'New' || firstProblemType === 'Learning' || firstProblemType === 'Relearning') {
+          buttonsBasedOnType = [
+            { label: 'Again', value: 'again' },
+            { label: 'Good', value: 'good' },
+            { label: 'Easy', value: 'easy' },
+          ];
+        } else {
+          buttonsBasedOnType = [
+            { label: 'Again', value: 'again' },
+            { label: 'Hard', value: 'hard' },
+            { label: 'Good', value: 'good' },
+            { label: 'Easy', value: 'easy' },
+          ];
+        }
+        setButtons(buttonsBasedOnType);
+      } else {
+        setIsSeverelyOverdue(false);
+        setMonthsOverdue(0);
       }
       if (dueProblems[0]) {
         switch (dueProblems[0].type) {
           case 'New': {
             const stepsArray = userSettings?.learnSteps.split(' ');
             const firstLearningStep = stepsArray[0];
+            // Good on New card goes to step 1, or graduates if only 1 step
             const secondLearningStep = stepsArray.length > 1 ? stepsArray[1] : userSettings?.graduatingInterval + "d";
             setAgainText(firstLearningStep);
             setGoodText(secondLearningStep);
@@ -347,56 +382,51 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           case 'Learning': {
             const stepsArray = userSettings?.learnSteps.split(' ');
             const firstLearningStep = stepsArray[0];
+            const currentStepIndex = dueProblems[0].stepIndex ?? 0;
+            const nextStepIndex = currentStepIndex + 1;
 
+            // Determine what Good will show
             let nextInterval;
-            // If interval is -1 or less than 12hr, set Good text to the second learning step or the graduating interval
-            if (dueProblems[0].interval === -1 || dueProblems[0].interval < 720) {
-              nextInterval = stepsArray.length > 1 ? stepsArray[1] : userSettings?.graduatingInterval + "d";
+            if (nextStepIndex >= stepsArray.length) {
+              // Would graduate
+              nextInterval = userSettings?.graduatingInterval + "d";
             } else {
-              // Find the current interval in the learning steps
-              const currentIndex = stepsArray.findIndex((step: any) => step === dueProblems[0].interval.toString());
-          
-              if (currentIndex >= 0 && currentIndex < stepsArray.length - 1) {
-                // If there is a next step, use it
-                nextInterval = stepsArray[currentIndex + 1];
-              } else {
-                // If the current interval is the last one, or not found, use the graduating interval
-                nextInterval = userSettings?.graduatingInterval + "d";
-              }
+              nextInterval = stepsArray[nextStepIndex];
             }
-            const easyint = userSettings?.easyInterval + "d"; 
 
             setAgainText(firstLearningStep);
             setGoodText(nextInterval);
-            setEasyText(easyint);
+            setEasyText(userSettings?.easyInterval + "d");
             break;
           }
           case 'Relearning': {
             const relearnStepsArray = userSettings?.relearnSteps.split(' '); 
             const firstStep = relearnStepsArray[0]; 
+            const currentStepIndex = dueProblems[0].stepIndex ?? 0;
+            const nextStepIndex = currentStepIndex + 1;
 
-            const currentIndex = relearnStepsArray.findIndex((step: any) => step === dueProblems[0].interval);
-            // Determine the next interval
+            // Determine what Good will show
             let nextInterval;
-            if (currentIndex >= 0 && currentIndex < relearnStepsArray.length - 1) {
-              // If there is a next step, use it
-              nextInterval = relearnStepsArray[currentIndex + 1];
+            if (nextStepIndex >= relearnStepsArray.length) {
+              // Would graduate back to Review
+              nextInterval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval;
+              nextInterval = Math.floor(nextInterval / 1440); // Convert to days
+              nextInterval = nextInterval + 'd';
             } else {
-              // If the current interval is the last one, or not found, use the relearnGraduating interval (which is a percent)
-              nextInterval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval
+              nextInterval = relearnStepsArray[nextStepIndex];
             }
             
             let easyInt = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval; 
-
-            nextInterval = Math.floor(nextInterval / 1440); // Convert to days and round down
             easyInt = Math.floor(easyInt / 1440); // Convert to days and round down
+
             setAgainText(firstStep); 
-            setGoodText(nextInterval + 'd'); 
+            setGoodText(nextInterval); 
             setEasyText(easyInt + 'd'); 
             break;
           }
           case 'Review': {
-            const relearnStepsArray = userSettings?.learnSteps.split(' '); 
+            // Again on Review goes to Relearning, so show first relearn step
+            const relearnStepsArray = userSettings?.relearnSteps.split(' '); 
             const firstRelearnStep = relearnStepsArray[0]; 
 
             const intervalHard = Math.floor((dueProblems[0].interval * 1.2 * userSettings?.intervalModifier) / 1440);
@@ -415,7 +445,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           }
         }
       }
-    }, [problems, dueProblems]);
+    }, [problems, dueProblems, userSettings]);
 
 
     // For heat map 
@@ -435,6 +465,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const getButtonColor = (label: string) => {
       switch (label) {
         case 'Again':
+        case 'Lapse':
           return 'text-error rounded-md hover:bg-hover2'; 
         case 'Hard':
           return 'text-medium rounded-md hover:bg-hover2'; 
@@ -466,6 +497,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     // handles the repeated logic of updating the problem's due date, updating the problem in the database, updating the collection counts, and handling the resultant changes in the array of problems
     async function Helper(problem: any) {
       setIsLoading(true);
+      
+      // Cap interval at maximumInterval (convert days to minutes)
+      const maxIntervalMinutes = userSettings?.maximumInterval * 24 * 60;
+      problem.interval = Math.min(problem.interval, maxIntervalMinutes);
+      
       // update due date 
       const currentDate = new Date(); // get the current date
       const additionalTime = problem.interval * 60 * 1000; // convert minutes to milliseconds 
@@ -476,12 +512,14 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         type: problem.type,
         interval: problem.interval,
         relearnInterval: problem.relearnInterval,
+        stepIndex: problem.stepIndex,
         ease: problem.ease,
         dueDate: problem.dueDate,
         againCount: problem.againCount,
         hardCount: problem.hardCount,  
         goodCount: problem.goodCount,   
-        easyCount: problem.easyCount    
+        easyCount: problem.easyCount,
+        lapses: problem.lapses
       };
       updateProblemMutation.mutate({ problemId: problem.id, updates }, {
         onSuccess: async (updatedProblem) => {
@@ -580,157 +618,125 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         }
 
         if(dueProblems[0].type === "New") {
-            if(buttonValue === "again") { // update type to learning, set interval to interval of first learning step, update due date 
-                dueProblems[0].type = "Learning"; 
-
-                // Parse learningSteps and convert to minutes
-                const stepsArray = userSettings?.learnSteps.split(' ').map((step:string) => {
-                const value = parseInt(step.slice(0, -1));
-                const unit = step.slice(-1);
-                return unit === 'm' ? value : value * 24 * 60; 
-            });
-            dueProblems[0].interval = stepsArray[0]; 
-
-
-            await Helper(dueProblems[0]); 
-        
-            }
-            else if(buttonValue === "good") { // update type to learning, set the interval 2nd step's (since this card is new, it's on the first step by default) interval OR graduating interval, update due date
-              dueProblems[0].type = "Learning"; 
-
-              const stepsArray = userSettings?.learnSteps.split(' ').map((step:string) => {
+            // Parse learningSteps and convert to minutes
+            const stepsArray = userSettings?.learnSteps.split(' ').map((step:string) => {
               const value = parseInt(step.slice(0, -1));
               const unit = step.slice(-1);
               return unit === 'm' ? value : value * 24 * 60; 
             });
 
-            let nextInterval;
-            if (stepsArray.length >= 2) {
-                // Set to the second step
-                nextInterval = stepsArray[1];
-            } else {
-                // No second step, use the graduating interval
-                // graduatingInterval is in days and needs to be converted to minutes
-                nextInterval = userSettings?.graduatingInterval * 24 * 60;
+            if(buttonValue === "again") { // update type to learning, set to first step
+                dueProblems[0].type = "Learning"; 
+                dueProblems[0].stepIndex = 0;
+                dueProblems[0].interval = stepsArray[0]; 
+
+                await Helper(dueProblems[0]); 
+            }
+            else if(buttonValue === "good") { // update type to learning, advance to step 1 (skipping step 0)
+              dueProblems[0].stepIndex = 1;
+              
+              if (dueProblems[0].stepIndex >= stepsArray.length) {
+                // No second step, graduate directly to Review
                 dueProblems[0].type = "Review"; 
+                dueProblems[0].stepIndex = 0;
+                dueProblems[0].interval = userSettings?.graduatingInterval * 24 * 60;
+              } else { // advance to next step
+                dueProblems[0].type = "Learning"; 
+                dueProblems[0].interval = stepsArray[dueProblems[0].stepIndex];
+              }
+
+              await Helper(dueProblems[0]);
             }
-            dueProblems[0].interval = nextInterval;
-
-            await Helper(dueProblems[0]);
-            }
-
-            else if (buttonValue === "easy") { // update type to review, change interval to easyinterval, update due date 
-            dueProblems[0].type = "Review"; 
-
-            // Set the interval to the easyInterval value (it's in days so convert it to minutes)
-            dueProblems[0].interval = userSettings?.easyInterval * 24 * 60; 
-            
-            await Helper(dueProblems[0]); 
+            else if (buttonValue === "easy") { // update type to review, change interval to easyinterval
+              dueProblems[0].type = "Review"; 
+              dueProblems[0].stepIndex = 0;
+              dueProblems[0].interval = userSettings?.easyInterval * 24 * 60; 
+              
+              await Helper(dueProblems[0]); 
             }
         }
         else if(dueProblems[0].type === "Learning") {
-            if(buttonValue === "again") { // set interval to first learning step, update due date
+            // Parse learningSteps and convert to minutes
             const stepsArray = userSettings?.learnSteps.split(' ').map((step:string) => {
                 const value = parseInt(step.slice(0, -1));
                 const unit = step.slice(-1);
                 return unit === 'm' ? value : value * 24 * 60; 
             });
-            dueProblems[0].interval = stepsArray[0]; 
 
-
-            await Helper(dueProblems[0]);
-            }
-            else if (buttonValue === "good") {
-              const stepsArray = userSettings?.learnSteps.split(' ').map((step: string) => {
-                const value = parseInt(step.slice(0, -1));
-                const unit = step.slice(-1);
-                return unit === 'm' ? value : value * 24 * 60; // Convert to minutes
-              });
-
-              let nextInterval;
-              // If the current problem's interval isn't set OR it is less than 12hr (arbitrarily chosen), then it means that this is probably a New card that had "Again" pressed on it to turn it to learning, so set interval to 2nd learning step 
-              if (dueProblems[0].interval === -1 || dueProblems[0].interval < 720) {
-                // If interval is -1, set it equal to the 2nd learning step instead
-                nextInterval = stepsArray[1];
-              } else {
-                // Find the index of the current interval in stepsArray
-                const currentIndex = stepsArray.findIndex((step: any) => step === dueProblems[0].interval);
-
-                if (currentIndex >= 0 && currentIndex < stepsArray.length - 1) {
-                  // If there is a next step, use it
-                  nextInterval = stepsArray[currentIndex + 1];
-                } else {
-                  // If the current interval is the last one, or not found, use the graduating interval
-                  // graduatingInterval is in days and needs to be converted to minutes
-                  nextInterval = userSettings?.graduatingInterval * 24 * 60;
-                  dueProblems[0].type = "Review";
-                }
-              }
-              dueProblems[0].interval = nextInterval;
-
+            if(buttonValue === "again") { // reset to first learning step
+              dueProblems[0].stepIndex = 0;
+              dueProblems[0].interval = stepsArray[0]; 
 
               await Helper(dueProblems[0]);
             }
-            else if (buttonValue === "easy") { // update type to review, set interval to easyInterval, update due date
-            dueProblems[0].type = "Review"; 
+            else if (buttonValue === "good") { // advance to next step or graduate
+              dueProblems[0].stepIndex += 1;
+              
+              if (dueProblems[0].stepIndex >= stepsArray.length) {
+                // Completed all steps, graduate to Review
+                dueProblems[0].type = "Review";
+                dueProblems[0].stepIndex = 0;
+                dueProblems[0].interval = userSettings?.graduatingInterval * 24 * 60;
+              } else {
+                dueProblems[0].interval = stepsArray[dueProblems[0].stepIndex];
+              }
 
-            // Set the interval to the easyInterval value (it's in days, so make it in minutes)
-            dueProblems[0].interval = userSettings?.easyInterval * 24 * 60; 
+              await Helper(dueProblems[0]);
+            }
+            else if (buttonValue === "easy") { // skip remaining steps, graduate to Review
+              dueProblems[0].type = "Review"; 
+              dueProblems[0].stepIndex = 0;
+              dueProblems[0].interval = userSettings?.easyInterval * 24 * 60; 
 
-
-            await Helper(dueProblems[0]);
+              await Helper(dueProblems[0]);
             }
         }
         else if (dueProblems[0].type === "Relearning") {
-            if(buttonValue === "again") { // set interval to 1st step in relearningSteps array, update due date
+            // Parse relearnSteps and convert to minutes
             const relearnStepsArray = userSettings?.relearnSteps.split(' ').map((step:string) => {
                 const value = parseInt(step.slice(0, -1));
                 const unit = step.slice(-1);
                 return unit === 'm' ? value : value * 24 * 60; 
             });
-            dueProblems[0].interval = relearnStepsArray[0]; 
 
+            if(buttonValue === "again") { // reset to first relearning step
+              dueProblems[0].stepIndex = 0;
+              dueProblems[0].interval = relearnStepsArray[0]; 
 
-            await Helper(dueProblems[0]);
+              await Helper(dueProblems[0]);
             }
-            else if(buttonValue === "good") { // set interval to the next relearning step (can NOT have duplictates) OR to relearnInterval * relearnGraduatingInterval, update due date
-            const relearnStepsArray = userSettings?.relearnSteps.split(' ').map((step:string) => {
-                const value = parseInt(step.slice(0, -1));
-                const unit = step.slice(-1);
-                return unit === 'm' ? value : value * 24 * 60; 
-            });
-            // Find the index of the current interval in stepsArray
-            const currentIndex = relearnStepsArray.findIndex((step: any) => step === dueProblems[0].interval);
-
-            // Determine the next interval
-            let nextInterval;
-            if (currentIndex >= 0 && currentIndex < relearnStepsArray.length - 1) {
-                // If there is a next step, use it
-                nextInterval = relearnStepsArray[currentIndex + 1];
-            } else {
-                // If the current interval is the last one, or not found, use the relearnGraduating interval (which is a percent)
-                nextInterval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval
-                dueProblems[0].relearnInterval = 0; 
+            else if(buttonValue === "good") { // advance to next step or graduate back to Review
+              dueProblems[0].stepIndex += 1;
+              
+              if (dueProblems[0].stepIndex >= relearnStepsArray.length) {
+                // Completed all relearn steps, graduate back to Review
                 dueProblems[0].type = "Review";
+                dueProblems[0].stepIndex = 0;
+                dueProblems[0].interval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval;
+                dueProblems[0].relearnInterval = 0; 
+              } else {
+                dueProblems[0].interval = relearnStepsArray[dueProblems[0].stepIndex];
+              }
+
+              await Helper(dueProblems[0]);
             }
+            else if (buttonValue === "easy") { // skip all relearn steps, graduate immediately
+              dueProblems[0].type = "Review"; 
+              dueProblems[0].stepIndex = 0;
+              dueProblems[0].interval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval; 
+              dueProblems[0].relearnInterval = 0; 
 
-            dueProblems[0].interval = nextInterval;
-
-
-            await Helper(dueProblems[0]);
-            }
-            else if (buttonValue === "easy") { // skip all the relearn steps and set interval immediately to relearnInterval * relearnGraduatingInterval, set type to reveiw, update due date
-            dueProblems[0].interval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval; 
-            dueProblems[0].relearnInterval = 0; 
-            dueProblems[0].type = "Review"; 
-
-            await Helper(dueProblems[0]);
+              await Helper(dueProblems[0]);
             }
         }
         else if (dueProblems[0].type === "Review") {
-            if(buttonValue === "again") { // set problem type to Relearning, decrease ease by 20% (0.2), set relearnInterval to current interval, set interval to 1st step of relearnSteps array, update due date 
+            if(buttonValue === "again") { // set problem type to Relearning, decrease ease by 20% (0.2), set relearnInterval to current interval, set interval to 1st step of relearnSteps array
             dueProblems[0].type = "Relearning";
+            dueProblems[0].stepIndex = 0; // Start at first relearn step
             dueProblems[0].ease = (dueProblems[0].ease - 0.20 >= userSettings?.minimumEase) ? dueProblems[0].ease - 0.20 : userSettings.minimumEase;
+
+            // Increment lapses if this is a lapse (severely overdue or regular Again on Review)
+            dueProblems[0].lapses = (dueProblems[0].lapses || 0) + 1;
 
             dueProblems[0].relearnInterval = dueProblems[0].interval;
             const relearnStepsArray = userSettings?.relearnSteps.split(' ').map((step:string) => {
@@ -766,7 +772,8 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               const fuzz = (Math.random() * (0.05 - 0.02) + 0.02).toFixed(2); 
               dueProblems[0].interval *= (1 + parseFloat(fuzz));
 
-              dueProblems[0].ease = dueProblems[0].ease + 0.15; 
+              // Increase ease by 15%, but ensure it's at least minimumEase (for legacy/edge cases)
+              dueProblems[0].ease = Math.max(dueProblems[0].ease + 0.15, userSettings?.minimumEase); 
 
               await Helper(dueProblems[0]);
             }
@@ -1026,54 +1033,67 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               {/* Content Area */}
               <div className="flex-1 overflow-y-auto p-4 bg-base_100" style={{ color: '#FFFFFF' }}>
                 {content === 'solution' && buttons?.length > 0 && (
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    {buttons.map((button: any, index: any) => {
-                      // Determine button styling based on label
-                      let buttonStyle = '';
-                      switch (button.label) {
-                        case 'Again':
-                          buttonStyle = 'border-[#8B3A3A] text-[#FF6B6B] hover:bg-[#3A2A2A]';
-                          break;
-                        case 'Hard':
-                          buttonStyle = 'border-[#8C5E2A] text-[#FFA94D] hover:bg-[#3A332A]';
-                          break;
-                        case 'Good':
-                          buttonStyle = 'border-[#2D6A39] text-[#69DB7C] hover:bg-[#2A3A2E]';
-                          break;
-                        case 'Easy':
-                          buttonStyle = 'border-[#2A5A8C] text-[#74C0FC] hover:bg-[#202C3A]';
-                          break;
-                        default:
-                          buttonStyle = 'border-[#3A4253] text-primary';
-                      }
-                      
-                      return (
-                        <button
-                          key={index}
-                          className={`mx-2 py-0.5 px-4 border rounded-md transition-all duration-300 ${buttonStyle}`}
-                          onClick={() => Algorithm(button.value)}
-                        >
-                          <span className="text-lg">{button.label}</span>
-                          {/* Show the time in smaller text */}
-                          <span className="text-xs ml-1 opacity-80">
-                            ({(() => {
-                              switch (button.label) {
-                                case 'Again':
-                                  return againText;
-                                case 'Hard':
-                                  return hardText;
-                                case 'Good':
-                                  return goodText;
-                                case 'Easy':
-                                  return easyText;
-                                default:
-                                  return '';
-                              }
-                            })()})
-                          </span>
-                        </button>
-                      );
-                    })}
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-2">
+                      {buttons.map((button: any, index: any) => {
+                        // Determine button styling based on label
+                        let buttonStyle = '';
+                        switch (button.label) {
+                          case 'Again':
+                          case 'Lapse':
+                            buttonStyle = 'border-[#8B3A3A] text-[#FF6B6B] hover:bg-[#3A2A2A]';
+                            break;
+                          case 'Hard':
+                            buttonStyle = 'border-[#8C5E2A] text-[#FFA94D] hover:bg-[#3A332A]';
+                            break;
+                          case 'Good':
+                            buttonStyle = 'border-[#2D6A39] text-[#69DB7C] hover:bg-[#2A3A2E]';
+                            break;
+                          case 'Easy':
+                            buttonStyle = 'border-[#2A5A8C] text-[#74C0FC] hover:bg-[#202C3A]';
+                            break;
+                          default:
+                            buttonStyle = 'border-[#3A4253] text-primary';
+                        }
+                        
+                        return (
+                          <button
+                            key={index}
+                            className={`mx-2 py-0.5 px-4 border rounded-md transition-all duration-300 ${buttonStyle}`}
+                            onClick={() => Algorithm(button.value)}
+                          >
+                            <span className="text-lg">{button.label}</span>
+                            {/* Show the time in smaller text */}
+                            <span className="text-xs ml-1 opacity-80">
+                              ({(() => {
+                                switch (button.label) {
+                                  case 'Again':
+                                  case 'Lapse':
+                                    return againText;
+                                  case 'Hard':
+                                    return hardText;
+                                  case 'Good':
+                                    return goodText;
+                                  case 'Easy':
+                                    return easyText;
+                                  default:
+                                    return '';
+                                }
+                              })()})
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Warning for severely overdue problems */}
+                    {isSeverelyOverdue && (
+                      <div className="mt-3 p-3 bg-[#3A2A2A] border border-[#8B3A3A] rounded-md">
+                        <p className="text-sm text-[#FF9999]">
+                          ⚠️ This problem is over {userSettings?.overdueWarningThreshold} months overdue ({monthsOverdue} months). 
+                          If you no longer remember it well, you should <span className="font-semibold text-[#FF6B6B]">Lapse</span> it to trigger the relearning process
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
                 {dueProblems.length > 0 && (

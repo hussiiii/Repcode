@@ -32,6 +32,7 @@ model User {
   maximumNewPerDay        Int         @default(9999)
   contributionHistory     String      @default("{}")
   newUser                 Boolean     @default(true)
+  overdueWarningThreshold Int         @default(12)
 }
 
 model Collection {
@@ -59,6 +60,7 @@ model Problem {
   type                    String      @default("New")
   interval                Int         @default(-1) 
   relearnInterval         Int         @default(0)
+  stepIndex               Int         @default(0)
   ease                    Float       @default(2.5) 
   dueDate                 DateTime    @default(now()) 
   language                String      @default("python")
@@ -69,4 +71,5 @@ model Problem {
   hardCount               Int         @default(0) 
   goodCount               Int         @default(0) 
   easyCount               Int         @default(0) 
+  lapses                  Int         @default(0)
 }

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { X, Calendar, Clock, BarChart3, Tag, Percent, ArrowRight, RefreshCw, PieChart } from 'lucide-react';
+import { X, Calendar, Clock, BarChart3, Tag, Percent, ArrowRight, RefreshCw, PieChart, AlertTriangle } from 'lucide-react';
 import Badge from '../ui/Badge';
 import DonutChart from './DonutChart';
 
@@ -151,7 +151,11 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                         icon={<RefreshCw className="h-4 w-4" />}
                         label="Relearn Interval"
                         value={formatInterval(problem.relearnInterval)}
-                        className="col-span-2"
+                      />
+                      <StatItem
+                        icon={<AlertTriangle className="h-4 w-4" />}
+                        label="Lapses"
+                        value={problem.lapses || 0}
                       />
                     </div>
                   </div>

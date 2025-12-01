@@ -6,12 +6,26 @@ import "../app/globals.css";
 export default function Changelog() {
     const changelogData = [
       {
+        month: "December 2025",
+        updates: [
+          {
+            date: "V 2.15 - December 1st, 2025",
+            changes: [
+              "➕Algorithm update: added a warning month threshold for lapses in Study Mode. So if you take a long break, the algo will adjust much better!",
+              "⚙️Adjusted styling of Study Mode problems queue",
+            ],
+          },
+        ],
+      },
+      {
         month: "November 2025",
         updates: [
           {
             date: "V 2.14 - November 30th, 2025",
             changes: [
               "➕New feature: Solve Random Problem button with collection selection modal",
+              "➕Algorithm update: added a cap to the interval so that it never exceeds the maximum interval set by user",
+              "➕Algorithm update: updated how algorithm navigates through steps for learning and relearning problems by adding a stepIndex field in DB",
               "➕Added year dividers to changelog sidebar for better navigation",
               "⚙️Adjusted tab styling in Problem and Study Mode views",
               "🛠️Fixed badge spacing issue in problem views",

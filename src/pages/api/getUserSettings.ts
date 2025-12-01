@@ -29,6 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           maximumNewPerDay: true,
           apiKey: true,
           contributionHistory: true,
+          overdueWarningThreshold: true,
         },
       });
 

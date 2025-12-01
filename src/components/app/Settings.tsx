@@ -117,6 +117,10 @@ const Settings = () => {
       intervalModifier: parseFloat(
         (document.getElementById('intervalModifier') as HTMLInputElement)?.value
       ),
+      overdueWarningThreshold: parseInt(
+        (document.getElementById('overdueWarningThreshold') as HTMLInputElement)?.value,
+        10
+      ),
       // API Settings
       apiKey: (document.getElementById('apiKey') as HTMLInputElement)?.value,
     };
@@ -132,9 +136,10 @@ const Settings = () => {
     if (
       !validateNumber(newSettings.graduatingInterval) ||
       !validateNumber(newSettings.easyInterval) ||
-      !validateNumber(newSettings.maximumInterval)
+      !validateNumber(newSettings.maximumInterval) ||
+      !validateNumber(newSettings.overdueWarningThreshold)
     ) {
-      showToast("Graduating Interval, Easy Interval, and Maximum Interval must be numbers.");
+      showToast("Graduating Interval, Easy Interval, Maximum Interval, and Overdue Warning Threshold must be numbers.");
       return;
     }
     if (
@@ -331,6 +336,16 @@ const Settings = () => {
               <StyledInput id="intervalModifier" defaultValue={data.intervalModifier} />
               <p className="text-xs text-[#8A94A6]">
                 A multiplier to adjust algorithm aggressiveness.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="overdueWarningThreshold" className="block text-sm font-medium text-[#B0B7C3]">
+                Overdue Warning Threshold (months)
+              </label>
+              <StyledInput id="overdueWarningThreshold" defaultValue={data.overdueWarningThreshold} />
+              <p className="text-xs text-[#8A94A6]">
+                Problems overdue by this many months will show a lapse warning in Study Mode
               </p>
             </div>
           </div>
