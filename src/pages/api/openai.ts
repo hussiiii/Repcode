@@ -47,7 +47,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages,
-      max_tokens: 300, 
+      max_tokens: 1500, 
     });
 
     if (completion.choices && completion.choices.length > 0) {
