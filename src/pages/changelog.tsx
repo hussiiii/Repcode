@@ -9,6 +9,13 @@ export default function Changelog() {
         month: "December 2025",
         updates: [
           {
+            date: "V 2.16 - December 2nd, 2025",
+            changes: [
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/78" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #78</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/77" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #77</a> merged, credit @OmkarSathish </>,
+            ],
+          },
+          {
             date: "V 2.15 - December 1st, 2025",
             changes: [
               "➕Algorithm update: added a warning month threshold for lapses in Study Mode. So if you take a long break, the algo will adjust much better!",
