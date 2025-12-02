@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark-reasonable.css';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const ChatWindow = ({ 
   problem, 
@@ -176,28 +178,71 @@ const ChatWindow = ({
   };
 
   const renderMessage = (msg: { text: string, sender: string }, index: number) => {
-    const codeRegex = /```(\w+)?\n([\s\S]*?)```/g;
-    const parts = msg.text.split(codeRegex);
-
     return (
       <div key={index} className={`message ${msg.sender} animate-fade-in my-2 p-3 rounded-lg w-full ${
-        msg.sender === "ai" 
-          ? "bg-[#343B4A] text-primary border-l-2 border-blue-400" 
+        msg.sender === "ai"
+          ? "bg-[#343B4A] text-primary border-l-2 border-blue-400"
           : "bg-gradient-to-r from-[#0891b2] to-[#2563eb] text-primary"
       }`}>
-        {parts.map((part, i) => {
-          if (i % 3 === 2) {
-            const language = parts[i - 1] || 'plaintext';
-            return (
-              <div key={i} className="mt-2 rounded-md bg-[#1E2430] overflow-hidden w-full">
-                <pre className="overflow-x-auto max-w-full">
-                  <code className={`language-${language} p-3 block text-sm`}>{part}</code>
-                </pre>
-              </div>
-            );
-          }
-          return part && <p key={i} className="whitespace-pre-wrap break-words mb-2">{part}</p>;
-        })}
+        <div className="markdown-content">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              code: ({ node, inline, className, children, ...props }: any) => {
+                const match = /language-(\w+)/.exec(className || '');
+                const language = match ? match[1] : 'plaintext';
+
+                return !inline ? (
+                  <div className="mt-2 rounded-md bg-[#1E2430] overflow-hidden w-full">
+                    <pre className="overflow-x-auto max-w-full">
+                      <code className={`language-${language} p-3 block text-sm`} {...props}>
+                        {children}
+                      </code>
+                    </pre>
+                  </div>
+                ) : (
+                  <code className="bg-[#1E2430] px-1.5 py-0.5 rounded text-sm" {...props}>
+                    {children}
+                  </code>
+                );
+              },
+              p: ({ children }) => (
+                <p className="mb-2 break-words">{children}</p>
+              ),
+              h1: ({ children }) => (
+                <h1 className="text-2xl font-bold mb-3 mt-4">{children}</h1>
+              ),
+              h2: ({ children }) => (
+                <h2 className="text-xl font-bold mb-2 mt-3">{children}</h2>
+              ),
+              h3: ({ children }) => (
+                <h3 className="text-lg font-bold mb-2 mt-2">{children}</h3>
+              ),
+              ul: ({ children }) => (
+                <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>
+              ),
+              ol: ({ children }) => (
+                <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>
+              ),
+              li: ({ children }) => (
+                <li className="ml-2">{children}</li>
+              ),
+              strong: ({ children }) => (
+                <strong className="font-bold">{children}</strong>
+              ),
+              em: ({ children }) => (
+                <em className="italic">{children}</em>
+              ),
+              blockquote: ({ children }) => (
+                <blockquote className="border-l-4 border-blue-400 pl-4 py-2 my-2 bg-[#1E2430]/50">
+                  {children}
+                </blockquote>
+              ),
+            }}
+          >
+            {msg.text}
+          </ReactMarkdown>
+        </div>
       </div>
     );
   };
