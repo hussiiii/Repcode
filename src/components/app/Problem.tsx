@@ -164,6 +164,8 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
+  const [isGeneratingSolution, setIsGeneratingSolution] = useState(false);
+  const [localProblem, setLocalProblem] = useState(problem);
 
   // For resizable panels
   const [panelWidth, setPanelWidth] = useState(50);
@@ -305,7 +307,99 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
     setIsToastVisible(true);
     setTimeout(() => setIsToastVisible(false), 3000);
   };
-  
+
+  // Sync local problem state when prop changes
+  useEffect(() => {
+    setLocalProblem(problem);
+  }, [problem]);
+
+  // Function to generate AI solution
+  const generateAISolution = async () => {
+    if (!data?.apiKey) {
+      showToast('Please add an OpenAI API key in Settings');
+      return;
+    }
+
+    setIsGeneratingSolution(true);
+
+    try {
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: localProblem.question,
+          solution: '',
+          userSolution: '',
+          userMessage: `Generate a complete solution for this problem in ${localProblem.language}. Strictly only provide the code without any explanations, comments, or markdown formatting.`,
+          apiKey: data?.apiKey,
+          mode: 'chat'
+        }),
+      });
+
+      if (!response.ok) {
+        showToast('Failed to generate solution');
+        setIsGeneratingSolution(false);
+        return;
+      }
+
+      const result = await response.json();
+      let generatedCode = result.message;
+
+      // Extract only code - remove markdown code blocks if present
+      generatedCode = generatedCode.replace(/```[\w]*\n?/g, '').trim();
+
+      // Remove any explanatory text (heuristic: remove lines that don't look like code)
+      const lines = generatedCode.split('\n');
+      const codeLines = lines.filter((line: string) => {
+        const trimmed = line.trim();
+        // Keep empty lines, comments, and lines that contain typical code characters
+        if (!trimmed) return true;
+        if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*') || trimmed.startsWith('*')) return true;
+        // Remove lines that look like explanations (contain many words without code symbols)
+        const hasCodeSymbols = /[{}\[\]();=<>+\-*/%&|^]/.test(trimmed);
+        const startsWithKeyword = /^(function|const|let|var|class|def|public|private|protected|static|void|int|string|return|if|else|for|while|switch|case)/i.test(trimmed);
+        return hasCodeSymbols || startsWithKeyword;
+      });
+
+      generatedCode = codeLines.join('\n').trim();
+
+      // Update the problem's solution in the database
+      const updateResponse = await fetch('/api/updateProblemForAlgo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: localProblem.id,
+          updates: { solution: generatedCode }
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        showToast('Failed to save generated solution');
+        setIsGeneratingSolution(false);
+        return;
+      }
+
+      // Update local state
+      setLocalProblem({ ...localProblem, solution: generatedCode });
+
+      // Trigger syntax highlighting after state update
+      setTimeout(() => {
+        hljs.highlightAll();
+      }, 100);
+
+      showToast('Solution generated successfully!');
+      setIsGeneratingSolution(false);
+    } catch (error) {
+      console.error('Error generating solution:', error);
+      showToast('Failed to generate solution');
+      setIsGeneratingSolution(false);
+    }
+  };
+
   // Function for handling AI interactions - no longer needed for modal toggle
 
   if (!problem) {
@@ -350,49 +444,84 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   }
 
   const renderTabContent = () => {
-    if (contentActive === 'notes') 
-      return <p className="text-white mt-4 whitespace-pre-wrap text-lg wrap-text bg-base_100">{problem.notes}</p>;
-    if (contentActive === 'question') 
+    if (contentActive === 'notes')
+      return <p className="text-white mt-4 whitespace-pre-wrap text-lg wrap-text bg-base_100">{localProblem.notes}</p>;
+    if (contentActive === 'question')
       return (
-        <div 
-          className="text-white mt-4 problem-content prose prose-invert max-w-none bg-base_100" 
-          dangerouslySetInnerHTML={{ 
-            __html: sanitizeCodeBlocks(problem.question) 
-          }} 
+        <div
+          className="text-white mt-4 problem-content prose prose-invert max-w-none bg-base_100"
+          dangerouslySetInnerHTML={{
+            __html: sanitizeCodeBlocks(localProblem.question)
+          }}
         />
       );
-    if (contentActive === 'whiteboard') 
+    if (contentActive === 'whiteboard')
       return (
-        <Whiteboard 
-          className="mt-4 h-[600px]" 
-          elements={whiteboardElements} 
-          setElements={setWhiteboardElements} 
-          history={whiteboardHistory} 
-          setHistory={setWhiteboardHistory} 
-          historyIndex={whiteboardHistoryIndex} 
-          setHistoryIndex={setWhiteboardHistoryIndex} 
+        <Whiteboard
+          className="mt-4 h-[600px]"
+          elements={whiteboardElements}
+          setElements={setWhiteboardElements}
+          history={whiteboardHistory}
+          setHistory={setWhiteboardHistory}
+          historyIndex={whiteboardHistoryIndex}
+          setHistoryIndex={setWhiteboardHistoryIndex}
         />
       );
-    if (contentActive === 'ai-assistant') 
+    if (contentActive === 'ai-assistant')
       return (
-        <ChatWindow 
-          problem={problem} 
-          editorContent={editorContent} 
-          apiKey={data?.apiKey} 
-          isTab={true} 
-          externalMessages={chatMessages} 
-          setExternalMessages={setChatMessages} 
-          externalInput={chatInput} 
-          setExternalInput={setChatInput} 
-          externalIsAnalyzing={isAnalyzing} 
-          setExternalIsAnalyzing={setIsAnalyzing} 
-          externalIsTyping={isTyping} 
-          setExternalIsTyping={setIsTyping} 
-          externalShowQuickQuestions={showQuickQuestions} 
-          setExternalShowQuickQuestions={setShowQuickQuestions} 
+        <ChatWindow
+          problem={localProblem}
+          editorContent={editorContent}
+          apiKey={data?.apiKey}
+          isTab={true}
+          externalMessages={chatMessages}
+          setExternalMessages={setChatMessages}
+          externalInput={chatInput}
+          setExternalInput={setChatInput}
+          externalIsAnalyzing={isAnalyzing}
+          setExternalIsAnalyzing={setIsAnalyzing}
+          externalIsTyping={isTyping}
+          setExternalIsTyping={setIsTyping}
+          externalShowQuickQuestions={showQuickQuestions}
+          setExternalShowQuickQuestions={setShowQuickQuestions}
         />
       );
-    return <pre className="wrap-text bg-base_100"><code className={`language-${problem.language} mr-5`}>{problem.solution}</code></pre>;
+    if (contentActive === 'solution')
+      return (
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-auto">
+            <pre className="wrap-text bg-base_100"><code className={`language-${localProblem.language} mr-5`}>{localProblem.solution}</code></pre>
+          </div>
+          <div className="mt-4 pt-4 border-t border-[#3A4253]">
+            <button
+              onClick={generateAISolution}
+              disabled={isGeneratingSolution}
+              className={`w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+                isGeneratingSolution
+                  ? 'bg-[#3A4253] text-[#B0B7C3] cursor-not-allowed'
+                  : 'bg-gradient-to-r from-[#9C27B0] to-[#7B1FA2] hover:from-[#AB47BC] hover:to-[#8E24AA] text-white shadow-lg hover:shadow-xl'
+              }`}
+            >
+              {isGeneratingSolution ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Generating Solution...</span>
+                </>
+              ) : (
+                <>
+                  <span className="material-icons" style={{ fontSize: '20px' }}>auto_awesome</span>
+                  <span>
+                    {localProblem.solution?.startsWith('# TODO: Enter your solution here by editing the problem')
+                      ? 'Generate Solution'
+                      : 'Regenerate Solution'}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      );
+    return null;
   };
 
   return (
@@ -409,18 +538,18 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-2xl font-semibold text-white mr-4" style={{ color: '#FFFFFF' }}>
-            {problem.name}
+            {localProblem.name}
           </h1>
           <div className="flex gap-2">
-            <Badge 
-              type="difficulty" 
-              value={problem.difficulty} 
-              className="text-white text-sm py-1.5 px-4 bg-[#3A4253]" 
+            <Badge
+              type="difficulty"
+              value={localProblem.difficulty}
+              className="text-white text-sm py-1.5 px-4 bg-[#3A4253]"
             />
-            <Badge 
-              type="problemType" 
-              value={problem.type} 
-              className="text-white text-sm py-1.5 px-4 bg-[#3A4253]" 
+            <Badge
+              type="problemType"
+              value={localProblem.type}
+              className="text-white text-sm py-1.5 px-4 bg-[#3A4253]"
             />
           </div>
         </div>
@@ -487,10 +616,10 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                 icon={<BarChart2 />} 
                 label="Stats" 
                 />
-                <ActionButton 
-                onClick={() => window.open(problem.link, '_blank')} 
-                icon={<ExternalLink />} 
-                label="Run on Leetcode" 
+                <ActionButton
+                onClick={() => window.open(localProblem.link, '_blank')}
+                icon={<ExternalLink />}
+                label="Run on Leetcode"
                 />
               </div>
             </div>
@@ -529,7 +658,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
         >
           <AceEditor
             className="rounded"
-            mode={problem.language}
+            mode={localProblem.language}
             theme="one_dark"
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
@@ -537,7 +666,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             showPrintMargin={false}
             showGutter={true}
             highlightActiveLine={true}
-            value={editorContent || problem.functionSignature}
+            value={editorContent || localProblem.functionSignature}
             onChange={(newValue) => setEditorContent(newValue)}
             setOptions={{
               enableBasicAutocompletion: true,
@@ -565,14 +694,14 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
         onClose={() => setIsEditModalOpen(false)}
         collectionId={Number(collectionId)}
         isEditMode={true}
-        problemToEdit={problem}
+        problemToEdit={localProblem}
         showToast={showToast}
       />
 
       <ProblemStatsModal
         isOpen={isStatsModalOpen}
         onClose={() => setIsStatsModalOpen(false)}
-        problem={problem}
+        problem={localProblem}
       />
 
       <Toast message={toastMessage} isVisible={isToastVisible} />
