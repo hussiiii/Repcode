@@ -34,6 +34,7 @@ const ProblemModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
+  const [isGeneratingSolution, setIsGeneratingSolution] = useState(false);
 
   const queryClient = useQueryClient();
   const { user } = useContext(AuthContext);
@@ -231,6 +232,92 @@ const ProblemModal = ({
       showToast?.('Error fetching problem data');
     } finally {
       setIsAutofilling(false);
+    }
+  };
+
+  const generateAISolution = async () => {
+    if (!theUser?.apiKey) {
+      showToast?.(
+        <>
+          <span className="inline-block mr-2 bg-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
+          Please add your OpenAI API key in settings first
+        </>
+      );
+      return;
+    }
+
+    if (!question.trim()) {
+      showToast?.(
+        <>
+          <span className="inline-block mr-2 bg-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
+          Please enter a question first
+        </>
+      );
+      return;
+    }
+
+    setIsGeneratingSolution(true);
+    try {
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: question,
+          solution: '',
+          userSolution: '',
+          userMessage: `Generate a complete solution for this problem in ${language}. Strictly only provide the code without any explanations, comments, or markdown formatting.`,
+          apiKey: theUser.apiKey,
+          mode: 'chat'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate solution');
+      }
+
+      const data = await response.json();
+      let generatedCode = data.message || '';
+
+      // Remove markdown code blocks if present
+      generatedCode = generatedCode.replace(/```[\w]*\n?/g, '').trim();
+
+      // Filter out lines that look like explanations
+      const lines = generatedCode.split('\n');
+      const codeLines = lines.filter((line: string) => {
+        const trimmed = line.trim();
+        if (!trimmed) return true; // Keep empty lines for formatting
+
+        // Keep comments
+        if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
+          return true;
+        }
+
+        // Keep lines that look like code 
+        const hasCodeSymbols = /[{}\[\]();=<>+\-*/%&|^]/.test(trimmed);
+        const startsWithKeyword = /^(function|const|let|var|class|def|import|from|return|if|else|for|while|try|catch|async|await|public|private|protected|static)/i.test(trimmed);
+
+        return hasCodeSymbols || startsWithKeyword;
+      });
+
+      const cleanedCode = codeLines.join('\n').trim();
+      setSolution(cleanedCode);
+
+      showToast?.(
+        <>
+          <span className="inline-block mr-2 bg-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
+          Solution generated successfully
+        </>
+      );
+    } catch (error) {
+      console.error('Error generating solution:', error);
+      showToast?.(
+        <>
+          <span className="inline-block mr-2 bg-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
+          Failed to generate solution. Please try again.
+        </>
+      );
+    } finally {
+      setIsGeneratingSolution(false);
     }
   };
 
@@ -479,21 +566,48 @@ const ProblemModal = ({
 
                   {/* SOLUTION */}
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 flex items-center">
-                      Solution <span className="ml-1 text-error">*</span>
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-300 flex items-center">
+                        Solution <span className="ml-1 text-error">*</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={generateAISolution}
+                        disabled={isGeneratingSolution || !question.trim()}
+                        className={`
+                          flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium
+                          transition-all duration-200
+                          ${isGeneratingSolution || !question.trim()
+                            ? 'bg-[#3A4150]/50 text-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white hover:from-[#0ea5c4] hover:to-[#2d74e7]'
+                          }
+                        `}
+                      >
+                        {isGeneratingSolution ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Generating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-icons" style={{ fontSize: '14px' }}>auto_awesome</span>
+                            <span>Generate Solution</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                     <div className="relative group">
                       <textarea
                         value={solution}
                         onChange={(e) => setSolution(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 
+                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70
+                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70
                                    focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
                                    text-primary min-h-[8rem] resize-none appearance-none"
                         placeholder="Copy/paste the solution here (syntax highlighting is applied after creation)."
                       />
                       <div className="absolute inset-0 rounded-md
-                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none 
+                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none
                                       transition-all duration-75"
                       />
                     </div>

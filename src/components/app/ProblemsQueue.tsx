@@ -111,6 +111,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const [isAnalyzing, setIsAnalyzing] = useState(true);
     const [isTyping, setIsTyping] = useState(false);
     const [showQuickQuestions, setShowQuickQuestions] = useState(true);
+    const [isGeneratingSolution, setIsGeneratingSolution] = useState(false);
 
     // State for severely overdue problems
     const [isSeverelyOverdue, setIsSeverelyOverdue] = useState(false);
@@ -570,27 +571,22 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     // Skip function to move current problem to end of queue
     const skipProblem = async () => {
         setIsLoading(true);
-        
         // Get the latest due date among current problems and add 1 minute to it
         const latestDueDate = dueProblems.reduce((latest: Date, problem: any) => {
             const problemDueDate = new Date(problem.dueDate);
             return problemDueDate > latest ? problemDueDate : latest;
         }, new Date());
-        
         // Set the skipped problem's due date to 1 minute after the latest due date
         const newDueDate = new Date(latestDueDate.getTime() + 60000); // 1 minute later
-        
         const updates = {
             dueDate: newDueDate,
         };
-        
         updateProblemMutation.mutate({ problemId: dueProblems[0].id, updates }, {
             onSuccess: async () => {
                 // Remove the skipped problem from the front and add it to the end
                 const skippedProblem = { ...dueProblems[0], dueDate: newDueDate };
                 const remainingProblems = dueProblems.slice(1);
                 setDueProblems([...remainingProblems, skippedProblem]);
-                
                 await refetchProblems();
                 setIsLoading(false);
                 setContent('question');
@@ -601,6 +597,92 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 setIsLoading(false);
             },
         });
+    };
+    
+    const generateAISolution = async () => {
+        if (!data?.apiKey) {
+            showToast('Please add an OpenAI API key in Settings');
+            return;
+        }
+
+        setIsGeneratingSolution(true);
+
+        try {
+            const response = await fetch('/api/openai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: dueProblems[0].question,
+                    solution: '',
+                    userSolution: '',
+                    userMessage: `Generate a complete solution for this problem in ${dueProblems[0].language}. Only provide the code without any explanations, comments, or markdown formatting.`,
+                    apiKey: data?.apiKey,
+                    mode: 'chat'
+                }),
+            });
+
+            if (!response.ok) {
+                showToast('Failed to generate solution');
+                setIsGeneratingSolution(false);
+                return;
+            }
+
+            const result = await response.json();
+            let generatedCode = result.message;
+
+            // Extract only code - remove markdown code blocks if present
+            generatedCode = generatedCode.replace(/```[\w]*\n?/g, '').trim();
+
+            // Remove any explanatory text (heuristic: remove lines that don't look like code)
+            const lines = generatedCode.split('\n');
+            const codeLines = lines.filter((line: string) => {
+                const trimmed = line.trim();
+                // Keep empty lines, comments, and lines that contain typical code characters
+                if (!trimmed) return true;
+                if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*') || trimmed.startsWith('*')) return true;
+                // Remove lines that look like explanations (contain many words without code symbols)
+                const hasCodeSymbols = /[{}\[\]();=<>+\-*/%&|^]/.test(trimmed);
+                const startsWithKeyword = /^(function|const|let|var|class|def|public|private|protected|static|void|int|string|return|if|else|for|while|switch|case)/i.test(trimmed);
+                return hasCodeSymbols || startsWithKeyword;
+            });
+
+            generatedCode = codeLines.join('\n').trim();
+
+            // Update the problem's solution in the database
+            const updateResponse = await fetch('/api/updateProblemForAlgo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: dueProblems[0].id,
+                    updates: { solution: generatedCode }
+                }),
+            });
+
+            if (!updateResponse.ok) {
+                showToast('Failed to save generated solution');
+                setIsGeneratingSolution(false);
+                return;
+            }
+
+            const updatedProblems = [...dueProblems];
+            updatedProblems[0] = { ...updatedProblems[0], solution: generatedCode };
+            setDueProblems(updatedProblems);
+
+            setTimeout(() => {
+                hljs.highlightAll();
+            }, 100);
+
+            showToast('Solution generated successfully!');
+            setIsGeneratingSolution(false);
+        } catch (error) {
+            console.error('Error generating solution:', error);
+            showToast('Failed to generate solution');
+            setIsGeneratingSolution(false);
+        }
     };
 
     // handles the logic of what happens to the problem depeneding on the feedback button pressed 
@@ -1136,7 +1218,38 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                       />
                     ) :
                     (
-                      <pre className="wrap-text overflow-auto"><code className={`language-${dueProblems[0].language} mr-5`}>{dueProblems[0].solution}</code></pre>
+                      <div className="flex flex-col h-full">
+                        <div className="flex-1 overflow-auto">
+                          <pre className="wrap-text overflow-auto"><code className={`language-${dueProblems[0].language} mr-5`}>{dueProblems[0].solution}</code></pre>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-[#3A4253]">
+                          <button
+                            onClick={generateAISolution}
+                            disabled={isGeneratingSolution}
+                            className={`w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+                              isGeneratingSolution
+                                ? 'bg-[#3A4253] text-[#B0B7C3] cursor-not-allowed'
+                                : 'bg-gradient-to-r from-[#9C27B0] to-[#7B1FA2] hover:from-[#AB47BC] hover:to-[#8E24AA] text-white shadow-lg hover:shadow-xl'
+                            }`}
+                          >
+                            {isGeneratingSolution ? (
+                              <>
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>Generating Solution...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="material-icons" style={{ fontSize: '20px' }}>auto_awesome</span>
+                                <span>
+                                  {dueProblems[0].solution?.startsWith('# TODO: Enter your solution here by editing the problem')
+                                    ? 'Generate Solution'
+                                    : 'Regenerate Solution'}
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
