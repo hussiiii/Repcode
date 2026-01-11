@@ -676,7 +676,6 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               tabSize: 4,
               fadeFoldWidgets: false,
               scrollPastEnd: false,
-              behavioursEnabled: false,
             }}
             style={{ height: '100%', width: '100%' }}
           />

@@ -1308,7 +1308,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                   tabSize: 4,
                   fadeFoldWidgets: false,
                   scrollPastEnd: false,
-                  behavioursEnabled: false,
                 }}
                 style={{ height: '100%', width: '100%' }}  
               />
