@@ -37,7 +37,7 @@
     "html-to-text": "^9.0.5",
     "konva": "^9.3.15",
     "lucide-react": "^0.479.0",
-    "next": "^14.2.3",
+    "next": "14.2.35",
     "nookies": "^2.5.2",
     "nprogress": "^0.2.0",
     "openai": "^4.87.3",
