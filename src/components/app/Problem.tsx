@@ -558,7 +558,14 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             <div className="w-2.5 h-2.5 bg-review rounded-full"></div>
             <div className="absolute inset-0 w-2.5 h-2.5 bg-[#00FF00] rounded-full opacity-70 animate-pulse" style={{ filter: "blur(1px)" }}></div>
           </div>
-          <span>all systems operational</span>
+          <a 
+            href="/changelog" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-link transition-colors duration-200 cursor-pointer"
+          >
+            v2.18 - stable release
+          </a>
         </div>
       </div>
 

@@ -51,7 +51,8 @@ const ProblemModal = ({
       setLink(isEditMode && problemToEdit ? problemToEdit.link : '');
       setNotes(isEditMode && problemToEdit ? problemToEdit.notes : '');
       setProblemNumber('');
-      setIsManualEntryOpen(false);
+      // Expand Manual Entry by default when editing, collapse when adding new
+      setIsManualEntryOpen(isEditMode);
     }
   }, [isOpen, isEditMode, problemToEdit]);
 
@@ -603,7 +604,7 @@ const ProblemModal = ({
                         className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70
                                    rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70
                                    focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
-                                   text-primary min-h-[8rem] resize-none appearance-none"
+                                   text-primary min-h-[12rem] resize-y"
                         placeholder="Copy/paste the solution here (syntax highlighting is applied after creation)."
                       />
                       <div className="absolute inset-0 rounded-md

@@ -9,6 +9,15 @@ export default function Changelog() {
         month: "January 2026",
         updates: [
           {
+            date: "V 2.18 - January 15th, 2026",
+            changes: [
+              "⚙️Adjusted Solution textarea in problem modal to be larger by default and vertically resizable",
+              "⚙️Made version indicator clickable - now opens changelog in a new tab",
+              "⚙️Manual Entry section now auto-expands when editing an existing problem",
+              "🛠️Fixed login issue on local development caused by firebase-admin bundling",
+            ],
+          },
+          {
             date: "V 2.17 - January 9th, 2026",
             changes: [
               <>⭐<a href="https://github.com/hussiiii/Repcode/pull/83" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #83</a> merged, credit @OmkarSathish </>,

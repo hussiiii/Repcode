@@ -1040,7 +1040,14 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 }
               `}</style>
             </div>
-            <span>all systems operational</span>
+            <a 
+              href="/changelog" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-link transition-colors duration-200 cursor-pointer"
+            >
+              v2.18 - stable release
+            </a>
           </div>
         </div>
 
