@@ -12,6 +12,7 @@ import BarGraphMonth from '@/components/app/BarGraphMonth';
 import Link from 'next/link';
 import Heatmap from '@/components/app/Heatmap';
 import Badge from '@/components/ui/Badge';
+import StatsCharts from '@/components/app/StatsCharts';
 
 // Import Lucide icons
 import {
@@ -27,6 +28,7 @@ import {
   SparklesIcon,
   BookOpenIcon,
   CircleIcon,
+  HeartPulseIcon,
 } from "lucide-react";
 
 const StudyProblemPage = () => {
@@ -222,72 +224,91 @@ const StudyProblemPage = () => {
             ) : (
               <>
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="bg-tertiary rounded-xl p-5 border border-divide shadow-lg">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+              <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-secondary text-sm font-medium">
+                  <h3 className="text-secondary text-xs font-medium">
                     Current Streak
                   </h3>
-                  <div className="bg-hardbg p-2 rounded-md">
-                    <FlameIcon size={18} className="text-hard" />
+                  <div className="bg-hardbg p-1.5 rounded-md">
+                    <FlameIcon size={16} className="text-hard" />
                   </div>
                 </div>
                 <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-primary">
+                  <span className="text-xl font-bold text-primary">
                     {streak}
                   </span>
-                  <span className="ml-1 text-secondary">days</span>
+                  <span className="ml-1 text-secondary text-sm">days</span>
                 </div>
               </div>
               
-              <div className="bg-tertiary rounded-xl p-5 border border-divide shadow-lg">
+              <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-secondary text-sm font-medium">
+                  <h3 className="text-secondary text-xs font-medium">
                     Total Problems
                   </h3>
-                  <div className="bg-[#6366f1]/10 p-2 rounded-md">
-                    <BarChart3Icon size={18} className="text-[#818cf8]" />
+                  <div className="bg-[#6366f1]/10 p-1.5 rounded-md">
+                    <BarChart3Icon size={16} className="text-[#818cf8]" />
                   </div>
                 </div>
                 <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-primary">
+                  <span className="text-xl font-bold text-primary">
                     {totalProblems}
                   </span>
-                  <span className="ml-1 text-secondary">tracked</span>
+                  <span className="ml-1 text-secondary text-sm">tracked</span>
                 </div>
               </div>
               
-              <div className="bg-tertiary rounded-xl p-5 border border-divide shadow-lg">
+              <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-secondary text-sm font-medium">
+                  <h3 className="text-secondary text-xs font-medium">
                     Due Today
                   </h3>
-                  <div className="bg-warningbg p-2 rounded-md">
-                    <TriangleAlertIcon size={18} className="text-learning" />
+                  <div className="bg-warningbg p-1.5 rounded-md">
+                    <TriangleAlertIcon size={16} className="text-learning" />
                   </div>
                 </div>
                 <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-primary">
+                  <span className="text-xl font-bold text-primary">
                     {dueTodayCount}
                   </span>
-                  <span className="ml-1 text-secondary">problems</span>
+                  <span className="ml-1 text-secondary text-sm">problems</span>
                 </div>
               </div>
               
-              <div className="bg-tertiary rounded-xl p-5 border border-divide shadow-lg">
+              <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-secondary text-sm font-medium">
+                  <h3 className="text-secondary text-xs font-medium">
                     Est. Study Time
                   </h3>
-                  <div className="bg-[#06b6d4]/10 p-2 rounded-md">
-                    <ClockIcon size={18} className="text-[#22d3ee]" />
+                  <div className="bg-[#06b6d4]/10 p-1.5 rounded-md">
+                    <ClockIcon size={16} className="text-[#22d3ee]" />
                   </div>
                 </div>
                 <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-primary">
+                  <span className="text-xl font-bold text-primary">
                     {estimatedStudyTime}
                   </span>
-                  <span className="ml-1 text-secondary">today</span>
+                  <span className="ml-1 text-secondary text-sm">today</span>
+                </div>
+              </div>
+
+              <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-secondary text-xs font-medium">
+                    Total Reviews
+                  </h3>
+                  <div className="bg-[#22c55e]/10 p-1.5 rounded-md">
+                    <HeartPulseIcon size={16} className="text-[#4ade80]" />
+                  </div>
+                </div>
+                <div className="flex items-baseline">
+                  <span className="text-xl font-bold text-primary">
+                    {data?.reduce((sum: number, p: any) => 
+                      sum + (p.againCount || 0) + (p.hardCount || 0) + (p.goodCount || 0) + (p.easyCount || 0), 0
+                    ) || 0}
+                  </span>
+                  <span className="ml-1 text-secondary text-sm">total</span>
                 </div>
               </div>
             </div>
@@ -341,6 +362,7 @@ const StudyProblemPage = () => {
                     {userData?.contributionHistory && <Heatmap contributions={userData.contributionHistory} currentYear={new Date().getFullYear()} />}
                   </div>
                 </div>
+
               </div>
 
               {/* Due Today Section - 1/3 width on large screens */}
@@ -398,6 +420,17 @@ const StudyProblemPage = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Stats Section - Full Width */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold text-primary mb-2">
+                Stats
+              </h2>
+              <p className="text-secondary mb-6">
+                See various statistics and data related to your study habits
+              </p>
+              <StatsCharts />
             </div>
                 </>
               )}

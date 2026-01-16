@@ -9,6 +9,16 @@ export default function Changelog() {
         month: "January 2026",
         updates: [
           {
+            date: "V 2.19 - January 17th, 2026",
+            changes: [
+              "➕Added new Stats section to Study Dashboard with interactive data visualizations",
+              "➕Added 6 different chart types: Creation Date, Interval Size, Lapses, Collections, Total Reviews, and Due Date",
+              "➕Added grouped/individual toggle views for detailed problem-level insights on each chart",
+              "➕Added Total Reviews card to Study Dashboard header",
+              "⚙️Optimized data fetching with react query caching for chart performance",
+            ],
+          },
+          {
             date: "V 2.18 - January 15th, 2026",
             changes: [
               "⚙️Adjusted Solution textarea in problem modal to be larger by default and vertically resizable",
