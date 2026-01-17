@@ -172,10 +172,14 @@ const ProblemModal = ({
         // This must happen BEFORE invalidating userSettings so the refetch gets the new value
         if (!isEditMode && user?.email) {
           try {
+            // Get local date in YYYY-MM-DD format (timezone-safe for streak tracking)
+            const now = new Date();
+            const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            
             await fetch('/api/updateStreak', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userEmail: user.email }),
+              body: JSON.stringify({ userEmail: user.email, localDate }),
             });
           } catch (error) {
             console.error('Failed to update streak:', error);

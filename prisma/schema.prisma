@@ -37,6 +37,7 @@ model User {
   currentStreak           Int         @default(0)
   longestStreak           Int         @default(0)
   lastStreakAction        DateTime?
+  lastStreakDate          String?
 }
 
 model ActivityDay {
