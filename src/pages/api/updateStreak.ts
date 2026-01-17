@@ -15,6 +15,10 @@ import prisma from '../../../prisma_client';
  *   If now - lastStreakAction > 36h → reset to 1
  * 
  * Also tracks longest streak ever achieved.
+ * 
+ * Activity Calendar:
+ *   Uses localDate (from frontend) to mark the user's LOCAL day as active,
+ *   ensuring late-night or early-morning actions mark the correct calendar day.
  */
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -51,23 +55,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const now = new Date();
     const lastAction = user.lastStreakAction ? new Date(user.lastStreakAction) : null;
     
-    // Get today's date at midnight UTC (for ActivityDay tracking)
-    const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    // Parse localDate string (e.g., "2026-01-17") into a Date object at midnight UTC
+    // This ensures the ActivityDay record reflects the USER'S local date, not server time
+    const localDateObj = new Date(localDate + 'T00:00:00.000Z');
 
-    // Always upsert an ActivityDay for today (tracks activity regardless of streak)
+    // Always upsert an ActivityDay for the user's LOCAL date (tracks activity regardless of streak)
     // Wrapped in try-catch because Prisma's upsert with @db.Date can have race conditions
     try {
       await prisma.activityDay.upsert({
         where: {
           userId_date: {
             userId: user.id,
-            date: today,
+            date: localDateObj,
           },
         },
         update: {}, // No-op if already exists
         create: {
           userId: user.id,
-          date: today,
+          date: localDateObj,
         },
       });
     } catch (error: any) {
