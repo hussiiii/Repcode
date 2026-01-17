@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { AuthContext } from '@/auth/AuthContext';
 import { useQuery } from 'react-query';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import "../../../app/globals.css"; 
 import SideBar from '@/components/app/SideBar';
 import nookies from "nookies"; 
@@ -10,9 +10,9 @@ import ProblemTypeInfo from '@/components/app/ProblemTypeInfo';
 import BarGraphWeek from '@/components/app/BarGraphWeek';
 import BarGraphMonth from '@/components/app/BarGraphMonth';
 import Link from 'next/link';
-import Heatmap from '@/components/app/Heatmap';
 import Badge from '@/components/ui/Badge';
 import StatsCharts from '@/components/app/StatsCharts';
+import StreakCalendar from '@/components/app/StreakCalendar';
 
 // Import Lucide icons
 import {
@@ -29,12 +29,14 @@ import {
   BookOpenIcon,
   CircleIcon,
   HeartPulseIcon,
+  HelpCircleIcon,
 } from "lucide-react";
 
 const StudyProblemPage = () => {
   const router = useRouter(); 
   const { user } = useContext(AuthContext);
   const [timeRange, setTimeRange] = useState<"daily" | "monthly">("daily");
+  const [streakCountdown, setStreakCountdown] = useState<string>("");
 
   const fetchAllProblems = async () => {
     if (!user) {
@@ -79,57 +81,45 @@ const StudyProblemPage = () => {
   // Calculate some basic stats for the stats cards
   const totalProblems = data ? data.length : 0;
 
-  // Add this function to calculate the current streak
-  const calculateCurrentStreak = (contributionHistory: any) => {
-    if (!contributionHistory) return 0;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const currentYear = today.getFullYear();
-    const dayOfYear = Math.floor((today.getTime() - new Date(currentYear, 0, 0).getTime()) / (24 * 60 * 60 * 1000));
-    
-    let streak = 0;
-    let currentDay = dayOfYear;
-    let currentYearToCheck = currentYear;
-    
-    // Check if there's activity today
-    const hasTodayActivity = contributionHistory[currentYear]?.[dayOfYear] > 0;
-    
-    // If no activity today, start checking from yesterday
-    if (!hasTodayActivity) {
-      currentDay = dayOfYear - 1;
-    }
-    
-    // Count consecutive days with activity
-    while (true) {
-      // If we've gone before the start of the year, move to previous year
-      if (currentDay < 0) {
-        currentYearToCheck--;
-        // If we don't have data for the previous year, break
-        if (!contributionHistory[currentYearToCheck]) break;
-        
-        // Set to the last day of the previous year (365 or 366 for leap years)
-        const daysInPrevYear = new Date(currentYearToCheck, 11, 31).getDate() === 29 ? 366 : 365;
-        currentDay = daysInPrevYear - 1; // 0-indexed
-      }
-      
-      // Check if there was activity on this day
-      const hasActivity = contributionHistory[currentYearToCheck]?.[currentDay] > 0;
-      
-      if (hasActivity) {
-        streak++;
-        currentDay--;
-      } else {
-        break;
-      }
-    }
-    
-    return streak;
-  };
+  // Get streak value from user data (stored in database)
+  const currentStreak = userData?.currentStreak ?? 0;
 
-  const streak = userData?.contributionHistory ? 
-    calculateCurrentStreak(userData.contributionHistory) : 0;
+  // Calculate streak countdown (36 hours from last action)
+  useEffect(() => {
+    if (!userData?.lastStreakAction) {
+      setStreakCountdown("");
+      return;
+    }
+
+    const calculateCountdown = () => {
+      const lastAction = new Date(userData.lastStreakAction);
+      const deadline = new Date(lastAction.getTime() + 36 * 60 * 60 * 1000); // 36 hours later
+      const now = new Date();
+      const remaining = deadline.getTime() - now.getTime();
+
+      if (remaining <= 0) {
+        setStreakCountdown("expired");
+        return;
+      }
+
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+      
+      if (hours > 0) {
+        setStreakCountdown(`${hours}h ${minutes}m ${seconds}s`);
+      } else if (minutes > 0) {
+        setStreakCountdown(`${minutes}m ${seconds}s`);
+      } else {
+        setStreakCountdown(`${seconds}s`);
+      }
+    };
+
+    calculateCountdown();
+    const interval = setInterval(calculateCountdown, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, [userData?.lastStreakAction]);
 
   const calculateEstimatedStudyTime = (problems: any[]) => {
     if (!problems || problems.length === 0) return "0 min";
@@ -225,21 +215,53 @@ const StudyProblemPage = () => {
               <>
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-              <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
+              <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg relative">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-secondary text-xs font-medium">
-                    Current Streak
-                  </h3>
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-secondary text-xs font-medium">
+                      Daily Streak
+                    </h3>
+                    <div className="relative group">
+                      <HelpCircleIcon
+                        size={12}
+                        className="text-secondary/50 hover:text-secondary cursor-help transition-colors"
+                      />
+
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-2 bg-base_100 border border-divide rounded-lg shadow-xl text-xs text-secondary w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div className="text-primary font-medium mb-1">
+                          How streaks work
+                        </div>
+
+                        <p className="mb-2">
+                          Create a new problem OR give feedback to a problem in Study Mode at least once every 36 hours to keep your streak alive.
+                        </p>
+
+                        <p className="text-secondary/80">
+                          {"If (current day ≠ last action day) AND (last action < 36 hours ago), then increment streak"}
+                        </p>
+
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-divide"></div>
+                      </div>
+                    </div>
+
+                  </div>
                   <div className="bg-hardbg p-1.5 rounded-md">
                     <FlameIcon size={16} className="text-hard" />
                   </div>
                 </div>
                 <div className="flex items-baseline">
                   <span className="text-xl font-bold text-primary">
-                    {streak}
+                    {currentStreak}
                   </span>
                   <span className="ml-1 text-secondary text-sm">days</span>
                 </div>
+                {streakCountdown && currentStreak > 0 && (
+                  <div className="absolute bottom-2 right-3">
+                    <span className={`text-[10px] ${streakCountdown === 'expired' ? 'text-hard' : 'text-secondary'}`}>
+                      {streakCountdown === 'expired' ? '⚠ streak at risk' : streakCountdown}
+                    </span>
+                  </div>
+                )}
               </div>
               
               <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
@@ -278,9 +300,18 @@ const StudyProblemPage = () => {
               
               <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-secondary text-xs font-medium">
-                    Est. Study Time
-                  </h3>
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-secondary text-xs font-medium">
+                      Est. Study Time
+                    </h3>
+                    <div className="relative group">
+                      <HelpCircleIcon size={12} className="text-secondary/50 hover:text-secondary cursor-help transition-colors" />
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-2 bg-base_100 border border-divide rounded-lg shadow-xl text-xs text-secondary w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        Calculated estimate based on the difficulty and type of each problem in your queue today.
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-divide"></div>
+                      </div>
+                    </div>
+                  </div>
                   <div className="bg-[#06b6d4]/10 p-1.5 rounded-md">
                     <ClockIcon size={16} className="text-[#22d3ee]" />
                   </div>
@@ -295,9 +326,18 @@ const StudyProblemPage = () => {
 
               <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-secondary text-xs font-medium">
-                    Total Reviews
-                  </h3>
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-secondary text-xs font-medium">
+                      Total Reviews
+                    </h3>
+                    <div className="relative group">
+                      <HelpCircleIcon size={12} className="text-secondary/50 hover:text-secondary cursor-help transition-colors" />
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-base_100 border border-divide rounded-lg shadow-xl text-xs text-secondary w-44 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        Giving feedback to a problem in Study Mode increments this.
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-divide"></div>
+                      </div>
+                    </div>
+                  </div>
                   <div className="bg-[#22c55e]/10 p-1.5 rounded-md">
                     <HeartPulseIcon size={16} className="text-[#4ade80]" />
                   </div>
@@ -345,13 +385,22 @@ const StudyProblemPage = () => {
                   </div>
                 </div>
 
-                {/* Study Activity / Heatmap */}
+                {/* Activity Calendar */}
                 <div className="bg-tertiary rounded-xl border border-divide shadow-lg mt-6 overflow-hidden">
                   <div className="p-5 border-b border-divide">
                     <div className="flex justify-between items-center">
-                      <h2 className="text-lg font-semibold text-primary">
-                        Study Activity
-                      </h2>
+                      <div className="flex items-center gap-1.5">
+                        <h2 className="text-lg font-semibold text-primary">
+                          Activity Calendar
+                        </h2>
+                        <div className="relative group">
+                          <HelpCircleIcon size={14} className="text-secondary/50 hover:text-secondary cursor-help transition-colors" />
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-2 bg-base_100 border border-divide rounded-lg shadow-xl text-xs text-secondary w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            Tracks all the days you had any kind of activity (either created or reviewed a problem).
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-divide"></div>
+                          </div>
+                        </div>
+                      </div>
                       <div className="text-secondary text-sm flex items-center">
                         <CalendarIcon size={14} className="mr-1" />
                         past year
@@ -359,7 +408,7 @@ const StudyProblemPage = () => {
                     </div>
                   </div>
                   <div className="p-5">
-                    {userData?.contributionHistory && <Heatmap contributions={userData.contributionHistory} currentYear={new Date().getFullYear()} />}
+                    <StreakCalendar currentYear={new Date().getFullYear()} />
                   </div>
                 </div>
 

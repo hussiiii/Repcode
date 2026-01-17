@@ -1,0 +1,1 @@
+mysqldump -h $DATABASE_HOST -u $DATABASE_USER -p $DATABASE_NAME > ~/Desktop/backup.sql

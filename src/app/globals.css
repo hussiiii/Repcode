@@ -198,8 +198,8 @@ body {
 }
 
 
-/* Heatmap styles */
-.heatmap-container {
+/* Streak Calendar styles */
+.streak-calendar-container {
   display: grid;
   grid-template-columns: repeat(53, 1fr); /* Adjust to create a 7x53 grid for all 365/366 days */
   gap: 4px;
@@ -207,7 +207,7 @@ body {
   padding-bottom: 50px; /* Add padding to accommodate the legend */
 }
 
-.heatmap-square {
+.streak-calendar-square {
   width: 14px;
   height: 14px;
   border-radius: 4px;
@@ -230,7 +230,7 @@ body {
 }
 
 /* Legend styles */
-.heatmap-legend {
+.streak-calendar-legend {
   display: flex;
   align-items: center;
   position: absolute;
@@ -240,12 +240,12 @@ body {
   border-radius: 5px;
 }
 
-.heatmap-legend span {
+.streak-calendar-legend span {
   margin: 0 5px;
   font-size: 12px;
 }
 
-.heatmap-legend-square {
+.streak-calendar-legend-square {
   width: 14px;
   height: 14px;
   margin: 0 2px;

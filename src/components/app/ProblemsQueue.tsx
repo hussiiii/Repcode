@@ -555,7 +555,23 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           } catch (error) {
             console.error('Failed to update collection counts:', error);
           }
+          
+          // Update streak when giving feedback on a problem
+          if (user?.email) {
+            try {
+              await fetch('/api/updateStreak', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userEmail: user.email }),
+              });
+            } catch (error) {
+              console.error('Failed to update streak:', error);
+            }
+          }
+          
           queryClient.invalidateQueries(['collections', user?.email]); // for collection problem type counts  
+          queryClient.invalidateQueries(['userSettings', user?.email]); // for updating the heatmap + streak
+          queryClient.invalidateQueries(['collectionDetails']); // for updating ProblemList
           
         },
         onError: (error) => {
@@ -563,9 +579,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           console.error('Error updating problem:', error);
         },
       });
-      //await updateContribution(user?.email || '');
-      queryClient.invalidateQueries(['userSettings', user?.email]); // for updating the heatmap 
-      queryClient.invalidateQueries(['collectionDetails']); // for updating ProblemList
     }
 
     // Skip function to move current problem to end of queue
@@ -1046,7 +1059,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               rel="noopener noreferrer"
               className="hover:text-link transition-colors duration-200 cursor-pointer"
             >
-              v2.19 - stable release
+              v2.20 - stable release
             </a>
           </div>
         </div>
@@ -1227,7 +1240,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                     (
                       <div className="flex flex-col h-full">
                         <div className="flex-1 overflow-auto">
-                          <pre className="wrap-text overflow-auto"><code className={`language-${dueProblems[0].language} mr-5`}>{dueProblems[0].solution}</code></pre>
+                      <pre className="wrap-text overflow-auto"><code className={`language-${dueProblems[0].language} mr-5`}>{dueProblems[0].solution}</code></pre>
                         </div>
                         <div className="mt-4 pt-4 border-t border-[#3A4253]">
                           <button

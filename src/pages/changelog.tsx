@@ -9,6 +9,17 @@ export default function Changelog() {
         month: "January 2026",
         updates: [
           {
+            date: "V 2.20 - January 18th, 2026",
+            changes: [
+              "➕Added Daily Streak feature with 36-hour grace window to encourage consistent practice",
+              "➕Added Activity Calendar to visualize which days you were active",
+              "➕Added streak countdown timer showing time remaining before streak resets",
+              "➕Added tooltip explanations for Daily Streak and Activity Calendar",
+              "⚙️Streak countdown now resets on every action (not just first action of the day)",
+              "🛠️Fixed Prisma upsert issue with date fields causing activity tracking to fail",
+            ],
+          },
+          {
             date: "V 2.19 - January 17th, 2026",
             changes: [
               "➕Added new Stats section to Study Dashboard with interactive data visualizations",

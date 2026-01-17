@@ -167,8 +167,22 @@ const ProblemModal = ({
       return result;
     },
     {
-      onSuccess: () => {
-        // Invalidate queries
+      onSuccess: async () => {
+        // Update streak only when CREATING a new problem (not editing)
+        // This must happen BEFORE invalidating userSettings so the refetch gets the new value
+        if (!isEditMode && user?.email) {
+          try {
+            await fetch('/api/updateStreak', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userEmail: user.email }),
+            });
+          } catch (error) {
+            console.error('Failed to update streak:', error);
+          }
+        }
+
+        // Invalidate queries (after streak update so userSettings gets fresh data)
         queryClient.invalidateQueries(['collectionDetails']);
         queryClient.invalidateQueries(['problemDetails']);
         queryClient.invalidateQueries(['allProblems', user?.email]);

@@ -18,7 +18,7 @@ const StudyDashboardPreview = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-[#343B4A] rounded-xl p-4 border border-[#3A4253] shadow-lg">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-[#B0B7C3] text-sm font-medium">Current Streak</h3>
+                <h3 className="text-[#B0B7C3] text-sm font-medium">Daily Streak</h3>
                 <div className="bg-[#f87171]/10 p-2 rounded-md">
                   <FlameIcon size={16} className="text-[#f87171]" />
                 </div>

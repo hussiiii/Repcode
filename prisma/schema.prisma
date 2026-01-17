@@ -19,6 +19,7 @@ model User {
   subscriptionEnd         DateTime?  
   apiKey                  String?     @default("null")
   collections             Collection[]
+  activityDays            ActivityDay[]
   learnSteps              String      @default("10m 1d")
   relearnSteps            String      @default("10m") 
   relearnGraduatingInterval Float     @default(0.75) 
@@ -33,6 +34,19 @@ model User {
   contributionHistory     Json        @default("{}")
   newUser                 Boolean     @default(true)
   overdueWarningThreshold Int         @default(12)
+  currentStreak           Int         @default(0)
+  longestStreak           Int         @default(0)
+  lastStreakAction        DateTime?
+}
+
+model ActivityDay {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  date      DateTime @db.Date
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, date])
+  @@index([userId, date])
 }
 
 model Collection {

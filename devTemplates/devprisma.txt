@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite" 
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -19,6 +19,7 @@ model User {
   subscriptionEnd         DateTime?  
   apiKey                  String?     @default("null")
   collections             Collection[]
+  activityDays            ActivityDay[]
   learnSteps              String      @default("10m 1d")
   relearnSteps            String      @default("10m") 
   relearnGraduatingInterval Float     @default(0.75) 
@@ -30,14 +31,27 @@ model User {
   intervalModifier        Float       @default(1.0) 
   maximumInterval         Int         @default(180) 
   maximumNewPerDay        Int         @default(9999)
-  contributionHistory     String      @default("{}")
+  contributionHistory     Json        @default("{}")
   newUser                 Boolean     @default(true)
   overdueWarningThreshold Int         @default(12)
+  currentStreak           Int         @default(0)
+  longestStreak           Int         @default(0)
+  lastStreakAction        DateTime?
+}
+
+model ActivityDay {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  date      DateTime @db.Date
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, date])
+  @@index([userId, date])
 }
 
 model Collection {
   id        Int      @id @default(autoincrement())
-  title     String
+  title     String   @db.VarChar(25)
   image     String @default("pattern1.svg")
   lastAdded DateTime? @default(now()) 
   userId    Int
@@ -50,10 +64,10 @@ model Collection {
 
 model Problem {
   id                      Int         @id @default(autoincrement())
-  name                    String
-  question                String
-  solution                String
-  difficulty              String
+  name                    String      @db.VarChar(57)
+  question                String      @db.VarChar(6000)
+  solution                String      @db.VarChar(4400)
+  difficulty              Difficulty
   collectionId            Int
   collection              Collection  @relation(fields: [collectionId], references: [id])
   creationDate            DateTime    @default(now())
@@ -64,12 +78,18 @@ model Problem {
   ease                    Float       @default(2.5) 
   dueDate                 DateTime    @default(now()) 
   language                String      @default("python")
-  functionSignature       String      @default("null")
+  functionSignature       String      @default("null") @db.VarChar(1000)
   link                    String      @default("null")
-  notes                   String      @default("null")
+  notes                   String      @default("null") @db.VarChar(2000)
   againCount              Int         @default(0) 
   hardCount               Int         @default(0) 
   goodCount               Int         @default(0) 
-  easyCount               Int         @default(0) 
+  easyCount               Int         @default(0)
   lapses                  Int         @default(0)
+}
+
+enum Difficulty {
+  Easy
+  Medium
+  Hard
 }

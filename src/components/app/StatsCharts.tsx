@@ -61,7 +61,7 @@ const chartConfigs: ChartConfig[] = [
 
 const StatsCharts = () => {
   const { user } = useContext(AuthContext);
-  const [selectedChart, setSelectedChart] = useState<ChartType>('creationDate');
+  const [selectedChart, setSelectedChart] = useState<ChartType>('collection');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [intervalViewMode, setIntervalViewMode] = useState<'grouped' | 'individual'>('grouped');
   const [lapsesViewMode, setLapsesViewMode] = useState<'grouped' | 'individual'>('grouped');
