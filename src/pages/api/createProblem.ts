@@ -22,23 +22,27 @@ export default async function handler(req: any, res: any) {
           return res.status(403).json({ error: 'Forbidden: You do not own this collection' });
         }
 
-        // Calculate tomorrow's date
+        // Calculate tomorrow's date as the initial due date
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
 
         // Create the problem and link it to the collection by collectionId
+        // NOTE: Both dueDate and originalDueDate are set to the same value initially
+        // - dueDate: Used for queue ordering (may change if user skips)
+        // - originalDueDate: The "true" due date for overdue tracking (only changes on feedback)
         const problem = await prisma.problem.create({
           data: {
             name,
             question,
             solution,
             difficulty, 
-            collectionId: parseInt(collectionId), // Convert collectionId to integer
+            collectionId: parseInt(collectionId),
             functionSignature,
             language,
             link,
             notes, 
-            dueDate: tomorrow, 
+            dueDate: tomorrow,
+            originalDueDate: tomorrow, // Set both dates to the same value on creation
           },
         });
 

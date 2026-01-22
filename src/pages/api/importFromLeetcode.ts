@@ -178,6 +178,9 @@ export default async function handler(req: any, res: any) {
                 }
 
                 // Create the problem with the calculated due date
+                // Both dueDate and originalDueDate are set to the same value on creation
+                // - dueDate: Used for queue ordering (may change if user skips)
+                // - originalDueDate: The "true" due date for overdue tracking
                 const createdProblem = await prisma.problem.create({
                 data: {
                     name: `${questionData.questionFrontendId}. ${questionData.title}` || 'Untitled Problem',
@@ -189,6 +192,7 @@ export default async function handler(req: any, res: any) {
                     language: 'python',
                     link: `https://leetcode.com/problems/${problem.titleSlug}/`,
                     dueDate,
+                    originalDueDate: dueDate, // Set both dates on creation
                 },
                 });
 

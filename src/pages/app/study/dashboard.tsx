@@ -458,10 +458,35 @@ const StudyProblemPage = () => {
                               <Badge type="difficulty" value={problem.difficulty} />
                               <Badge type="problemType" value={problem.type} />
                             </div>
-                            <div className="flex items-center text-xs text-secondary">
-                              <ClockIcon size={12} className="mr-1" />
-                              Due: Today
-                            </div>
+                            {(() => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            
+                            // Use originalDueDate if available, otherwise fall back to dueDate
+                            const actualDueDate = new Date(problem.originalDueDate || problem.dueDate);
+                            actualDueDate.setHours(0, 0, 0, 0);
+                            
+                            const isOverdue = actualDueDate < today;
+                            const formattedDate = actualDueDate.toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric' 
+                            });
+                            
+                            return (
+                              <div className="flex items-center justify-between text-xs">
+                                <div className="flex items-center text-secondary">
+                                  <ClockIcon size={12} className="mr-1" />
+                                  Due: {formattedDate}
+                                </div>
+                                {isOverdue && (
+                                  <span className="text-hard/80 font-medium">
+                                    overdue
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                           </div>
                         ))}
                       </div>

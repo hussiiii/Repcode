@@ -443,14 +443,12 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="flex items-center px-4 py-2 bg-[#343B4A] border border-dashed border-[#4A5267] hover:border-[#60a5fa] text-[#B0B7C3] hover:text-[#60a5fa] rounded-lg transition-all duration-200 group"
+              className="flex items-center px-4 py-2 bg-[#2A303C] border border-dashed border-[#3A4253] text-[#5A6270] rounded-lg cursor-not-allowed opacity-60"
+              disabled={true}
             >
-              <span className="material-icons text-sm mr-1.5 group-hover:text-[#60a5fa] transition-colors">cloud_download</span>
-              <span className="group-hover:text-[#60a5fa] transition-colors">Import Leetcode List</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-0 h-4 ml-1 opacity-0 group-hover:w-4 group-hover:opacity-100 transition-all duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
+              <span className="material-icons text-sm mr-1.5">cloud_download</span>
+              <span>Import Leetcode List</span>
+              <span className="ml-2 text-[10px] uppercase tracking-wide bg-[#3A4253] px-1.5 py-0.5 rounded text-[#6A7280]">Soon</span>
             </button>
             <button
               onClick={() => {

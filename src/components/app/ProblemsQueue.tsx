@@ -495,7 +495,19 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
       return response.json();
     });
 
-    // handles the repeated logic of updating the problem's due date, updating the problem in the database, updating the collection counts, and handling the resultant changes in the array of problems
+    // ============================================================================
+    // HELPER FUNCTION - Updates problem after user gives feedback
+    // ============================================================================
+    // This handles the repeated logic of:
+    // - Updating the problem's due date (both dueDate AND originalDueDate)
+    // - Persisting changes to the database
+    // - Updating collection counts
+    // - Managing the local problems array state
+    //
+    // IMPORTANT: Both dueDate and originalDueDate are set here because the user
+    // is giving actual feedback (Again/Hard/Good/Easy), which means the spaced
+    // repetition algorithm has calculated a new "true" due date.
+    // ============================================================================
     async function Helper(problem: any) {
       setIsLoading(true);
       
@@ -503,11 +515,16 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
       const maxIntervalMinutes = userSettings?.maximumInterval * 24 * 60;
       problem.interval = Math.min(problem.interval, maxIntervalMinutes);
       
-      // update due date 
-      const currentDate = new Date(); // get the current date
+      // Calculate the new due date based on current time + interval
+      const currentDate = new Date();
       const additionalTime = problem.interval * 60 * 1000; // convert minutes to milliseconds 
-      const newDueDate = new Date(currentDate.getTime() + additionalTime); // set the new due date based on the current date plus the interval
+      const newDueDate = new Date(currentDate.getTime() + additionalTime);
+      
+      // Update BOTH due dates - this is a "real" feedback action, not a skip
+      // dueDate: for queue ordering
+      // originalDueDate: for overdue tracking and display
       problem.dueDate = newDueDate;
+      problem.originalDueDate = newDueDate;
     
       const updates = {
         type: problem.type,
@@ -516,6 +533,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         stepIndex: problem.stepIndex,
         ease: problem.ease,
         dueDate: problem.dueDate,
+        originalDueDate: problem.originalDueDate, // Also update the "true" due date
         againCount: problem.againCount,
         hardCount: problem.hardCount,  
         goodCount: problem.goodCount,   
@@ -585,7 +603,21 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
       });
     }
 
-    // Skip function to move current problem to end of queue
+    // ============================================================================
+    // SKIP FUNCTION - Moves current problem to end of today's queue
+    // ============================================================================
+    // IMPORTANT: This ONLY updates dueDate, NOT originalDueDate!
+    //
+    // Why? Because skipping is just a queue reordering action, not actual feedback.
+    // The user hasn't reviewed the problem yet, so we don't want to lose track of
+    // when the problem was actually supposed to be due.
+    //
+    // - dueDate: Updated to "latest + 1 minute" for queue ordering
+    // - originalDueDate: UNCHANGED - preserves the "true" due date for overdue tracking
+    //
+    // This allows users to skip problems repeatedly without "resetting" the overdue
+    // status. The dashboard uses originalDueDate to show accurate overdue information.
+    // ============================================================================
     const skipProblem = async () => {
         setIsLoading(true);
         // Get the latest due date among current problems and add 1 minute to it
@@ -593,10 +625,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             const problemDueDate = new Date(problem.dueDate);
             return problemDueDate > latest ? problemDueDate : latest;
         }, new Date());
-        // Set the skipped problem's due date to 1 minute after the latest due date
+        // Set ONLY dueDate (queue ordering) - originalDueDate stays unchanged!
         const newDueDate = new Date(latestDueDate.getTime() + 60000); // 1 minute later
         const updates = {
             dueDate: newDueDate,
+            // NOTE: originalDueDate is intentionally NOT included here
         };
         updateProblemMutation.mutate({ problemId: dueProblems[0].id, updates }, {
             onSuccess: async () => {

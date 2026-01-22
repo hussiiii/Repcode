@@ -77,7 +77,8 @@ model Problem {
   relearnInterval         Int         @default(0)
   stepIndex               Int         @default(0)
   ease                    Float       @default(2.5) 
-  dueDate                 DateTime    @default(now()) 
+  dueDate                 DateTime    @default(now())
+  originalDueDate         DateTime?
   language                String      @default("python")
   functionSignature       String      @default("null") @db.VarChar(1000)
   link                    String      @default("null")

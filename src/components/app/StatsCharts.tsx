@@ -936,7 +936,8 @@ const StatsCharts = () => {
     const oneMonth = 30 * oneDay;
 
     problems.forEach((p: any) => {
-      const due = new Date(p.dueDate);
+      // Use originalDueDate if available (the "true" due date), fallback to dueDate for legacy problems
+      const due = new Date(p.originalDueDate || p.dueDate);
       const diff = due.getTime() - now.getTime();
 
       // Skip overdue problems
@@ -986,7 +987,8 @@ const StatsCharts = () => {
     const dateGroups: Record<string, { date: Date; problems: any[] }> = {};
     
     problems.forEach((p: any) => {
-      const due = new Date(p.dueDate);
+      // Use originalDueDate if available (the "true" due date), fallback to dueDate for legacy problems
+      const due = new Date(p.originalDueDate || p.dueDate);
       due.setHours(0, 0, 0, 0);
       
       // Skip overdue problems
@@ -1070,7 +1072,8 @@ const StatsCharts = () => {
     let maxDate = now;
     
     problems.forEach((p: any) => {
-      const due = new Date(p.dueDate);
+      // Use originalDueDate if available (the "true" due date), fallback to dueDate for legacy problems
+      const due = new Date(p.originalDueDate || p.dueDate);
       due.setHours(0, 0, 0, 0);
       if (due < minDate) minDate = due;
       if (due > maxDate) maxDate = due;
