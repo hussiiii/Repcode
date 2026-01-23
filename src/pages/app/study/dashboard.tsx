@@ -438,7 +438,7 @@ const StudyProblemPage = () => {
                       </button>
                     ) : (
                       <div className="text-center p-4 text-secondary">
-                        You don&apos;t have any problems due today. Enjoy your day!
+                        You don&apos;t have any problems due today. Maybe now is a good time to create some and learn some new stuff...
                       </div>
                     )}
                     

@@ -115,7 +115,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                       <StatItem 
                         icon={<Clock className="h-4 w-4" />} 
                         label="Next Due" 
-                        value={formatDate(problem.dueDate)} 
+                        value={formatDate(problem.originalDueDate || problem.dueDate)} 
                       />
                       <StatItem 
                         icon={<BarChart3 className="h-4 w-4" />} 

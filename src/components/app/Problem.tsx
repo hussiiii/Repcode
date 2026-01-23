@@ -19,7 +19,7 @@ import ProblemStatsModal from './ProblemStatsModal';
 import Toast from './Toast';
 import Badge from '@/components/ui/Badge';
 import { Whiteboard, DrawingElement } from './WhiteBoard';
-import { ArrowLeft, Edit3, BarChart2, ExternalLink, ClipboardPen, NotepadText, Lightbulb, BotMessageSquare, PenSquare } from "lucide-react";
+import { ArrowLeft, Edit3, BarChart2, ExternalLink, ClipboardPen, NotepadText, Lightbulb, BotMessageSquare, PenSquare, MoreHorizontal } from "lucide-react";
 const sanitizeCodeBlocks = (html: string) => {
   const div = document.createElement('div');
   div.innerHTML = html;
@@ -89,11 +89,11 @@ const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => 
 // Function to determine icon color based on label
 const getIconColor = (label: string): string => {
   switch (label.toLowerCase()) {
-    case 'description': return 'text-[#4CAF50]'; // Green
+    case 'description': return 'text-[#FF5252]'; // Red
     case 'notes': return 'text-[#FF9800]'; // Orange
     case 'whiteboard': return 'text-[#2196F3]'; // Blue
-    case 'solution': return 'text-[#9C27B0]'; // Purple
-    case 'repcode ai': return 'text-[#FF5722]'; // Red
+    case 'solution': return 'text-[#FFCA28]'; // Yellow
+    case 'repcode ai': return 'text-[#FF5722]'; // Deep Orange
     case 'edit': return 'text-[#FF9800]'; // Orange
     case 'stats': return 'text-[#2196F3]'; // Blue
     case 'run on leetcode': return 'text-[#4CAF50]'; // Green
@@ -151,6 +151,8 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isToastVisible, setIsToastVisible] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   // Whiteboard state
@@ -197,6 +199,17 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
       return () => window.removeEventListener('mouseup', handleMouseUp);
     }
   }, [isDragging]);
+
+  // Close more menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchUserSettings = async () => {
     if (!user) throw new Error("No user found");
@@ -564,7 +577,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             rel="noopener noreferrer"
             className="hover:text-link transition-colors duration-200 cursor-pointer"
           >
-            v2.20 - stable release
+            v2.21 - stable release
           </a>
         </div>
       </div>
@@ -581,7 +594,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
         >
           <div className="h-full border-r border-[#3A4253] bg-base_100 flex flex-col" style={{ color: '#FFFFFF' }}>
             <div className="border-b border-[#3A4253] bg-base_100 sticky top-0 z-10 p-2" style={{ color: '#FFFFFF' }}>
-              <div className="flex flex-wrap items-center gap-1 px-2">
+              <div className="flex items-center gap-1 px-2">
                 <TabButton 
                   active={contentActive === 'question'} 
                   label="Description" 
@@ -606,28 +619,82 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                   onClick={() => setContentActive('solution')} 
                   icon={<Lightbulb />} 
                 />
-                <TabButton 
-                  active={contentActive === 'ai-assistant'} 
-                  label="Repcode AI" 
-                  onClick={() => setContentActive('ai-assistant')} 
-                  icon={<BotMessageSquare />} 
-                />
-              </div>
-              <div className="flex justify-start gap-2 px-2 mt-2">
-                <ActionButton onClick={() => setIsEditModalOpen(true)} 
-                icon={<Edit3 />} 
-                label="Edit" 
-                />
-                <ActionButton 
-                onClick={() => setIsStatsModalOpen(true)} 
-                icon={<BarChart2 />} 
-                label="Stats" 
-                />
-                <ActionButton
-                onClick={() => window.open(localProblem.link, '_blank')}
-                icon={<ExternalLink />}
-                label="Run on Leetcode"
-                />
+                
+                {/* More Menu */}
+                <div className="relative ml-auto" ref={moreMenuRef}>
+                  <button
+                    onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+                    className={`
+                      px-3 py-2 text-sm font-medium rounded-full flex items-center gap-1.5
+                      transition-all duration-200
+                      ${isMoreMenuOpen || contentActive === 'ai-assistant'
+                        ? 'bg-[#3b82f6]/15 text-white' 
+                        : 'text-[#B0B7C3] hover:text-white hover:bg-[#2A303C]/50'}
+                    `}
+                  >
+                    <span>More</span>
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                  
+                  {/* Dropdown Menu */}
+                  {isMoreMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-[#2A303C] border border-[#3A4253] rounded-xl shadow-2xl overflow-hidden z-50">
+                      <div className="p-1.5">
+                        {/* Repcode AI */}
+                        <button
+                          onClick={() => {
+                            setContentActive('ai-assistant');
+                            setIsMoreMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
+                            contentActive === 'ai-assistant' 
+                              ? 'bg-[#3b82f6]/15 text-white' 
+                              : 'text-[#B0B7C3] hover:text-white hover:bg-[#343B4A]'
+                          }`}
+                        >
+                          <BotMessageSquare className="w-4 h-4 text-[#FF5722]" />
+                          <span className="text-sm font-medium">Repcode AI</span>
+                        </button>
+                        
+                        {/* Edit */}
+                        <button
+                          onClick={() => {
+                            setIsEditModalOpen(true);
+                            setIsMoreMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                        >
+                          <Edit3 className="w-4 h-4 text-[#FF9800]" />
+                          <span className="text-sm font-medium">Edit</span>
+                        </button>
+                        
+                        {/* Stats */}
+                        <button
+                          onClick={() => {
+                            setIsStatsModalOpen(true);
+                            setIsMoreMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                        >
+                          <BarChart2 className="w-4 h-4 text-[#2196F3]" />
+                          <span className="text-sm font-medium">Stats</span>
+                        </button>
+                        
+                        {/* Run on Leetcode */}
+                        <button
+                          onClick={() => {
+                            window.open(localProblem.link, '_blank');
+                            setIsMoreMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                        >
+                          <ExternalLink className="w-4 h-4 text-[#4CAF50]" />
+                          <span className="text-sm font-medium">Run on Leetcode</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             {/* Content Area */}

@@ -9,6 +9,16 @@ export default function Changelog() {
         month: "January 2026",
         updates: [
           {
+            date: "V 2.21 - January 24th, 2026",
+            changes: [
+              "➕Added a dropdown menu in problem view to declutter the tab bar",
+              "⚙️Reorganized tab buttons: Description, Notes, Whiteboard, Solution are always visible",
+              "⚙️Moved Repcode AI, Edit, Stats, and Run on Leetcode to the dropdown",
+              "⚙️Updated icon colors: Description (red), Solution (yellow)",
+              "➖Disabled Import Leetcode List functionality for now"
+            ],
+          },
+          {
             date: "V 2.20 - January 18th, 2026",
             changes: [
               "➕Added Daily Streak feature with 36-hour grace window to encourage consistent practice",
