@@ -36,7 +36,6 @@ const StudyProblemPage = () => {
   const router = useRouter(); 
   const { user } = useContext(AuthContext);
   const [timeRange, setTimeRange] = useState<"daily" | "monthly">("daily");
-  const [streakCountdown, setStreakCountdown] = useState<string>("");
 
   const fetchAllProblems = async () => {
     if (!user) {
@@ -84,42 +83,31 @@ const StudyProblemPage = () => {
   // Get streak value from user data (stored in database)
   const currentStreak = userData?.currentStreak ?? 0;
 
-  // Calculate streak countdown (36 hours from last action)
-  useEffect(() => {
-    if (!userData?.lastStreakAction) {
-      setStreakCountdown("");
-      return;
+  // Calculate streak status based on lastStreakDate (calendar-day based)
+  const getStreakStatus = (): { status: 'done_today' | 'action_needed' | 'streak_lost' | 'no_streak'; message: string } => {
+    if (!userData?.lastStreakDate) {
+      return { status: 'no_streak', message: 'Start your streak!' };
     }
 
-    const calculateCountdown = () => {
-      const lastAction = new Date(userData.lastStreakAction);
-      const deadline = new Date(lastAction.getTime() + 36 * 60 * 60 * 1000); // 36 hours later
-      const now = new Date();
-      const remaining = deadline.getTime() - now.getTime();
+    // Get today's local date in YYYY-MM-DD format
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    // Get yesterday's local date
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
 
-      if (remaining <= 0) {
-        setStreakCountdown("expired");
-        return;
-      }
+    if (userData.lastStreakDate === todayStr) {
+      return { status: 'done_today', message: '✓ Done for today' };
+    } else if (userData.lastStreakDate === yesterdayStr) {
+      return { status: 'action_needed', message: 'Do activity today!' };
+    } else {
+      return { status: 'streak_lost', message: 'Streak lost' };
+    }
+  };
 
-      const hours = Math.floor(remaining / (1000 * 60 * 60));
-      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-      
-      if (hours > 0) {
-        setStreakCountdown(`${hours}h ${minutes}m ${seconds}s`);
-      } else if (minutes > 0) {
-        setStreakCountdown(`${minutes}m ${seconds}s`);
-      } else {
-        setStreakCountdown(`${seconds}s`);
-      }
-    };
-
-    calculateCountdown();
-    const interval = setInterval(calculateCountdown, 1000); // Update every second
-
-    return () => clearInterval(interval);
-  }, [userData?.lastStreakAction]);
+  const streakStatus = getStreakStatus();
 
   const calculateEstimatedStudyTime = (problems: any[]) => {
     if (!problems || problems.length === 0) return "0 min";
@@ -227,17 +215,17 @@ const StudyProblemPage = () => {
                         className="text-secondary/50 hover:text-secondary cursor-help transition-colors"
                       />
 
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-2 bg-base_100 border border-divide rounded-lg shadow-xl text-xs text-secondary w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-2 bg-base_100 border border-divide rounded-lg shadow-xl text-xs text-secondary w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                         <div className="text-primary font-medium mb-1">
                           How streaks work
                         </div>
 
                         <p className="mb-2">
-                          Create a new problem OR give feedback to a problem in Study Mode at least once every 36 hours to keep your streak alive.
+                          Do activity (create a problem or give feedback) on consecutive days to build your streak.
                         </p>
 
                         <p className="text-secondary/80">
-                          {"If (current day ≠ last action day) AND (last action < 36 hours ago), then increment streak"}
+                          You have until the end of the next day to continue your streak.
                         </p>
 
                         <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-divide"></div>
@@ -255,13 +243,16 @@ const StudyProblemPage = () => {
                   </span>
                   <span className="ml-1 text-secondary text-sm">days</span>
                 </div>
-                {streakCountdown && currentStreak > 0 && (
-                  <div className="absolute bottom-2 right-3">
-                    <span className={`text-[10px] ${streakCountdown === 'expired' ? 'text-hard' : 'text-secondary'}`}>
-                      {streakCountdown === 'expired' ? '⚠ streak at risk' : streakCountdown}
-                    </span>
-                  </div>
-                )}
+                <div className="absolute bottom-2 right-3">
+                  <span className={`text-[10px] ${
+                    streakStatus.status === 'done_today' ? 'text-easy' :
+                    streakStatus.status === 'action_needed' ? 'text-learning' :
+                    streakStatus.status === 'streak_lost' ? 'text-hard' :
+                    'text-secondary'
+                  }`}>
+                    {streakStatus.message}
+                  </span>
+                </div>
               </div>
               
               <div className="bg-tertiary rounded-xl p-4 border border-divide shadow-lg">

@@ -33,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           currentStreak: true,
           longestStreak: true,
           lastStreakAction: true,
+          lastStreakDate: true,
         },
       });
 

@@ -629,7 +629,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                       transition-all duration-200
                       ${isMoreMenuOpen || contentActive === 'ai-assistant'
                         ? 'bg-[#3b82f6]/15 text-white' 
-                        : 'text-[#B0B7C3] hover:text-white hover:bg-[#2A303C]/50'}
+                        : 'text-[#B0B7C3] hover:text-[#FFFFFF] hover:bg-[#2A303C]/50'}
                     `}
                   >
                     <span>More</span>
