@@ -420,6 +420,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             const firstStep = relearnStepsArray[0]; 
             const currentStepIndex = dueProblems[0].stepIndex ?? 0;
             const nextStepIndex = currentStepIndex + 1;
+            const maxInterval = userSettings?.maximumInterval || 180;
 
             // Determine what Good will show
             let nextInterval;
@@ -427,6 +428,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               // Would graduate back to Review
               nextInterval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval;
               nextInterval = Math.floor(nextInterval / 1440); // Convert to days
+              nextInterval = Math.min(nextInterval, maxInterval); // Cap at maximumInterval
               nextInterval = nextInterval + 'd';
             } else {
               nextInterval = relearnStepsArray[nextStepIndex];
@@ -434,6 +436,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             
             let easyInt = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval; 
             easyInt = Math.floor(easyInt / 1440); // Convert to days and round down
+            easyInt = Math.min(easyInt, maxInterval); // Cap at maximumInterval
 
             setAgainText(firstStep); 
             setGoodText(nextInterval); 
@@ -444,10 +447,21 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             // Again on Review goes to Relearning, so show first relearn step
             const relearnStepsArray = userSettings?.relearnSteps.split(' '); 
             const firstRelearnStep = relearnStepsArray[0]; 
+            const maxInterval = userSettings?.maximumInterval || 180;
 
-            const intervalHard = Math.floor((dueProblems[0].interval * 1.2 * userSettings?.intervalModifier) / 1440);
-            const intervalGood = Math.floor((dueProblems[0].interval * dueProblems[0].ease * userSettings?.intervalModifier) / 1440); 
-            const intervalEasy = Math.floor((dueProblems[0].interval * dueProblems[0].ease * userSettings?.easyBonus * userSettings?.intervalModifier) / 1440);
+            // Calculate intervals and cap at maximumInterval
+            const intervalHard = Math.min(
+              Math.floor((dueProblems[0].interval * 1.2 * userSettings?.intervalModifier) / 1440),
+              maxInterval
+            );
+            const intervalGood = Math.min(
+              Math.floor((dueProblems[0].interval * dueProblems[0].ease * userSettings?.intervalModifier) / 1440),
+              maxInterval
+            ); 
+            const intervalEasy = Math.min(
+              Math.floor((dueProblems[0].interval * dueProblems[0].ease * userSettings?.easyBonus * userSettings?.intervalModifier) / 1440),
+              maxInterval
+            );
 
             setAgainText(firstRelearnStep); 
             setHardText(intervalHard + "d"); 
@@ -1127,7 +1141,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             style={{ width: `${panelWidth}%` }}
           >
             <div className="h-full border-r border-[#3A4253] bg-base_100 flex flex-col">
-              <div className="border-b border-[#3A4253] bg-base_100 sticky top-0 z-10 p-2">
+              <div className="border-b border-[#3A4253] bg-base_100 sticky top-0 z-10 p-2" style={{ color: '#FFFFFF' }}>
                 <div className="flex items-center gap-1 px-2">
                   <TabButton 
                     active={content === 'question'} 
@@ -1165,7 +1179,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                         transition-all duration-200
                         ${isMoreMenuOpen || content === 'ai-assistant'
                           ? 'bg-[#3b82f6]/15 text-white' 
-                          : 'text-[#B0B7C3] hover:text-white hover:bg-[#2A303C]/50'}
+                          : 'text-[#B0B7C3] hover:text-[#FFFFFF] hover:bg-[#2A303C]/50'}
                       `}
                     >
                       <span>More</span>
