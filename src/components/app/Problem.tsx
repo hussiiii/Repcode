@@ -577,7 +577,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             rel="noopener noreferrer"
             className="hover:text-link transition-colors duration-200 cursor-pointer"
           >
-            v2.21 - stable release
+            v2.22 - stable release
           </a>
         </div>
       </div>

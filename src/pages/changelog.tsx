@@ -6,6 +6,19 @@ import "../app/globals.css";
 export default function Changelog() {
     const changelogData = [
       {
+        month: "February 2026",
+        updates: [
+          {
+            date: "V 2.22 - February 23rd, 2026",
+            changes: [
+              "🛠️Fixed button text in Study Mode to respect Maximum Interval setting (no longer shows intervals exceeding the cap)",
+              "🛠️Fixed relearnInterval to be capped at Maximum Interval when a problem lapses",
+              "🛠️Fixed button text color in Study Mode turning black instead of white",
+            ],
+          },
+        ],
+      },
+      {
         month: "January 2026",
         updates: [
           {

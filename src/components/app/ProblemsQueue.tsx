@@ -899,7 +899,9 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             // Increment lapses if this is a lapse (severely overdue or regular Again on Review)
             dueProblems[0].lapses = (dueProblems[0].lapses || 0) + 1;
 
-            dueProblems[0].relearnInterval = dueProblems[0].interval;
+            // Cap relearnInterval at maximumInterval (in minutes) to ensure consistency
+            const maxIntervalMinutes = (userSettings?.maximumInterval || 180) * 24 * 60;
+            dueProblems[0].relearnInterval = Math.min(dueProblems[0].interval, maxIntervalMinutes);
             const relearnStepsArray = userSettings?.relearnSteps.split(' ').map((step:string) => {
                 const value = parseInt(step.slice(0, -1));
                 const unit = step.slice(-1);
@@ -1125,7 +1127,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               rel="noopener noreferrer"
               className="hover:text-link transition-colors duration-200 cursor-pointer"
             >
-              v2.21 - stable release
+              v2.22 - stable release
             </a>
           </div>
         </div>
