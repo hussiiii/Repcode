@@ -166,7 +166,6 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
-  const [isGeneratingSolution, setIsGeneratingSolution] = useState(false);
   const [localProblem, setLocalProblem] = useState(problem);
 
   // For resizable panels
@@ -326,94 +325,6 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
     setLocalProblem(problem);
   }, [problem]);
 
-  // Function to generate AI solution
-  const generateAISolution = async () => {
-    if (!data?.apiKey) {
-      showToast('Please add an OpenAI API key in Settings');
-      return;
-    }
-
-    setIsGeneratingSolution(true);
-
-    try {
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          question: localProblem.question,
-          solution: '',
-          userSolution: '',
-          userMessage: `Generate a complete solution for this problem in ${localProblem.language}. Strictly only provide the code without any explanations, comments, or markdown formatting.`,
-          apiKey: data?.apiKey,
-          mode: 'chat'
-        }),
-      });
-
-      if (!response.ok) {
-        showToast('Failed to generate solution');
-        setIsGeneratingSolution(false);
-        return;
-      }
-
-      const result = await response.json();
-      let generatedCode = result.message;
-
-      // Extract only code - remove markdown code blocks if present
-      generatedCode = generatedCode.replace(/```[\w]*\n?/g, '').trim();
-
-      // Remove any explanatory text (heuristic: remove lines that don't look like code)
-      const lines = generatedCode.split('\n');
-      const codeLines = lines.filter((line: string) => {
-        const trimmed = line.trim();
-        // Keep empty lines, comments, and lines that contain typical code characters
-        if (!trimmed) return true;
-        if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*') || trimmed.startsWith('*')) return true;
-        // Remove lines that look like explanations (contain many words without code symbols)
-        const hasCodeSymbols = /[{}\[\]();=<>+\-*/%&|^]/.test(trimmed);
-        const startsWithKeyword = /^(function|const|let|var|class|def|public|private|protected|static|void|int|string|return|if|else|for|while|switch|case)/i.test(trimmed);
-        return hasCodeSymbols || startsWithKeyword;
-      });
-
-      generatedCode = codeLines.join('\n').trim();
-
-      // Update the problem's solution in the database
-      const updateResponse = await fetch('/api/updateProblemForAlgo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: localProblem.id,
-          updates: { solution: generatedCode }
-        }),
-      });
-
-      if (!updateResponse.ok) {
-        showToast('Failed to save generated solution');
-        setIsGeneratingSolution(false);
-        return;
-      }
-
-      // Update local state
-      setLocalProblem({ ...localProblem, solution: generatedCode });
-
-      // Trigger syntax highlighting after state update
-      setTimeout(() => {
-        hljs.highlightAll();
-      }, 100);
-
-      showToast('Solution generated successfully!');
-      setIsGeneratingSolution(false);
-    } catch (error) {
-      console.error('Error generating solution:', error);
-      showToast('Failed to generate solution');
-      setIsGeneratingSolution(false);
-    }
-  };
-
-  // Function for handling AI interactions - no longer needed for modal toggle
 
   if (!problem) {
     return (
@@ -501,38 +412,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
       );
     if (contentActive === 'solution')
       return (
-        <div className="flex flex-col h-full">
-          <div className="flex-1 overflow-auto">
-            <pre className="wrap-text bg-base_100"><code className={`language-${localProblem.language} mr-5`}>{localProblem.solution}</code></pre>
-          </div>
-          <div className="mt-4 pt-4 border-t border-[#3A4253]">
-            <button
-              onClick={generateAISolution}
-              disabled={isGeneratingSolution}
-              className={`w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
-                isGeneratingSolution
-                  ? 'bg-[#3A4253] text-[#B0B7C3] cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#9C27B0] to-[#7B1FA2] hover:from-[#AB47BC] hover:to-[#8E24AA] text-white shadow-lg hover:shadow-xl'
-              }`}
-            >
-              {isGeneratingSolution ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Generating Solution...</span>
-                </>
-              ) : (
-                <>
-                  <span className="material-icons" style={{ fontSize: '20px' }}>auto_awesome</span>
-                  <span>
-                    {localProblem.solution?.startsWith('# TODO: Enter your solution here by editing the problem')
-                      ? 'Generate Solution'
-                      : 'Regenerate Solution'}
-                  </span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
+        <pre className="wrap-text bg-base_100"><code className={`language-${localProblem.language} mr-5`}>{localProblem.solution}</code></pre>
       );
     return null;
   };
