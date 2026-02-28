@@ -9,6 +9,15 @@ export default function Changelog() {
         month: "February 2026",
         updates: [
           {
+            date: "V 2.23 - February 28th, 2026",
+            changes: [
+              "➕Added Manual Lapse button in Problem Stats modal for Review problems",
+              "➕Manual Lapse applies the same lapse logic as pressing Again in Study Mode (type → Relearning, ease −20%, relearnInterval stored, interval reset to first relearn step)",
+              "⚙️Manual Lapse button is disabled for non-Review problems (New, Learning, Relearning)",
+              "➕Added tooltip explaining Manual Lapse with styling consistent with dashboard tooltips",
+            ],
+          },
+          {
             date: "V 2.22 - February 23rd, 2026",
             changes: [
               "🛠️Fixed button text in Study Mode to respect Maximum Interval setting (no longer shows intervals exceeding the cap)",

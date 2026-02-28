@@ -1,12 +1,48 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { X, Calendar, Clock, BarChart3, Tag, Percent, ArrowRight, RefreshCw, PieChart, AlertTriangle } from 'lucide-react';
+import { X, Calendar, Clock, BarChart3, Tag, Percent, ArrowRight, RefreshCw, PieChart, AlertTriangle, RotateCcw, HelpCircleIcon } from 'lucide-react';
 import Badge from '../ui/Badge';
 import DonutChart from './DonutChart';
+import { useMutation, useQueryClient } from 'react-query';
+import { AuthContext } from '@/auth/AuthContext';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onClose: () => void, problem: any }) => {
+  const queryClient = useQueryClient();
+  const { user } = useContext(AuthContext);
+
+  const manualLapseMutation = useMutation(
+    async (problemId: number) => {
+      const res = await fetch('/api/manualLapse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ problemId }),
+      });
+      if (!res.ok) throw new Error('Failed to lapse problem');
+      return res.json();
+    },
+    {
+      onSuccess: async () => {
+        try {
+          await fetch('/api/updateCollectionCounts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ collectionId: problem?.collectionId }),
+          });
+        } catch (e) {
+          console.error('Failed to update collection counts:', e);
+        }
+        queryClient.invalidateQueries(['allProblems', user?.email]);
+        queryClient.invalidateQueries(['dueTodayProblems', user?.email]);
+        queryClient.invalidateQueries(['collectionDetails']);
+        queryClient.invalidateQueries(['collections', user?.email]);
+        queryClient.invalidateQueries(['collectionProblems', problem?.collectionId]);
+        queryClient.invalidateQueries(['userSettings', user?.email]);
+        onClose();
+      },
+    }
+  );
   // Handle keyboard events (Escape to close)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -158,6 +194,33 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                         value={problem.lapses || 0}
                       />
                     </div>
+                  </div>
+
+                  {/* Manual Lapse Action - only enabled for Review problems */}
+                  <div className="pt-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => manualLapseMutation.mutate(problem.id)}
+                        disabled={manualLapseMutation.isLoading || problem.type !== 'Review'}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-errorBorder text-error hover:bg-errorBg transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        {manualLapseMutation.isLoading ? 'Lapsing...' : 'Lapse Manually'}
+                      </button>
+                      <div className="relative group">
+                        <HelpCircleIcon
+                          size={14}
+                          className="text-secondary/50 hover:text-secondary cursor-help transition-colors"
+                        />
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-base_100 border border-divide rounded-lg shadow-xl text-xs text-secondary w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                          Manually lapse this problem to reset due date and cap intervals at your max setting.
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-divide"></div>
+                        </div>
+                      </div>
+                    </div>
+                    {manualLapseMutation.isError && (
+                      <p className="mt-2 text-xs text-error">Failed to lapse. Please try again.</p>
+                    )}
                   </div>
                 </div>
 

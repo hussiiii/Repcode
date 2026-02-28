@@ -27,6 +27,8 @@ const config: Config = {
       grey: '#A5A9AE', 
       success: '#87cf3a', 
       error: '#ff6b6b', 
+      errorBorder: '#8B3A3A',
+      errorBg: '#3A2A2A',
       warning: "#e1d460", 
       easy: "#34BF8F",
       medium: "#F6903C", 
