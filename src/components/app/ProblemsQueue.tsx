@@ -22,6 +22,7 @@ import Badge from '@/components/ui/Badge';
 import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { Whiteboard, DrawingElement } from './WhiteBoard';
 import { ClipboardPen, NotepadText, Lightbulb, BotMessageSquare, PenSquare, Edit3, BarChart2, ExternalLink, MoreHorizontal } from "lucide-react";
+import Stopwatch from './Stopwatch';
 
 // If there's ever a <code> nested within a <pre>, it breaks everything, so we need to check for this and remove it 
 const sanitizeCodeBlocks = (html: string) => {
@@ -1010,9 +1011,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           
           {/* Status indicator stays on the right */}
           <div className="flex items-center text-xs text-[#B0B7C3]">
+            <Stopwatch resetKey={dueProblems[0]?.id ?? 'empty'} />
             <div className="relative mr-2">
               <div className="w-2.5 h-2.5 bg-review rounded-full"></div>
-              <div 
+              <div
                 className="absolute inset-0 w-2.5 h-2.5 bg-[#00FF00] rounded-full opacity-70"
                 style={{
                   animation: "breathe 3s ease-in-out infinite",
