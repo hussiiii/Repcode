@@ -6,6 +6,20 @@ import "../app/globals.css";
 export default function Changelog() {
     const changelogData = [
       {
+        month: "March 2026",
+        updates: [
+          {
+            date: "V 2.24 - March 27th, 2026",
+            changes: [
+              "➕Added Move Problem feature in collection list (3-dot menu) so problems can be moved between collections without deleting/recreating",
+              "⚙️Move Problem now preserves all spaced-repetition state (due dates, type, interval, relearnInterval, review counts, lapses, ease, and more)",
+              "🛠️Updated Review button interval previews (Hard/Good/Easy) to match actual scheduled interval by applying the same fuzz factor used on click",
+              "🛠️Increased functionSignature storage by switching to TEXT in Prisma schema to prevent truncation issues with longer signatures",
+            ],
+          },
+        ],
+      },
+      {
         month: "February 2026",
         updates: [
           {

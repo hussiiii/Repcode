@@ -38,6 +38,10 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [problemToDelete, setProblemToDelete] = useState<any>(null);
   const [isDeletingProblem, setIsDeletingProblem] = useState(false);
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [problemToMove, setProblemToMove] = useState<any>(null);
+  const [selectedTargetCollectionId, setSelectedTargetCollectionId] = useState<string>('');
+  const [isMovingProblem, setIsMovingProblem] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,6 +94,13 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
     return response.json();
   };
 
+  const fetchUserCollections = async () => {
+    if (!user?.email) throw new Error('No user found');
+    const response = await fetch(`/api/getUserCollections?userEmail=${user.email}`);
+    if (!response.ok) throw new Error('Failed to fetch collections');
+    return response.json();
+  };
+
     const toggleMenu = (id: number) => {
     setVisibleMenuId(prev => (prev === id ? null : id));
   };
@@ -111,6 +122,12 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
     ['collectionDetails', collectionId],
     fetchCollectionDetails,
     { enabled: !!collectionId }
+  );
+
+  const { data: userCollections } = useQuery(
+    ['userCollections', user?.email],
+    fetchUserCollections,
+    { enabled: !!user?.email }
   );
 
   const getDifficultyColor = (difficulty: string) => {
@@ -206,6 +223,25 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
     }
   );
 
+  const moveProblemMutation = useMutation(
+    async ({ problemId, targetCollectionId }: { problemId: number; targetCollectionId: number }) => {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        throw new Error('Authentication token is not available.');
+      }
+      const response = await fetch('/api/moveProblem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ problemId, targetCollectionId }),
+      });
+      if (!response.ok) throw new Error('Failed to move problem');
+      return response.json();
+    }
+  );
+
   const openDeleteConfirmation = (problem: any) => {
     setProblemToDelete(problem);
     setDeleteConfirmationOpen(true);
@@ -249,6 +285,82 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
   const openEditModal = (problem: any) => {
     setProblemToEdit(problem);
     setIsEditModalOpen(true);
+  };
+
+  const openMoveModal = (problem: any) => {
+    setProblemToMove(problem);
+    setSelectedTargetCollectionId('');
+    setMoveModalOpen(true);
+    setVisibleMenuId(null);
+  };
+
+  const closeMoveModal = () => {
+    setMoveModalOpen(false);
+    setProblemToMove(null);
+    setSelectedTargetCollectionId('');
+  };
+
+  const confirmMoveProblem = () => {
+    if (!problemToMove || !selectedTargetCollectionId) return;
+    setIsMovingProblem(true);
+
+    const sourceCollectionId = Number(problemToMove.collectionId);
+    const targetCollectionId = Number(selectedTargetCollectionId);
+
+    moveProblemMutation.mutate(
+      { problemId: problemToMove.id, targetCollectionId },
+      {
+        onSuccess: async () => {
+          try {
+            await fetch('/api/updateCollectionCounts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ collectionId: sourceCollectionId }),
+            });
+            await fetch('/api/updateCollectionCounts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ collectionId: targetCollectionId }),
+            });
+          } catch (error) {
+            console.error('Failed to update collection counts:', error);
+          }
+
+          queryClient.invalidateQueries(['collectionDetails']);
+          queryClient.invalidateQueries(['collections', user?.email]);
+          queryClient.invalidateQueries(['allProblems', user?.email]);
+          queryClient.invalidateQueries(['dueTodayProblems', user?.email]);
+          queryClient.invalidateQueries(['collectionProblems', sourceCollectionId]);
+          queryClient.invalidateQueries(['collectionProblems', targetCollectionId]);
+          queryClient.invalidateQueries(['userCollections', user?.email]);
+
+          showToast(
+            <>
+              <span
+                className='inline-block mr-2 bg-link rounded-full'
+                style={{ width: '10px', height: '10px' }}
+              ></span>
+              Problem moved successfully
+            </>
+          );
+          setIsMovingProblem(false);
+          closeMoveModal();
+        },
+        onError: (error) => {
+          console.error('Failed to move problem:', error);
+          setIsMovingProblem(false);
+          showToast(
+            <>
+              <span
+                className='inline-block mr-2 bg-error rounded-full'
+                style={{ width: '10px', height: '10px' }}
+              ></span>
+              Failed to move problem
+            </>
+          );
+        },
+      }
+    );
   };
 
   const openStatsModal = (problem: any) => {
@@ -612,6 +724,16 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
                                     className="w-full px-4 py-2 text-sm text-[#B0B7C3] hover:bg-[#3A4253] hover:text-primary flex items-center"
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      openMoveModal(problem);
+                                    }}
+                                  >
+                                    <span className="material-icons mr-2" style={{ fontSize: '14px' }}>drive_file_move</span>
+                                    Move
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-sm text-[#B0B7C3] hover:bg-[#3A4253] hover:text-primary flex items-center"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       openStatsModal(problem);
                                       setVisibleMenuId(null);
                                     }}
@@ -744,6 +866,61 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
                   'Delete'
                 )}
                 <span className="absolute inset-0 w-full h-full bg-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Move Problem Modal Backdrop */}
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-all duration-300 ${moveModalOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onClick={closeMoveModal}
+      />
+
+      {/* Move Problem Modal */}
+      <div
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full max-w-md rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-500 bg-gradient-to-b from-[#2A303C] to-[#252B38] border border-[#3A4150]/50 text-primary overflow-hidden ${moveModalOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}`}
+      >
+        <div className="h-1 w-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6]"></div>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold tracking-tight text-primary">Move Problem</h2>
+            <button
+              onClick={closeMoveModal}
+              className="h-8 w-8 rounded-full hover:bg-[#3A4150]/70 transition-colors duration-200 flex items-center justify-center"
+            >
+              <span className="material-icons" style={{ fontSize: '18px' }}>close</span>
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-gray-300 text-sm">
+              Move <span className="font-semibold text-primary">{problemToMove?.name}</span> to:
+            </p>
+
+            <select
+              value={selectedTargetCollectionId}
+              onChange={(e) => setSelectedTargetCollectionId(e.target.value)}
+              className="w-full bg-[#1E232C] border border-[#3A4253] rounded-lg px-3 py-2.5 text-primary focus:outline-none focus:border-blue-500 transition-colors"
+            >
+              <option value="">Select a collection</option>
+              {(userCollections || [])
+                .filter((c: any) => c.id !== Number(collectionId))
+                .map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
+                  </option>
+                ))}
+            </select>
+
+            <div className="flex justify-end pt-3">
+              <button
+                onClick={confirmMoveProblem}
+                disabled={isMovingProblem || !selectedTargetCollectionId}
+                className={`relative overflow-hidden bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0891b2] hover:to-[#2563eb] text-primary shadow-md transition-all duration-200 py-2 px-6 rounded-md ${(isMovingProblem || !selectedTargetCollectionId) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isMovingProblem ? 'Moving...' : 'Move'}
               </button>
             </div>
           </div>

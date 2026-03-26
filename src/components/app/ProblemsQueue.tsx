@@ -119,6 +119,26 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     // More menu state
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const moreMenuRef = useRef<HTMLDivElement>(null);
+    const reviewFuzzRef = useRef<{ problemId: number | null; hard: number; good: number; easy: number }>({
+      problemId: null,
+      hard: 0,
+      good: 0,
+      easy: 0,
+    });
+
+    const generateReviewFuzz = () => parseFloat((Math.random() * (0.05 - 0.02) + 0.02).toFixed(2));
+
+    const getReviewFuzzFactors = (problemId: number) => {
+      if (reviewFuzzRef.current.problemId !== problemId) {
+        reviewFuzzRef.current = {
+          problemId,
+          hard: generateReviewFuzz(),
+          good: generateReviewFuzz(),
+          easy: generateReviewFuzz(),
+        };
+      }
+      return reviewFuzzRef.current;
+    };
 
     // Joyride tour state
     const [runTour, setRunTour] = useState(false);
@@ -446,21 +466,24 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             // Again on Review goes to Relearning, so show first relearn step
             const relearnStepsArray = userSettings?.relearnSteps.split(' '); 
             const firstRelearnStep = relearnStepsArray[0]; 
-            const maxInterval = userSettings?.maximumInterval || 180;
+            const maxIntervalMinutes = (userSettings?.maximumInterval || 180) * 24 * 60;
+            const fuzzFactors = getReviewFuzzFactors(dueProblems[0].id);
 
-            // Calculate intervals and cap at maximumInterval
-            const intervalHard = Math.min(
-              Math.floor((dueProblems[0].interval * 1.2 * userSettings?.intervalModifier) / 1440),
-              maxInterval
-            );
-            const intervalGood = Math.min(
-              Math.floor((dueProblems[0].interval * dueProblems[0].ease * userSettings?.intervalModifier) / 1440),
-              maxInterval
-            ); 
-            const intervalEasy = Math.min(
-              Math.floor((dueProblems[0].interval * dueProblems[0].ease * userSettings?.easyBonus * userSettings?.intervalModifier) / 1440),
-              maxInterval
-            );
+            // Keep preview text aligned with actual scheduling logic:
+            // base interval equation -> apply fuzz -> cap at maximum interval -> convert to days
+            const getPreviewDays = (baseIntervalMinutes: number, fuzz: number) => {
+              const fuzzedMinutes = baseIntervalMinutes * (1 + fuzz);
+              const cappedMinutes = Math.min(fuzzedMinutes, maxIntervalMinutes);
+              return Math.floor(cappedMinutes / 1440);
+            };
+
+            const baseHardMinutes = dueProblems[0].interval * 1.2 * userSettings?.intervalModifier;
+            const baseGoodMinutes = dueProblems[0].interval * dueProblems[0].ease * userSettings?.intervalModifier;
+            const baseEasyMinutes = dueProblems[0].interval * dueProblems[0].ease * userSettings?.easyBonus * userSettings?.intervalModifier;
+
+            const intervalHard = getPreviewDays(baseHardMinutes, fuzzFactors.hard);
+            const intervalGood = getPreviewDays(baseGoodMinutes, fuzzFactors.good);
+            const intervalEasy = getPreviewDays(baseEasyMinutes, fuzzFactors.easy);
 
             setAgainText(firstRelearnStep); 
             setHardText(intervalHard + "d"); 
@@ -828,25 +851,25 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             }
             else if(buttonValue === "hard") { // decrease the problem's ease by 15%, set interval to 1.2*current interval*interval modifier, update due date
               dueProblems[0].ease = (dueProblems[0].ease - 0.15 >= userSettings?.minimumEase) ? dueProblems[0].ease - 0.15 : userSettings.minimumEase;
+              const fuzzFactors = getReviewFuzzFactors(dueProblems[0].id);
 
               // Calculate next interval via equation 
               dueProblems[0].interval = dueProblems[0].interval * 1.2 * userSettings?.intervalModifier;
-              const fuzz = (Math.random() * (0.05 - 0.02) + 0.02).toFixed(2); 
-              dueProblems[0].interval *= (1 + parseFloat(fuzz));
+              dueProblems[0].interval *= (1 + fuzzFactors.hard);
 
               await Helper(dueProblems[0]);
             }
             else if(buttonValue === "good") { // set the interval according to equation (ease remains unchanged), update due date
+              const fuzzFactors = getReviewFuzzFactors(dueProblems[0].id);
               dueProblems[0].interval = dueProblems[0].interval * dueProblems[0].ease * userSettings?.intervalModifier;
-              const fuzz = (Math.random() * (0.05 - 0.02) + 0.02).toFixed(2); 
-              dueProblems[0].interval *= (1 + parseFloat(fuzz));
+              dueProblems[0].interval *= (1 + fuzzFactors.good);
 
               await Helper(dueProblems[0]);
             }
             else if (buttonValue === "easy") { // set the interval according to the equation, increase the ease by 15%, update due date
+              const fuzzFactors = getReviewFuzzFactors(dueProblems[0].id);
               dueProblems[0].interval = dueProblems[0].interval * dueProblems[0].ease * userSettings?.easyBonus * userSettings?.intervalModifier;
-              const fuzz = (Math.random() * (0.05 - 0.02) + 0.02).toFixed(2); 
-              dueProblems[0].interval *= (1 + parseFloat(fuzz));
+              dueProblems[0].interval *= (1 + fuzzFactors.easy);
 
               // Increase ease by 15%, but ensure it's at least minimumEase (for legacy/edge cases)
               dueProblems[0].ease = Math.max(dueProblems[0].ease + 0.15, userSettings?.minimumEase); 
@@ -1040,7 +1063,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               rel="noopener noreferrer"
               className="hover:text-link transition-colors duration-200 cursor-pointer"
             >
-              v2.23 - stable release
+              v2.24 - stable release
             </a>
           </div>
         </div>

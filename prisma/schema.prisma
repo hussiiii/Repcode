@@ -80,7 +80,7 @@ model Problem {
   dueDate                 DateTime    @default(now())
   originalDueDate         DateTime?
   language                String      @default("python")
-  functionSignature       String      @default("null") @db.VarChar(1000)
+  functionSignature       String      @db.Text
   link                    String      @default("null")
   notes                   String      @default("null") @db.VarChar(2000)
   againCount              Int         @default(0) 
