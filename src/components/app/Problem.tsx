@@ -20,6 +20,7 @@ import Toast from './Toast';
 import Badge from '@/components/ui/Badge';
 import { Whiteboard, DrawingElement } from './WhiteBoard';
 import { ArrowLeft, Edit3, BarChart2, ExternalLink, ClipboardPen, NotepadText, Lightbulb, BotMessageSquare, PenSquare, MoreHorizontal } from "lucide-react";
+import Stopwatch from './Stopwatch';
 const sanitizeCodeBlocks = (html: string) => {
   const div = document.createElement('div');
   div.innerHTML = html;
@@ -447,13 +448,14 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           </div>
         </div>
         <div className="flex items-center text-xs text-white" style={{ color: '#FFFFFF' }}>
+          <Stopwatch resetKey={localProblem.id} />
           <div className="relative mr-2">
             <div className="w-2.5 h-2.5 bg-review rounded-full"></div>
             <div className="absolute inset-0 w-2.5 h-2.5 bg-[#00FF00] rounded-full opacity-70 animate-pulse" style={{ filter: "blur(1px)" }}></div>
           </div>
-          <a 
-            href="/changelog" 
-            target="_blank" 
+          <a
+            href="/changelog"
+            target="_blank"
             rel="noopener noreferrer"
             className="hover:text-link transition-colors duration-200 cursor-pointer"
           >
