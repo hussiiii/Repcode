@@ -96,7 +96,7 @@ const NavBar = () => {
                   </div>
                   
                   {/* Version text */}
-                  <span className="text-xs font-medium text-[#E5E7EB]">v2.24</span>
+                  <span className="text-xs font-medium text-[#E5E7EB]">v2.25</span>
                 </div>
               </div>
             </div>

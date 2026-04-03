@@ -1065,7 +1065,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               rel="noopener noreferrer"
               className="hover:text-link transition-colors duration-200 cursor-pointer"
             >
-              v2.24 - stable release
+              v2.25 - stable release
             </a>
           </div>
         </div>

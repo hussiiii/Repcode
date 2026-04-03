@@ -9,6 +9,13 @@ export default function Changelog() {
         month: "March 2026",
         updates: [
           {
+            date: "V 2.25 - March 31st, 2026",
+            changes: [
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/88" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #88</a> merged, credit @darshangoswami </>,
+              "⚙️Small UI updates to problem modal component",
+            ],
+          },
+          {
             date: "V 2.24 - March 27th, 2026",
             changes: [
               "➕Added Move Problem feature in collection list (3-dot menu) so problems can be moved between collections without deleting/recreating",
