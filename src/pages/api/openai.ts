@@ -2,10 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { question, solution, userSolution, userMessage, apiKey, mode = "chat" } = req.body;
+  const { question, solution, userSolution, userMessage, apiKey, baseUrl, modelId, mode = "chat" } = req.body;
 
   const openai = new OpenAI({
     apiKey: apiKey,
+    baseURL: baseUrl || "https://api.openai.com/v1",
   });
 
   let messages: any = [];
@@ -45,9 +46,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
     
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: modelId || "gpt-4o",
       messages,
-      max_tokens: 1500, 
+      max_tokens: 1500,
     });
 
     if (completion.choices && completion.choices.length > 0) {

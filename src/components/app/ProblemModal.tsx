@@ -286,6 +286,8 @@ const ProblemModal = ({
           userSolution: '',
           userMessage: `Generate a complete solution for this problem in ${language}. Strictly only provide the code without any explanations, comments, or markdown formatting.`,
           apiKey: theUser.apiKey,
+          baseUrl: theUser.apiBaseUrl,
+          modelId: theUser.modelId,
           mode: 'chat'
         }),
       });
