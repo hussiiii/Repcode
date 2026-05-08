@@ -1346,6 +1346,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 showPrintMargin={false}
                 showGutter={true}
                 highlightActiveLine={true}
+                wrapEnabled={true}
                 value={editorContent || dueProblems[0].functionSignature}
                 onChange={(newValue) => setEditorContent(newValue)}
                 setOptions={{
@@ -1356,6 +1357,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                   tabSize: 4,
                   fadeFoldWidgets: false,
                   scrollPastEnd: false,
+                  wrap: true,
                 }}
                 style={{ height: '100%', width: '100%' }}  
               />

@@ -622,6 +622,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             showPrintMargin={false}
             showGutter={true}
             highlightActiveLine={true}
+            wrapEnabled={true}
             value={editorContent || localProblem.functionSignature}
             onChange={(newValue) => setEditorContent(newValue)}
             setOptions={{
@@ -632,6 +633,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               tabSize: 4,
               fadeFoldWidgets: false,
               scrollPastEnd: false,
+              wrap: true,
             }}
             style={{ height: '100%', width: '100%' }}
           />
