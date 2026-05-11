@@ -67,7 +67,7 @@ model Problem {
   id                      Int         @id @default(autoincrement())
   name                    String      @db.VarChar(57)
   question                String      @db.VarChar(6000)
-  solution                String      @db.VarChar(4400)
+  solution                String      @db.Text
   difficulty              Difficulty
   collectionId            Int
   collection              Collection  @relation(fields: [collectionId], references: [id])
