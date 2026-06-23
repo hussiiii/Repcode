@@ -18,6 +18,8 @@ model User {
   subscriptionStart       DateTime?   
   subscriptionEnd         DateTime?  
   apiKey                  String?     @default("null")
+  apiBaseUrl              String?     @default("https://api.openai.com/v1")
+  modelId                 String?     @default("gpt-4o")
   collections             Collection[]
   activityDays            ActivityDay[]
   learnSteps              String      @default("10m 1d")

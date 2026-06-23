@@ -4,10 +4,12 @@ import 'highlight.js/styles/atom-one-dark-reasonable.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-const ChatWindow = ({ 
-  problem, 
-  editorContent, 
-  apiKey, 
+const ChatWindow = ({
+  problem,
+  editorContent,
+  apiKey,
+  baseUrl,
+  modelId,
   isTab = false,
   externalMessages,
   setExternalMessages,
@@ -19,10 +21,12 @@ const ChatWindow = ({
   setExternalIsTyping,
   externalShowQuickQuestions,
   setExternalShowQuickQuestions
-}: { 
-  problem: any, 
-  editorContent: string, 
-  apiKey: any, 
+}: {
+  problem: any,
+  editorContent: string,
+  apiKey: any,
+  baseUrl?: any,
+  modelId?: any,
   isTab?: boolean,
   externalMessages?: Array<{ text: string, sender: string }>,
   setExternalMessages?: React.Dispatch<React.SetStateAction<Array<{ text: string, sender: string }>>>,
@@ -90,6 +94,8 @@ const ChatWindow = ({
               userSolution: editorContent,
               userMessage: "analyze", // Special flag to just analyze the code
               apiKey: apiKey,
+              baseUrl: baseUrl,
+              modelId: modelId,
               mode: "analyze" // Tell the API we're just loading context
             }),
           });
@@ -156,6 +162,8 @@ const ChatWindow = ({
           userSolution: editorContent,
           userMessage: initialMessage || input,
           apiKey: apiKey,
+          baseUrl: baseUrl,
+          modelId: modelId,
           mode: "chat" // Specify we're in chat mode now
         }),
       });

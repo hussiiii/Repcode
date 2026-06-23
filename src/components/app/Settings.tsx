@@ -21,6 +21,8 @@ const Settings = () => {
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isBaseUrlVisible, setIsBaseUrlVisible] = useState(false);
+  const [isModelIdVisible, setIsModelIdVisible] = useState(false);
 
   const fetchUserSettings = async () => {
     if (!user) throw new Error('No user found');
@@ -123,6 +125,8 @@ const Settings = () => {
       ),
       // API Settings
       apiKey: (document.getElementById('apiKey') as HTMLInputElement)?.value,
+      apiBaseUrl: (document.getElementById('apiBaseUrl') as HTMLInputElement)?.value,
+      modelId: (document.getElementById('modelId') as HTMLInputElement)?.value,
     };
 
     // Validations (same as before)
@@ -357,11 +361,11 @@ const Settings = () => {
             <KeyIcon className="w-5 h-5 mr-2" style={{ color: '#8b5cf6' }} />
             <h2 className="text-lg font-medium text-[#ffffff]">API Settings</h2>
           </div>
-          
+
           <div className="space-y-5">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-[#B0B7C3]">
-                OpenAI API Key
+                API Key
               </label>
               <div className="relative">
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[rgba(6,182,212,0.1)] to-[rgba(59,130,246,0.1)]" />
@@ -387,7 +391,61 @@ const Settings = () => {
                 </div>
               </div>
               <p className="text-xs text-[#8A94A6]">
-                Enter your OpenAI API key to enable AI-based features.
+                Enter your API key to enable AI-based features.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#B0B7C3]">
+                Base URL
+              </label>
+              <div className="relative group">
+                <input
+                  type={isBaseUrlVisible ? "text" : "password"}
+                  id="apiBaseUrl"
+                  defaultValue={data.apiBaseUrl}
+                  placeholder="https://api.openai.com/v1"
+                  className="w-full px-3 py-2 bg-[#2A303C] border border-[#3A4150]/70 rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 text-primary h-11"
+                  style={{ outline: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsBaseUrlVisible(!isBaseUrlVisible)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A94A6] hover:text-[#ffffff] transition-colors"
+                >
+                  {isBaseUrlVisible ? 'Hide' : 'Show'}
+                </button>
+                <div className="absolute inset-0 rounded-md border border-[#3b82f6]/0 group-focus-within:border-[#3b82f6]/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgba(59,130,246,0)] group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"></div>
+              </div>
+              <p className="text-xs text-[#8A94A6]">
+                Custom API endpoint for OpenAI-compatible providers (e.g., Ollama, Together AI, Groq). Leave empty for default OpenAI.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#B0B7C3]">
+                Model ID
+              </label>
+              <div className="relative group">
+                <input
+                  type={isModelIdVisible ? "text" : "password"}
+                  id="modelId"
+                  defaultValue={data.modelId}
+                  placeholder="gpt-4o"
+                  className="w-full px-3 py-2 bg-[#2A303C] border border-[#3A4150]/70 rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 text-primary h-11"
+                  style={{ outline: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsModelIdVisible(!isModelIdVisible)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A94A6] hover:text-[#ffffff] transition-colors"
+                >
+                  {isModelIdVisible ? 'Hide' : 'Show'}
+                </button>
+                <div className="absolute inset-0 rounded-md border border-[#3b82f6]/0 group-focus-within:border-[#3b82f6]/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgba(59,130,246,0)] group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"></div>
+              </div>
+              <p className="text-xs text-[#8A94A6]">
+                Model identifier to use (e.g., gpt-4o, llama3.2, mixtral-8x7b). Leave empty for default gpt-4o.
               </p>
             </div>
           </div>

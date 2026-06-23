@@ -28,6 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           maximumInterval: true,
           maximumNewPerDay: true,
           apiKey: true,
+          apiBaseUrl: true,
+          modelId: true,
           contributionHistory: true,
           overdueWarningThreshold: true,
           currentStreak: true,

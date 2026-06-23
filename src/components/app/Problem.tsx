@@ -285,6 +285,8 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               userSolution: editorContent,
               userMessage: "analyze",
               apiKey: data?.apiKey,
+              baseUrl: data?.apiBaseUrl,
+              modelId: data?.modelId,
               mode: "analyze"
             }),
           });
@@ -398,6 +400,8 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           problem={localProblem}
           editorContent={editorContent}
           apiKey={data?.apiKey}
+          baseUrl={data?.apiBaseUrl}
+          modelId={data?.modelId}
           isTab={true}
           externalMessages={chatMessages}
           setExternalMessages={setChatMessages}

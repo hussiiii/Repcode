@@ -248,6 +248,8 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 userSolution: editorContent,
                 userMessage: "analyze",
                 apiKey: data?.apiKey,
+                baseUrl: data?.apiBaseUrl,
+                modelId: data?.modelId,
                 mode: "analyze"
               }),
             });
@@ -1280,9 +1282,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                       />
                     ) : content === 'ai-assistant' ? (
                       <ChatWindow
-                          problem={dueProblems[0]} 
-                          editorContent={editorContent} 
+                          problem={dueProblems[0]}
+                          editorContent={editorContent}
                           apiKey={data?.apiKey}
+                          baseUrl={data?.apiBaseUrl}
+                          modelId={data?.modelId}
                           isTab={true}
                           externalMessages={chatMessages}
                           setExternalMessages={setChatMessages}
