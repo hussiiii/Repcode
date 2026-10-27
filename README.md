@@ -46,6 +46,33 @@ This project is an open-source platform designed to streamline your Leetcode pra
 * **Backend**: Prisma, MySQL (production), SQLite (development), Firebase (for auth)
 * **Hosting**: Vercel
 
+## Authentication and regression checks
+
+Private API routes require a Firebase ID token in the `Authorization: Bearer ...`
+header. Browser code should use `authenticatedFetch` from
+`src/lib/authenticatedFetch.ts`. The server derives the account from the verified
+token and checks collection/problem ownership; client-supplied emails and user IDs
+do not grant access. Because existing database accounts are linked by email, API
+access requires a verified email. Google sign-in supplies that verification.
+
+Saved OpenAI keys stay on the server. Settings responses expose `hasApiKey`, and
+the AI endpoint loads the signed-in user's saved key. A blank replacement field
+preserves that key; the Settings page provides a separate removal action.
+
+Use **Jest with `next/jest` for all automated tests**, including future tests.
+Run `npm test` for authentication, ownership, sign-in, and credential-handling
+regressions, `npm run test:watch` during development, and `npm run test:coverage`
+for coverage reports. Test files belong under `tests/` and use `.test.js`,
+`.test.jsx`, `.test.ts`, or `.test.tsx` names. React component tests use React
+Testing Library and the jsdom environment; API/helper tests default to Node.
+
+The suite uses Jest mocks for Firebase, Prisma, and OpenAI. It does not connect to
+a live database or call paid AI services. `tests/setup-env.js` replaces external
+service credentials loaded by Next with test-only values before app code runs.
+Use Next's test transforms and Jest mocks rather than custom module loaders or
+additional test runners. Run `npm run lint` and `npm run build` before submitting
+changes as well.
+
 ## Getting Started
 
 Below are detailed instructions for how to set up your local development environment and make and submit changes/PRs. If you run into any issues, please email repcode.io@gmail.com.
@@ -53,7 +80,7 @@ Below are detailed instructions for how to set up your local development environ
 ### Prerequisites
 
 Ensure you have the following installed:
-* Node.js (v20 or higher REQUIRED)
+* Node.js (v22 or higher REQUIRED)
 * npm or yarn
 * SQLite (for local development)
 

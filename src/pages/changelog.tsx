@@ -6,6 +6,23 @@ import "../app/globals.css";
 export default function Changelog() {
     const changelogData = [
       {
+        month: "October 2026",
+        updates: [
+          {
+            date: "V 2.26 - October 26th, 2026",
+            changes: [
+              "🛠️Improved account privacy with consistent sign-in and ownership checks for collections, problems, settings, and study updates",
+              "🛠️Fixed returning Google sign-ins attempting duplicate account creation and improved sign-in failure handling",
+              "⚙️Saved OpenAI API keys now stay on the server, with separate options to replace or remove a saved key",
+              "🛠️Improved session cleanup and cleared cached account data when signing out or switching accounts",
+              "⚙️Added request validation and safer API error responses",
+              "➕Added automated authentication and API regression tests using Jest with next/jest",
+              "➖Removed the unused Stripe webhook",
+            ],
+          },
+        ],
+      },
+      {
         month: "March 2026",
         updates: [
           {

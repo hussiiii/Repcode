@@ -1,15 +1,12 @@
 import prisma from "../../../prisma_client";
 import { startOfYear, differenceInCalendarDays } from 'date-fns';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { withUser } from '../../lib/server/api';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    const { userEmail } = req.body;
-
+export default withUser('POST', async (req, res) => {
     try {
       // Fetch the user and their current contribution history
       const user = await prisma.user.findUnique({
-        where: { email: userEmail },
+        where: { id: req.appUser.id },
       });
 
       if (!user) {
@@ -39,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Update the user record in the database
       await prisma.user.update({
-        where: { email: userEmail },
+        where: { id: req.appUser.id },
         data: { contributionHistory },
       });
 
@@ -48,11 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Failed to update contribution history:', error);
       res.status(500).json({ error: 'Failed to update contribution history' });
     }
-  } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+});
 
 // Helper function to check if a year is a leap year
 const isLeapYear = (year: number) => {

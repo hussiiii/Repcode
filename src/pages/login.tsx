@@ -1,6 +1,8 @@
+import { completeSignIn } from '@/auth/completeSignIn';
+import { clearSessionCookie } from '@/auth/sessionCookie';
 import React, { useState, useContext, useEffect } from 'react';
 import { auth } from '../firebaseConfig';
-import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, sendPasswordResetEmail, sendEmailVerification, signOut } from "firebase/auth";
 import { useRouter } from 'next/router'; 
 import nookies from "nookies"; 
 import firebaseAdmin from "../../firebaseAdmin";
@@ -32,77 +34,37 @@ const Login = () => {
 
   const signUp = async () => {
     try {
-      await setPersistence(auth, browserLocalPersistence); // Set persistence before signing up
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      console.log('User created:', user);
-  
-      // Call your API endpoint to create the user in your MySQL database
-      await fetch('/api/createUser', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: user.email }),
-      });
-  
-      await router.push('/app/main');
+      await setPersistence(auth, browserLocalPersistence);
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      await sendEmailVerification(user);
+      clearSessionCookie();
+      await signOut(auth);
+      setError('Check your email to verify your account, then sign in.');
     } catch (error) {
-      console.error('Error signing up:', error);
-      setError('Failed to sign up. Please check your details and try again.'); 
+      setError(error instanceof Error ? error.message : 'Failed to sign up. Please try again.');
     }
   };
 
   const signIn = async () => {
     try {
-      await setPersistence(auth, browserLocalPersistence); // Set persistence before signing in
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      console.log('User signed in:', user);
-      router.push('/app/main');
-    } catch (error:any) {
-      console.error('Error signing in:', error);
-      setError(error.message); 
+      await setPersistence(auth, browserLocalPersistence);
+      await signInWithEmailAndPassword(auth, email, password);
+      await completeSignIn();
+      await router.push('/app/main');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to sign in. Please try again.');
     }
   };
 
   const googleSignIn = async () => {
     setGoogleSignInLoading(true);
-    const provider = new GoogleAuthProvider();
+    setError('');
     try {
-      const result = await signInWithPopup(auth, provider);
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if(credential)
-      {
-        const token = credential.accessToken;
-      }
-      // The signed-in user info.
-      const user = result.user;
-  
-      console.log('User signed in with Google:', user);
-  
-      // Optional: Call your backend API to create/update the user in your database
-      await fetch('/api/createUser', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: user.email }),
-      });
-  
-      router.push('/app/main');
-    } catch (error:any) {
-      console.error('Error signing in with Google:', error);
-      // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      // The email of the user's account used.
-      const email = error.email;
-      // The AuthCredential type that was used.
-      const credential = GoogleAuthProvider.credentialFromError(error);
-      // Show error message to user here
-      setError(errorCode);
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      await completeSignIn();
+      await router.push('/app/main');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to sign in with Google. Please try again.');
     } finally {
       setGoogleSignInLoading(false);
     }

@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useContext } from 'react';
 import { AuthContext } from '@/auth/AuthContext';
 import { useQuery } from 'react-query';
@@ -87,7 +88,7 @@ const BarGraphMonth = () => {
       if (!user) {
           throw new Error("No user found");
       }
-      const response = await fetch(`/api/getAllProblemsFromUser?userEmail=${user.email}`);
+      const response = await authenticatedFetch(`/api/getAllProblemsFromUser`);
       if (!response.ok) {
           throw new Error("Failed to fetch all problems");
       }

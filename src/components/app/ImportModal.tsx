@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { AuthContext } from '@/auth/AuthContext';
@@ -59,7 +60,7 @@ const ImportModal = ({ isOpen, onClose, collectionId }: ImportModalProps) => {
         throw new Error('User is not authenticated');
       }
 
-      const response = await fetch('/api/importFromLeetcode', {
+      const response = await authenticatedFetch('/api/importFromLeetcode', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json', 
@@ -79,7 +80,7 @@ const ImportModal = ({ isOpen, onClose, collectionId }: ImportModalProps) => {
       const result = await response.json();
 
       // Call updateCollectionCounts endpoint after successful import
-      const updateResponse = await fetch('/api/updateCollectionCounts', {
+      const updateResponse = await authenticatedFetch('/api/updateCollectionCounts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

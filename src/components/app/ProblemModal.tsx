@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useContext } from 'react';
 import { auth } from '../../firebaseConfig';
 import { useQuery, useMutation, useQueryClient } from 'react-query'; 
@@ -60,7 +61,7 @@ const ProblemModal = ({
 
   const fetchUserSettings = async () => {
     if (!user) throw new Error("No user found");
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error("Failed to fetch user settings");
     return response.json();
   };
@@ -74,7 +75,7 @@ const ProblemModal = ({
   });
 
   const fetchProblems = async () => {
-    const response = await fetch(`/api/getCollectionProblems?collectionId=${collectionId}&userId=${theUser?.id}`);
+    const response = await authenticatedFetch(`/api/getCollectionProblems?collectionId=${collectionId}`);
     if (!response.ok) throw new Error('Failed to fetch problems');
     return response.json();
   };
@@ -88,7 +89,7 @@ const ProblemModal = ({
   const { data: problemCount } = useQuery(
     ['problemCount', collectionId],
     async () => {
-      const response = await fetch(`/api/getCollectionProblems?collectionId=${collectionId}`);
+      const response = await authenticatedFetch(`/api/getCollectionProblems?collectionId=${collectionId}`);
       const probs = await response.json();
       return probs.length;
     },
@@ -131,7 +132,7 @@ const ProblemModal = ({
         : '/api/createProblem';
       const method = isEditMode ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await authenticatedFetch(url, {
         method,
         headers,
         body: JSON.stringify({
@@ -154,7 +155,7 @@ const ProblemModal = ({
 
       // Update collection counts if this is a new problem
       if (!isEditMode) {
-        const updateResponse = await fetch('/api/updateCollectionCounts', {
+        const updateResponse = await authenticatedFetch('/api/updateCollectionCounts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ collectionId }),
@@ -176,7 +177,7 @@ const ProblemModal = ({
             const now = new Date();
             const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             
-            await fetch('/api/updateStreak', {
+            await authenticatedFetch('/api/updateStreak', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userEmail: user.email, localDate }),
@@ -255,7 +256,7 @@ const ProblemModal = ({
   };
 
   const generateAISolution = async () => {
-    if (!theUser?.apiKey) {
+    if (!theUser?.hasApiKey) {
       showToast?.(
         <>
           <span className="inline-block mr-2 bg-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
@@ -277,7 +278,7 @@ const ProblemModal = ({
 
     setIsGeneratingSolution(true);
     try {
-      const response = await fetch('/api/openai', {
+      const response = await authenticatedFetch('/api/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -285,7 +286,6 @@ const ProblemModal = ({
           solution: '',
           userSolution: '',
           userMessage: `Generate a complete solution for this problem in ${language}. Strictly only provide the code without any explanations, comments, or markdown formatting.`,
-          apiKey: theUser.apiKey,
           mode: 'chat'
         }),
       });

@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import '../../app/globals.css'; 
@@ -202,7 +203,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
 
   const fetchUserSettings = async () => {
     if (!user) throw new Error("No user found");
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error("Failed to fetch user settings");
     return response.json();
   };
@@ -234,10 +235,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     // Separate effect for actual API call, depending on analyzing state
     useEffect(() => {
       // Only proceed if we're in analyzing state and have a problem and API key
-      if (isAnalyzing && dueProblems.length > 0 && data?.apiKey) {
+      if (isAnalyzing && dueProblems.length > 0 && data?.hasApiKey) {
         const analyzeCode = async () => {
           try {
-            const response = await fetch('/api/openai', {
+            const response = await authenticatedFetch('/api/openai', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -247,7 +248,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 solution: dueProblems[0].solution,
                 userSolution: editorContent,
                 userMessage: "analyze",
-                apiKey: data?.apiKey,
                 mode: "analyze"
               }),
             });
@@ -276,7 +276,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         
         analyzeCode();
       }
-    }, [isAnalyzing, dueProblems, data?.apiKey, editorContent]);
+    }, [isAnalyzing, dueProblems, data?.hasApiKey, editorContent]);
 
     const handleMouseDown = () => {
       setIsDragging(true);
@@ -503,7 +503,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
 
     // For heat map 
     const updateContribution = async (userEmail: string) => {
-      const response = await fetch('/api/updateContribution', {
+      const response = await authenticatedFetch('/api/updateContribution', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -532,7 +532,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     };
 
     const updateProblemMutation = useMutation(async ({ problemId, updates }: { problemId: any, updates: any }) => {
-      const response = await fetch('/api/updateProblemForAlgo', {
+      const response = await authenticatedFetch('/api/updateProblemForAlgo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -614,7 +614,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     
           // Call updateCollectionCounts endpoint after problem type update
           try {
-            const updateResponse = await fetch('/api/updateCollectionCounts', {
+            const updateResponse = await authenticatedFetch('/api/updateCollectionCounts', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -633,7 +633,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               const now = new Date();
               const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
               
-              await fetch('/api/updateStreak', {
+              await authenticatedFetch('/api/updateStreak', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userEmail: user.email, localDate }),
@@ -1065,7 +1065,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               rel="noopener noreferrer"
               className="hover:text-link transition-colors duration-200 cursor-pointer"
             >
-              v2.25 - stable release
+              v2.26 - stable release
             </a>
           </div>
         </div>
@@ -1282,7 +1282,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                       <ChatWindow
                           problem={dueProblems[0]} 
                           editorContent={editorContent} 
-                          apiKey={data?.apiKey}
+                          hasApiKey={data?.hasApiKey}
                           isTab={true}
                           externalMessages={chatMessages}
                           setExternalMessages={setChatMessages}

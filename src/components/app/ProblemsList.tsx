@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import ProblemModal from './ProblemModal';
 import Toast from './Toast';
@@ -70,14 +71,14 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
 
   const fetchUserSettings = async () => {
     if (!user) throw new Error('No user found');
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error('Failed to fetch user settings');
     return response.json();
   };
 
   const fetchProblems = async (collectionId: any, userId: any) => {
     if (!collectionId || !userId) return null;
-    const response = await fetch(`/api/getCollectionProblems?collectionId=${collectionId}&userId=${userId}`);
+    const response = await authenticatedFetch(`/api/getCollectionProblems?collectionId=${collectionId}`);
     if (!response.ok) {
       if (response.status === 403) {
         throw new Error('Access Denied');
@@ -89,14 +90,14 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
   };
 
   const fetchCollectionDetails = async () => {
-    const response = await fetch(`/api/getCollectionDetails?collectionId=${collectionId}`);
+    const response = await authenticatedFetch(`/api/getCollectionDetails?collectionId=${collectionId}`);
     if (!response.ok) throw new Error('Network response was not ok');
     return response.json();
   };
 
   const fetchUserCollections = async () => {
     if (!user?.email) throw new Error('No user found');
-    const response = await fetch(`/api/getUserCollections?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserCollections`);
     if (!response.ok) throw new Error('Failed to fetch collections');
     return response.json();
   };
@@ -196,7 +197,7 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       };
-      const response = await fetch(`/api/deleteProblem?problemId=${problemId}`, {
+      const response = await authenticatedFetch(`/api/deleteProblem?problemId=${problemId}`, {
         method: 'DELETE',
         headers: headers,
       });
@@ -229,7 +230,7 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
       if (!token) {
         throw new Error('Authentication token is not available.');
       }
-      const response = await fetch('/api/moveProblem', {
+      const response = await authenticatedFetch('/api/moveProblem', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +262,7 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
     deleteProblemMutation.mutate(problemToDelete.id, {
       onSuccess: async () => {
         try {
-          const updateResponse = await fetch('/api/updateCollectionCounts', {
+          const updateResponse = await authenticatedFetch('/api/updateCollectionCounts', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -312,12 +313,12 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
       {
         onSuccess: async () => {
           try {
-            await fetch('/api/updateCollectionCounts', {
+            await authenticatedFetch('/api/updateCollectionCounts', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ collectionId: sourceCollectionId }),
             });
-            await fetch('/api/updateCollectionCounts', {
+            await authenticatedFetch('/api/updateCollectionCounts', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ collectionId: targetCollectionId }),
@@ -386,7 +387,7 @@ const ProblemsList = ({ collectionId }: { collectionId: any }) => {
 
   const chooseRandomProblemFromAll = async () => {
     try {
-      const response = await fetch(`/api/getAllProblemsFromUser?userEmail=${user?.email}`);
+      const response = await authenticatedFetch(`/api/getAllProblemsFromUser`);
       if (!response.ok) throw new Error('Failed to fetch all problems');
       const problems = await response.json();
       const randomProblem = problems[Math.floor(Math.random() * problems?.length)];

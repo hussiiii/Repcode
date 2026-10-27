@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { auth } from '../../firebaseConfig';
@@ -213,7 +214,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
 
   const fetchUserSettings = async () => {
     if (!user) throw new Error("No user found");
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error("Failed to fetch user settings");
     return response.json();
   };
@@ -271,10 +272,10 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   // Separate effect for actual API call, depending on analyzing state
   useEffect(() => {
     // Only proceed if we're in analyzing state and have a problem and API key
-    if (isAnalyzing && problem && data?.apiKey && contentActive === 'ai-assistant') {
+    if (isAnalyzing && problem && data?.hasApiKey && contentActive === 'ai-assistant') {
       const analyzeCode = async () => {
         try {
-          const response = await fetch('/api/openai', {
+          const response = await authenticatedFetch('/api/openai', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -284,7 +285,6 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               solution: problem.solution,
               userSolution: editorContent,
               userMessage: "analyze",
-              apiKey: data?.apiKey,
               mode: "analyze"
             }),
           });
@@ -313,7 +313,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
 
       analyzeCode();
     }
-  }, [isAnalyzing, problem, data?.apiKey, editorContent, contentActive]);
+  }, [isAnalyzing, problem, data?.hasApiKey, editorContent, contentActive]);
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -397,7 +397,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
         <ChatWindow
           problem={localProblem}
           editorContent={editorContent}
-          apiKey={data?.apiKey}
+          hasApiKey={data?.hasApiKey}
           isTab={true}
           externalMessages={chatMessages}
           setExternalMessages={setChatMessages}
@@ -459,7 +459,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             rel="noopener noreferrer"
             className="hover:text-link transition-colors duration-200 cursor-pointer"
           >
-            v2.25 - stable release
+            v2.26 - stable release
           </a>
         </div>
       </div>

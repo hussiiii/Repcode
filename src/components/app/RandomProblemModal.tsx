@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from 'react-query';
@@ -19,14 +20,14 @@ const RandomProblemModal = ({ isOpen, onClose }: RandomProblemModalProps) => {
 
   const fetchCollections = async () => {
     if (!user) return [];
-    const response = await fetch(`/api/getUserCollections?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserCollections`);
     if (!response.ok) throw new Error('Failed to fetch collections');
     return response.json();
   };
 
   const fetchUserSettings = async () => {
     if (!user) return null;
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error('Failed to fetch user settings');
     return response.json();
   };
@@ -124,7 +125,7 @@ const RandomProblemModal = ({ isOpen, onClose }: RandomProblemModalProps) => {
       const allProblems: any[] = [];
 
       for (const collectionId of selectedCollectionIds) {
-        const response = await fetch(`/api/getCollectionProblems?collectionId=${collectionId}&userId=${userSettings.id}`);
+        const response = await authenticatedFetch(`/api/getCollectionProblems?collectionId=${collectionId}`);
         if (response.ok) {
           const problems = await response.json();
           allProblems.push(...problems);

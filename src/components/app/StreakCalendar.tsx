@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext, useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { 
@@ -25,7 +26,7 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
   const displayedYear = currentMonth.getFullYear();
   
   const fetchActivityDays = async () => {
-    const response = await fetch(`/api/getActivityDays?userEmail=${user?.email}&year=${displayedYear}`);
+    const response = await authenticatedFetch(`/api/getActivityDays?year=${displayedYear}`);
     if (!response.ok) {
       throw new Error('Failed to fetch activity days');
     }

@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useRef } from 'react';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark-reasonable.css';
@@ -7,7 +8,7 @@ import remarkGfm from 'remark-gfm';
 const ChatWindow = ({ 
   problem, 
   editorContent, 
-  apiKey, 
+  hasApiKey,
   isTab = false,
   externalMessages,
   setExternalMessages,
@@ -22,7 +23,7 @@ const ChatWindow = ({
 }: { 
   problem: any, 
   editorContent: string, 
-  apiKey: any, 
+  hasApiKey?: boolean,
   isTab?: boolean,
   externalMessages?: Array<{ text: string, sender: string }>,
   setExternalMessages?: React.Dispatch<React.SetStateAction<Array<{ text: string, sender: string }>>>,
@@ -79,7 +80,7 @@ const ChatWindow = ({
       
       const analyzeCode = async () => {
         try {
-          const response = await fetch('/api/openai', {
+          const response = await authenticatedFetch('/api/openai', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -89,7 +90,6 @@ const ChatWindow = ({
               solution: problem.solution,
               userSolution: editorContent,
               userMessage: "analyze", // Special flag to just analyze the code
-              apiKey: apiKey,
               mode: "analyze" // Tell the API we're just loading context
             }),
           });
@@ -123,7 +123,7 @@ const ChatWindow = ({
       // If we have external messages but external analyzing is still true, set it to false
       setIsAnalyzing(false);
     }
-  }, [problem, editorContent, apiKey, externalMessages, externalIsAnalyzing, localMessages.length, setIsAnalyzing, setMessages, setShowQuickQuestions]);
+  }, [problem, editorContent, hasApiKey, externalMessages, externalIsAnalyzing, localMessages.length, setIsAnalyzing, setMessages, setShowQuickQuestions]);
 
   useEffect(() => {
     hljs.highlightAll();
@@ -145,7 +145,7 @@ const ChatWindow = ({
     setShowQuickQuestions(false); // Hide quick questions once a message is sent
 
     try {
-      const response = await fetch('/api/openai', {
+      const response = await authenticatedFetch('/api/openai', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,7 +155,6 @@ const ChatWindow = ({
           solution: problem.solution,
           userSolution: editorContent,
           userMessage: initialMessage || input,
-          apiKey: apiKey,
           mode: "chat" // Specify we're in chat mode now
         }),
       });

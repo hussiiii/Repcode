@@ -1,6 +1,7 @@
 import prisma from "../../../prisma_client";
-import { convert } from 'html-to-text';
-import authenticate from '@/auth/Authenticate';
+import { z } from 'zod';
+import { ownedCollection, withUser } from '../../lib/server/api';
+import { idSchema } from '../../lib/server/validation';
 
 enum Difficulty {
   Easy = 'Easy',
@@ -32,41 +33,17 @@ interface LeetcodeProblemResponse {
 
 const MAX_PROBLEMS = 152;
 
-export default async function handler(req: any, res: any) {
-    authenticate(req, res, async () => {
-        if (req.method !== 'POST') {
-            return res.status(405).json({ message: 'Method not allowed' });
-        }
-
-        // 1) Parse request body
-        const { slug, collectionId } = req.body;
-
-        // 2) Look up user in DB
-        const userObject = await prisma.user.findUnique({
-            where: {
-            email: req.user?.email as string
-            }
-        });
-
-        // 2.5) If user not found, handle error
-        if (!userObject) {
-            return res.status(404).json({ message: 'User not found in database' });
-        }
-
-        // 3) Look up collection
-        const collection = await prisma.collection.findUnique({
-            where: { id: parseInt(collectionId) }
-        });
-
-        // 4) Check ownership
-        if (!collection || collection.userId !== userObject.id) {
-            return res.status(403).json({ message: 'Forbidden: You do not own this collection' });
-        }
+export default withUser('POST', async (req, res) => {
+        const { slug, collectionId } = z.object({
+            slug: z.string().trim().min(1).max(200).regex(/^[a-zA-Z0-9_-]+$/),
+            collectionId: idSchema,
+        }).parse(req.body);
+        await ownedCollection(collectionId, req.appUser.id);
 
         try {
             // Check current problem count
             const currentProblems = await prisma.problem.count({
-            where: { collectionId: parseInt(collectionId) }
+            where: { collectionId: collectionId }
             });
 
             // Step 1: Get all problems from the list
@@ -187,7 +164,7 @@ export default async function handler(req: any, res: any) {
                     question: questionData.content || 'No content available',
                     solution: 'TODO: Add your solution here',
                     difficulty: mapDifficulty(questionData.difficulty || 'Medium'),
-                    collectionId: parseInt(collectionId),
+                    collectionId: collectionId,
                     functionSignature,
                     language: 'python',
                     link: `https://leetcode.com/problems/${problem.titleSlug}/`,
@@ -202,7 +179,7 @@ export default async function handler(req: any, res: any) {
 
             // Update collection's lastAdded field
             await prisma.collection.update({
-            where: { id: parseInt(collectionId) },
+            where: { id: collectionId, userId: req.appUser.id },
             data: { lastAdded: new Date() },
             });
 
@@ -215,5 +192,4 @@ export default async function handler(req: any, res: any) {
             console.error('Import error:', error);
             return res.status(500).json({ message: 'Failed to import problems' });
         }
-    })
-} 
+});

@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useContext, useState, useMemo, useRef, useEffect } from 'react';
 import { AuthContext } from '@/auth/AuthContext';
 import { useQuery } from 'react-query';
@@ -84,7 +85,7 @@ const StatsCharts = () => {
   // Fetch all problems
   const fetchAllProblems = async () => {
     if (!user) throw new Error("No user found");
-    const response = await fetch(`/api/getAllProblemsFromUser?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getAllProblemsFromUser`);
     if (!response.ok) throw new Error("Failed to fetch problems");
     return response.json();
   };
@@ -92,7 +93,7 @@ const StatsCharts = () => {
   // Fetch collections for names
   const fetchCollections = async () => {
     if (!user) throw new Error("No user found");
-    const response = await fetch(`/api/getUserCollections?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserCollections`);
     if (!response.ok) throw new Error("Failed to fetch collections");
     return response.json();
   };

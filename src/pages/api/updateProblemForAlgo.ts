@@ -1,24 +1,13 @@
-import prisma from "../../../prisma_client"; 
-import { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../prisma_client';
+import { ownedProblem, withUser } from '../../lib/server/api';
+import { idSchema, reviewUpdatesSchema } from '../../lib/server/validation';
 
-  export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    const { id, updates } = req.body;
-
-    try {
-      const updatedProblem = await prisma.problem.update({
-        where: { id },
-        data: updates,
-      });
-
-      console.log("CALLED: /updateProblemForAlgo"); 
-      return res.status(200).json(updatedProblem);
-    } catch (error) {
-      console.error('Failed to update problem:', error);
-      return res.status(500).json({ error: 'Failed to update problem' });
-    }
-  } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+export default withUser('POST', async (req, res) => {
+  const id = idSchema.parse(req.body?.id);
+  const updates = reviewUpdatesSchema.parse(req.body?.updates);
+  await ownedProblem(id, req.appUser.id);
+  const problem = await prisma.problem.update({
+    where: { id, collection: { userId: req.appUser.id } }, data: updates,
+  });
+  return res.status(200).json(problem);
+});

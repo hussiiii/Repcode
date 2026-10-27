@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="pleat-rounded-title pleat-rounded-desc">
+  <title id="pleat-rounded-title">Repcode — Pleat / Rounded</title>
+  <desc id="pleat-rounded-desc">The original three folded ribbons, with constant widths and semicircular end caps. All original folds and straight sides are preserved. Solid black vector artwork on a transparent background.</desc>
+  <g fill="#000000">
+    <path d="M100 269L228 108C244 87.88 274.55 85.87 293.05 103.7L352 160.5A19.996890 19.996890 0 0 1 324.25 189.3L265.3 132.5C263.04 130.32 259.31 130.57 257.35 133.03L131.3 291.4A19.244804 19.244804 0 0 1 100 269Z"/>
+    <path d="M142 322L240 198.73C256 178.61 286.55 176.6 305.05 194.43L374 260.86A19.996890 19.996890 0 0 1 346.25 289.66L277.3 223.23C275.04 221.05 271.31 221.3 269.35 223.76L173.3 344.4A19.244804 19.244804 0 0 1 142 322Z"/>
+    <path d="M184 375L252 289.46C268 269.34 298.55 267.33 317.05 285.16L396 361.22A19.996890 19.996890 0 0 1 368.25 390.02L289.3 313.96C287.04 311.78 283.31 312.03 281.35 314.49L215.3 397.4A19.244804 19.244804 0 0 1 184 375Z"/>
+  </g>
+</svg>

@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useEffect, useContext } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { X, Calendar, Clock, BarChart3, Tag, Percent, ArrowRight, RefreshCw, PieChart, AlertTriangle, RotateCcw, HelpCircleIcon } from 'lucide-react';
@@ -14,7 +15,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
 
   const manualLapseMutation = useMutation(
     async (problemId: number) => {
-      const res = await fetch('/api/manualLapse', {
+      const res = await authenticatedFetch('/api/manualLapse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ problemId }),
@@ -25,7 +26,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
     {
       onSuccess: async () => {
         try {
-          await fetch('/api/updateCollectionCounts', {
+          await authenticatedFetch('/api/updateCollectionCounts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ collectionId: problem?.collectionId }),

@@ -1,46 +1,12 @@
-import prisma from "../../../prisma_client"; 
-import authenticate from "../../auth/Authenticate";
-import { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../prisma_client';
+import { withUser } from '../../lib/server/api';
+import { collectionSchema } from '../../lib/server/validation';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Apply authentication middleware
-  authenticate(req, res, async () => {
-    // Existing handler code here...
-    if (req.method === 'POST') {
-      const { title, userEmail } = req.body;
-      const images = ['pattern1.svg', 'pattern2.svg', 'pattern3.svg', 'pattern4.svg'];
-      const randomImage = images[Math.floor(Math.random() * images.length)];
-  
-      try {
-        // Find the user by email
-        const user = await prisma.user.findUnique({
-          where: {
-            email: userEmail,
-          },
-        });
-  
-        if (!user) {
-          return res.status(404).json({ error: 'User not found' });
-        }
-  
-        // Create the collection with the found userId
-        const collection = await prisma.collection.create({
-          data: {
-            title,
-            userId: user.id,
-            image: randomImage,
-          },
-        });
-  
-        console.log("CALLED: /createCollection")
-        return res.status(200).json(collection);
-      } catch (error) {
-        console.error('Failed to create collection:', error);
-        return res.status(500).json({ error: 'Failed to create collection' });
-      }
-    } else {
-      res.setHeader('Allow', ['POST']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
-    }
+export default withUser('POST', async (req, res) => {
+  const { title } = collectionSchema.parse(req.body);
+  const images = ['pattern1.svg', 'pattern2.svg', 'pattern3.svg', 'pattern4.svg'];
+  const collection = await prisma.collection.create({
+    data: { title, userId: req.appUser.id, image: images[Math.floor(Math.random() * images.length)] },
   });
-}
+  return res.status(200).json(collection);
+});

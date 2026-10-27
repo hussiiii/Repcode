@@ -1,34 +1,12 @@
-import prisma from "../../../prisma_client"; 
-import { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../prisma_client';
+import { ownedCollection, withUser } from '../../lib/server/api';
+import { idSchema } from '../../lib/server/validation';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    const collectionId = Number(req.query.collectionId);
-
-    try {
-      const collection = await prisma.collection.findUnique({
-        where: {
-          id: collectionId,
-        },
-        select: {
-          title: true, 
-          lastAdded: true, 
-          problems: true, 
-        },
-      });
-
-      if (collection) {
-        console.log("CALLED: /getCollectionDetails"); 
-        return res.status(200).json(collection);
-      } else {
-        return res.status(404).json({ error: 'Collection not found' });
-      }
-    } catch (error) {
-      console.error('Failed to fetch collection details:', error);
-      return res.status(500).json({ error: 'Failed to fetch collection details' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+export default withUser('GET', async (req, res) => {
+  const id = idSchema.parse(req.query.collectionId);
+  const collection = await ownedCollection(id, req.appUser.id);
+  const problems = await prisma.problem.findMany({
+    where: { collectionId: id, collection: { userId: req.appUser.id } },
+  });
+  return res.status(200).json({ title: collection.title, lastAdded: collection.lastAdded, problems });
+});

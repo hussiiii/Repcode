@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useContext } from "react";
 import CollectionModal from "./CollectionModal";
 import { auth } from "../../firebaseConfig";
@@ -44,7 +45,7 @@ const CollectionCards = () => {
 
   const fetchCollections = async () => {
     if (!user) return null; 
-    const response = await fetch(`/api/getUserCollections?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserCollections`);
     if (!response.ok) throw new Error('Network response was not ok');
     return response.json();
   };
@@ -80,7 +81,7 @@ const CollectionCards = () => {
         throw new Error('Authentication token is not available.');
       }
   
-      const response = await fetch(`/api/deleteCollection?collectionId=${collectionId}`, {
+      const response = await authenticatedFetch(`/api/deleteCollection?collectionId=${collectionId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

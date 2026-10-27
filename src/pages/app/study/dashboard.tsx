@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import { AuthContext } from '@/auth/AuthContext';
 import { useQuery } from 'react-query';
@@ -41,7 +42,7 @@ const StudyProblemPage = () => {
     if (!user) {
       throw new Error("No user found");
     }
-    const response = await fetch(`/api/getAllProblemsFromUser?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getAllProblemsFromUser`);
     if (!response.ok) {
       throw new Error("Failed to fetch all problems");
     }
@@ -49,7 +50,7 @@ const StudyProblemPage = () => {
   };
 
   const fetchUserSettings = async () => {
-    const response = await fetch(`/api/getUserSettings?userEmail=${user?.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) {
       throw new Error("Failed to fetch user settings");
     }

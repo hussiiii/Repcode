@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext } from 'react';
 import '../../../../../app/globals.css'; 
@@ -21,21 +22,21 @@ const ProblemDetailPage = () => {
   // to get the user ID to verify that user can only access problems they have created 
   const fetchUserSettings = async () => {
     if (!user) throw new Error("No user found");
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error("Failed to fetch user settings");
     return response.json();
   };
 
   const fetchCollectionDetails = async (collectionId:any) => {
     if (!collectionId) return null; // Guard clause to ensure collectionId is not undefined
-    const response = await fetch(`/api/getCollectionDetails?collectionId=${collectionId}`);
+    const response = await authenticatedFetch(`/api/getCollectionDetails?collectionId=${collectionId}`);
     if (!response.ok) throw new Error('Network response was not ok');
     return response.json();
   };
   
   const fetchProblemDetails = async (problemId: any, userId: any) => {
     if (!problemId || !userId) return null; // Guard clause to ensure problemId and userId are not undefined
-    const response = await fetch(`/api/getProblemDetails?problemId=${problemId}&userId=${userId}`);
+    const response = await authenticatedFetch(`/api/getProblemDetails?problemId=${problemId}`);
     if (!response.ok) throw new Error('Network response was not ok');
     return response.json();
   };

@@ -1,4 +1,5 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { withUser } from '../../lib/server/api';
+import { localDateSchema } from '../../lib/server/validation';
 import prisma from '../../../prisma_client';
 
 /**
@@ -36,24 +37,12 @@ function getDaysDifference(dateStr1: string, dateStr2: string): number {
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { userEmail, localDate } = req.body;
-
-  if (!userEmail) {
-    return res.status(400).json({ error: 'User email is required' });
-  }
-
-  if (!localDate) {
-    return res.status(400).json({ error: 'Local date is required' });
-  }
+export default withUser('POST', async (req, res) => {
+  const localDate = localDateSchema.parse(req.body?.localDate);
 
   try {
     const user = await prisma.user.findUnique({
-      where: { email: userEmail },
+      where: { id: req.appUser.id },
       select: {
         id: true,
         currentStreak: true,
@@ -138,7 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     await prisma.user.update({
-      where: { email: userEmail },
+      where: { id: req.appUser.id },
       data: {
         currentStreak: newCurrentStreak,
         longestStreak: newLongestStreak,
@@ -157,4 +146,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Error updating streak:', error);
     return res.status(500).json({ error: 'Failed to update streak' });
   }
-}
+});

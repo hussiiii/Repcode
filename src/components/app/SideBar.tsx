@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext } from 'react';
 import { auth } from '../../firebaseConfig';
 import { signOut } from "firebase/auth";
@@ -100,7 +101,7 @@ const SideBar = () => {
   // User settings query
   const fetchUserSettings = async () => {
     if (!user) throw new Error('No user found');
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error('Failed to fetch user settings');
     return response.json();
   };
@@ -118,7 +119,7 @@ const SideBar = () => {
   //       // Proceed to fetch collections if the user is authenticated
   //       const fetchCollections = async () => {
   //         try {
-  //           const response = await fetch(`/api/getUserCollections?userEmail=${user.email}`);
+  //           const response = await fetch(`/api/getUserCollections`);
   //           if (!response.ok) {
   //             throw new Error('Failed to fetch collections');
   //           }
@@ -156,7 +157,7 @@ const SideBar = () => {
     updatedCollections[collectionIndex].isLoading = true;
     setCollections(updatedCollections);
 
-    const response = await fetch(`/api/getCollectionProblems?collectionId=${collectionId}`);
+    const response = await authenticatedFetch(`/api/getCollectionProblems?collectionId=${collectionId}`);
     if (response.ok) {
       const problems = await response.json();
       updatedCollections = updatedCollections.map(collection =>

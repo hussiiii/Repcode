@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useState, useContext, useEffect } from 'react';
 import { auth } from '../../firebaseConfig';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
@@ -24,7 +25,7 @@ const Settings = () => {
 
   const fetchUserSettings = async () => {
     if (!user) throw new Error('No user found');
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error('Failed to fetch user settings');
     return response.json();
   };
@@ -45,16 +46,21 @@ const Settings = () => {
         Authorization: `Bearer ${token}`,
       };
 
-      const response = await fetch('/api/updateUserSettings', {
+      const response = await authenticatedFetch('/api/updateUserSettings', {
         method: 'PUT',
         headers,
         body: JSON.stringify({ userEmail: user?.email, settings: newSettings }),
       });
-      if (!response.ok) throw new Error('Failed to update settings');
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || 'Failed to update settings');
+      }
       return response.json();
     },
     {
       onSuccess: () => {
+        const keyInput = document.getElementById('apiKey') as HTMLInputElement | null;
+        if (keyInput) keyInput.value = '';
         queryClient.invalidateQueries(['userSettings', user?.email]);
         showToast(
           <>
@@ -66,6 +72,7 @@ const Settings = () => {
           </>
         );
       },
+      onError: (error: Error) => showToast(error.message),
       onSettled: () => setIsSaving(false),
     }
   );
@@ -87,6 +94,7 @@ const Settings = () => {
   const handleSave = () => {
     if (!data) return;
 
+    const replacementKey = (document.getElementById('apiKey') as HTMLInputElement)?.value.trim();
     const newSettings = {
       // New Cards
       learnSteps: (document.getElementById('learnSteps') as HTMLInputElement)?.value,
@@ -122,7 +130,7 @@ const Settings = () => {
         10
       ),
       // API Settings
-      apiKey: (document.getElementById('apiKey') as HTMLInputElement)?.value,
+      ...(replacementKey ? { apiKey: replacementKey } : {}),
     };
 
     // Validations (same as before)
@@ -372,7 +380,9 @@ const Settings = () => {
                   <input
                     type={isApiKeyVisible ? "text" : "password"}
                     id="apiKey"
-                    defaultValue={data.apiKey}
+                    defaultValue=""
+                    placeholder={data.hasApiKey ? 'Saved key — enter a replacement' : 'Enter your OpenAI API key'}
+                    autoComplete="off"
                     className="flex-1 px-4 py-2.5 bg-[#1E232C] text-[#ffffff] focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 h-11"
                     style={{ outline: 'none' }}
                   />
@@ -387,8 +397,23 @@ const Settings = () => {
                 </div>
               </div>
               <p className="text-xs text-[#8A94A6]">
-                Enter your OpenAI API key to enable AI-based features.
+                {data.hasApiKey
+                  ? 'A key is saved. Leave this field blank to keep it.'
+                  : 'Enter your OpenAI API key to enable AI-based features.'}
               </p>
+              {data.hasApiKey && (
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => {
+                    setIsSaving(true);
+                    updateSettingsMutation.mutate({ apiKey: null });
+                  }}
+                  className="text-xs text-error hover:underline disabled:opacity-50"
+                >
+                  Remove saved key
+                </button>
+              )}
             </div>
           </div>
         </div>

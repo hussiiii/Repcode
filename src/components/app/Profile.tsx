@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useState, useContext } from 'react';
 import { auth } from '../../firebaseConfig';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
@@ -11,7 +12,7 @@ const Profile = () => {
 
     const fetchUserSettings = async () => {
         if (!user) throw new Error("No user found");
-        const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+        const response = await authenticatedFetch(`/api/getUserSettings`);
         if (!response.ok) throw new Error("Failed to fetch user settings");
         return response.json();
     };

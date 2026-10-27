@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { auth } from '../../firebaseConfig';
 import '../../app/globals.css'; 
@@ -45,7 +46,7 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
 
   const fetchUserSettings = async () => {
     if (!user) throw new Error("No user found");
-    const response = await fetch(`/api/getUserSettings?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserSettings`);
     if (!response.ok) throw new Error("Failed to fetch user settings");
     return response.json();
   };
@@ -59,7 +60,7 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
       setIsSubmitting(true);
       const url = isEditMode ? `/api/updateCollection?collectionId=${collectionToEdit.id}` : '/api/createCollection';
       const method = isEditMode ? 'PUT' : 'POST';
-      const response = await fetch(url, {
+      const response = await authenticatedFetch(url, {
         method: method,
         headers: headers,
         body: JSON.stringify({

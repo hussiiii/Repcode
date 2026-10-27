@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 // Entry point for the actual app, once user successfully logs in 
 
 import React, { useEffect, useState, useContext } from 'react';
@@ -20,7 +21,7 @@ const Main = () => {
 
   const fetchUserStatus = async () => {
     if (!user) throw new Error("No user found");
-    const response = await fetch(`/api/getUserStatus?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getUserStatus`);
     if (!response.ok) throw new Error("Failed to fetch user status");
     return response.json();
   };
@@ -40,7 +41,7 @@ const Main = () => {
 
   const handleCloseModal = async () => {
     try {
-      await fetch('/api/updateNewUserStatus', {
+      await authenticatedFetch('/api/updateNewUserStatus', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,6 @@
 {
   "name": "flashcode",
-  "version": "0.1.0",
+  "version": "2.26.0",
   "private": true,
   "engines": {
     "node": ">=22.0.0"
@@ -10,7 +10,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.2.5",
@@ -62,8 +65,12 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@jest/globals": "^30.5.2",
     "@tailwindcss/forms": "^0.5.7",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.3",
     "@types/html-to-text": "^9.0.4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22",
     "@types/nprogress": "^0.2.3",
     "@types/react": "^18",
@@ -71,6 +78,8 @@
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
     "postcss": "^8",
     "prisma": "^5.10.2",
     "tailwindcss": "^3.3.0",

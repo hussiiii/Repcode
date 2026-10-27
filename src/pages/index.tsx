@@ -128,7 +128,7 @@ function merge(left, right) {
           <div className="max-w-5xl mx-auto text-center">
             <div className="inline-flex items-center px-4 py-2 bg-[#343B4A]/80 backdrop-blur-sm rounded-full border border-[#3A4253] mb-8">
               <SparklesIcon className="w-4 h-4 text-easy mr-2" />
-              <span className="text-[#B0B7C3]">Welcome to Version 2.0</span>
+              <span className="text-[#B0B7C3]">Welcome to Version 2.26</span>
             </div>
             {/* Mobile heading */}
             <h1 className="block sm:hidden text-4xl font-bold mb-4 leading-tight">

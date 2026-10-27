@@ -1,3 +1,4 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/router';
 import { AuthContext } from '@/auth/AuthContext';
@@ -11,7 +12,7 @@ const ProblemTypeInfo = () => {
     if (!user) {
       throw new Error("No user found");
     }
-    const response = await fetch(`/api/getAllProblemsFromUser?userEmail=${user.email}`);
+    const response = await authenticatedFetch(`/api/getAllProblemsFromUser`);
     if (!response.ok) {
       throw new Error("Failed to fetch all problems");
     }

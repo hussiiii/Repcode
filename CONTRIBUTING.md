@@ -14,10 +14,18 @@ git checkout -b feature/your-feature-name
 3. **Make your changes locally**:
    * Follow the setup instructions under Getting Started  in the README to set up the dev environment 
 
-4. 4. **IMPORTANT: check to see if your changes actually build**: 
-```bash 
-npm run build 
-``` 
+4. **Run the tests, lint, and production build**:
+```bash
+npm test
+npm run lint
+npm run build
+```
+Use Jest with `next/jest` for all new and existing automated tests. Put tests
+under `tests/` using `.test.js`, `.test.jsx`, `.test.ts`, or `.test.tsx` filenames.
+Use Jest mocks for external services and React Testing Library for component
+interactions. Do not add custom TypeScript/module loaders or another test runner.
+Use `npm run test:watch` while developing and `npm run test:coverage` for reports.
+
 * if there are any build errors, they'll be listed in the terminal, please fix them. If everything builds fine, you're good to go (warnings are fine, but errors must be addressed)
 
 5. **Commit your changes**:
