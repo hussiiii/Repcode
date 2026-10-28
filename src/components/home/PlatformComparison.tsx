@@ -7,7 +7,6 @@ const PlatformComparison = () => {
     {
       name: 'LeetCode',
       description: 'Problem Source',
-      color: 'from-[#FFA94D] to-[#FF8C00]',
       logo: '/leetcode.png',
       features: [
         { text: 'Real company interview problems', included: true },
@@ -23,7 +22,6 @@ const PlatformComparison = () => {
     {
       name: 'Neetcode',
       description: 'Problem Roadmap, Video Explanations, Courses',
-      color: 'from-[#60a5fa] to-[#3b82f6]',
       logo: '/neetcode.avif',
       features: [
         { text: 'Real company interview problems', included: true },
@@ -39,7 +37,6 @@ const PlatformComparison = () => {
     {
       name: 'Repcode',
       description: 'Personalized Learning System',
-      color: 'from-[#22d3ee] to-[#06b6d4]',
       logo: '/repcode.png',
       highlight: true,
       features: [
@@ -56,14 +53,14 @@ const PlatformComparison = () => {
   ];
 
   return (
-    <section className="py-20 bg-[#343B4A] relative overflow-hidden">
+    <section className="py-20 bg-surface relative overflow-hidden">
 
       <div className="container mx-auto px-6 relative">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             How Repcode Stacks Up
           </h2>
-          <p className="text-[#B0B7C3] max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             See how Repcode complements LeetCode and Neetcode to create the ultimate learning experience
           </p>
         </div>
@@ -72,7 +69,7 @@ const PlatformComparison = () => {
           {platforms.map((platform, index) => (
             <div
               key={index}
-              className="relative bg-[#2A303C] rounded-2xl border border-[#3A4253] p-8 transition-all duration-300 hover:shadow-xl hover:shadow-[0_4px_20px_0_rgba(59,130,246,0.1)]"
+              className="relative bg-background rounded-2xl border border-border p-8 transition-all duration-300 hover:shadow-xl hover:shadow-marketing-comparison"
             >
 
               <div className="text-center mb-8">
@@ -85,8 +82,8 @@ const PlatformComparison = () => {
                     className="object-contain mx-auto"
                   />
                 </div>
-                <h3 className="text-2xl font-bold text-primary mb-2">{platform.name}</h3>
-                <p className="text-[#B0B7C3] text-sm">{platform.description}</p>
+                <h3 className="text-2xl font-bold text-foreground mb-2">{platform.name}</h3>
+                <p className="text-muted-foreground text-sm">{platform.description}</p>
               </div>
 
               <div className="space-y-4">
@@ -94,12 +91,12 @@ const PlatformComparison = () => {
                   <div key={featureIndex} className="flex items-start">
                                          <div className="mr-3 mt-1 flex-shrink-0">
                        {feature.included ? (
-                         <CheckIcon className="w-5 h-5 text-[#3AB357]" />
+                         <CheckIcon className="w-5 h-5 text-marketing-comparison-included" />
                        ) : (
-                         <XIcon className="w-5 h-5 text-[#FF0000]" />
+                         <XIcon className="w-5 h-5 text-marketing-comparison-excluded" />
                        )}
                      </div>
-                    <span className={`text-sm ${feature.included ? 'text-[#B0B7C3]' : 'text-[#6B7280]'}`}>
+                    <span className={`text-sm ${feature.included ? 'text-muted-foreground' : 'text-dimmed'}`}>
                       {feature.text}
                     </span>
                   </div>
@@ -107,12 +104,12 @@ const PlatformComparison = () => {
                 </div>
 
                 {platform.highlight && (
-                  <div className="mt-8 pt-6 border-t border-[#3A4253]">
+                  <div className="mt-8 pt-6 border-t border-border">
                     <div className="text-center">
-                      <p className="text-[#22d3ee] text-sm font-medium mb-2">
+                      <p className="text-marketing-highlight text-sm font-medium mb-2">
                         We&apos;re not biased! 
                       </p>
-                      <p className="text-[#B0B7C3] text-xs">
+                      <p className="text-muted-foreground text-xs">
                         No platform does everything, even Repcode has its pros and cons. It&apos;s meant to supplement the other two platforms, not replace them.
                       </p>
                     </div>
@@ -127,4 +124,4 @@ const PlatformComparison = () => {
   );
 };
 
-export default PlatformComparison; 
+export default PlatformComparison;

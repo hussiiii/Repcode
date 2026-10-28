@@ -14,6 +14,7 @@ import {
   Download,
   Palette,
 } from "lucide-react";
+import { canvasColor, cssColor, hexColor } from '@/lib/colors';
 import { cn } from "@/lib/utils";
 
 type Tool = "draw" | "erase" | "select";
@@ -42,18 +43,16 @@ interface WhiteboardProps {
   setHistoryIndex?: React.Dispatch<React.SetStateAction<number>>;
 }
 
+// Store token names only for the current tool. Saved paths keep resolved ink colors.
 const colors = [
-  "#000000",
-  "#FF0000",
-  "#00FF00",
-  "#0000FF",
-  "#FFFF00",
-  "#FF00FF",
-  "#00FFFF",
-  "#FFA500",
-  "#800080",
-  "#008000",
+  'drawing-ink-black', 'drawing-ink-red', 'drawing-ink-lime', 'drawing-ink-blue',
+  'drawing-ink-yellow', 'drawing-ink-magenta', 'drawing-ink-cyan',
+  'drawing-ink-orange', 'drawing-ink-purple', 'drawing-ink-green',
 ];
+
+// Keep existing selections usable during Fast Refresh, and retain the saved ink format.
+const resolvedInk = (ink: string) => ink.startsWith('drawing-ink-') ? hexColor(ink).toUpperCase() : ink;
+const previewInk = (ink: string) => ink.startsWith('drawing-ink-') ? cssColor(ink) : ink;
 
 export function Whiteboard({ 
   className,
@@ -66,7 +65,7 @@ export function Whiteboard({
 }: WhiteboardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tool, setTool] = useState<Tool>("draw");
-  const [color, setColor] = useState("#000000");
+  const [color, setColor] = useState('drawing-ink-black');
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [localElements, localSetElements] = useState<DrawingElement[]>([]);
   const [localHistory, localSetHistory] = useState<DrawingElement[][]>([]);
@@ -159,7 +158,7 @@ export function Whiteboard({
 
       // Draw selection indicator
       if (element.selected) {
-        ctx.strokeStyle = "#0066FF";
+        ctx.strokeStyle = canvasColor('drawing-selection');
         ctx.lineWidth = 1;
         ctx.setLineDash([5, 5]);
 
@@ -187,7 +186,7 @@ export function Whiteboard({
     // Draw current path while drawing
     if (isDrawing && currentPath.length > 0 && tool === "draw") {
       ctx.beginPath();
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = resolvedInk(color);
       ctx.lineWidth = strokeWidth;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -202,7 +201,7 @@ export function Whiteboard({
 
     // Draw selection box
     if (selectionBox) {
-      ctx.strokeStyle = "#0066FF";
+      ctx.strokeStyle = canvasColor('drawing-selection');
       ctx.lineWidth = 1;
       ctx.setLineDash([5, 5]);
       const width = selectionBox.end.x - selectionBox.start.x;
@@ -342,7 +341,7 @@ export function Whiteboard({
         id: Date.now().toString(),
         type: "path",
         points: [...currentPath],
-        color,
+        color: resolvedInk(color),
         strokeWidth,
       };
       const newElements = [...elements, newElement];
@@ -415,9 +414,10 @@ export function Whiteboard({
   }, [selectedElements]);
 
   return (
-    <div className={cn("flex flex-col h-full border border-divide rounded-lg overflow-hidden bg-primary", className)}>
+    <div className={cn("flex flex-col h-full border border-border rounded-lg overflow-hidden bg-drawing-surface", className)}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 p-4 border-b border-divide bg-tertiary flex-shrink-0">
+      {/* Keep toolbar buttons transparent as shared component tokens become available. */}
+      <div className="flex flex-wrap items-center gap-2 p-4 border-b border-border bg-surface flex-shrink-0">
         {/* Row 1: Essential Tools */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Drawing Tools */}
@@ -426,7 +426,7 @@ export function Whiteboard({
               variant={tool === "draw" ? "default" : "outline"}
               size="sm"
               onClick={() => setTool("draw")}
-              className={tool === "draw" ? "bg-blue hover:bg-blue text-primary" : "text-secondary hover:text-primary border-divide"}
+              className={tool === "draw" ? "bg-action hover:bg-action text-foreground" : "bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"}
             >
               <Pen className="w-4 h-4" />
             </Button>
@@ -434,7 +434,7 @@ export function Whiteboard({
               variant={tool === "erase" ? "default" : "outline"}
               size="sm"
               onClick={() => setTool("erase")}
-              className={tool === "erase" ? "bg-blue hover:bg-blue text-primary" : "text-secondary hover:text-primary border-divide"}
+              className={tool === "erase" ? "bg-action hover:bg-action text-foreground" : "bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"}
             >
               <Eraser className="w-4 h-4" />
             </Button>
@@ -442,13 +442,13 @@ export function Whiteboard({
               variant={tool === "select" ? "default" : "outline"}
               size="sm"
               onClick={() => setTool("select")}
-              className={tool === "select" ? "bg-blue hover:bg-blue text-primary" : "text-secondary hover:text-primary border-divide"}
+              className={tool === "select" ? "bg-action hover:bg-action text-foreground" : "bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"}
             >
               <MousePointer className="w-4 h-4" />
             </Button>
           </div>
 
-          <Separator orientation="vertical" className="h-6 bg-divide opacity-70" />
+          <Separator orientation="vertical" className="h-6 bg-border opacity-70" />
 
           {/* History Controls */}
           <div className="flex items-center gap-1">
@@ -457,7 +457,7 @@ export function Whiteboard({
               size="sm"
               onClick={undo}
               disabled={historyIndex <= 0}
-              className="text-secondary hover:text-primary border-divide disabled:text-disabledText disabled:bg-disabled"
+              className="bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border disabled:text-control-disabled-foreground disabled:bg-control-disabled"
             >
               <Undo2 className="w-4 h-4" />
             </Button>
@@ -466,13 +466,13 @@ export function Whiteboard({
               size="sm"
               onClick={redo}
               disabled={historyIndex >= history.length - 1}
-              className="text-secondary hover:text-primary border-divide disabled:text-disabledText disabled:bg-disabled"
+              className="bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border disabled:text-control-disabled-foreground disabled:bg-control-disabled"
             >
               <Redo2 className="w-4 h-4" />
             </Button>
           </div>
 
-          <Separator orientation="vertical" className="h-6 bg-divide opacity-70" />
+          <Separator orientation="vertical" className="h-6 bg-border opacity-70" />
 
           {/* Color Controls */}
           <div className="flex flex-wrap items-center gap-2">
@@ -481,27 +481,27 @@ export function Whiteboard({
                 variant="outline"
                 size="sm"
                 onClick={() => setShowColorPicker(!showColorPicker)}
-                className="gap-2 text-secondary hover:text-primary border-divide"
+                className="gap-2 bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"
               >
                 <Palette className="w-4 h-4" />
                 <div
-                  className="w-4 h-4 rounded border border-primary"
-                  style={{ backgroundColor: color }}
+                  className="w-4 h-4 rounded border border-foreground"
+                  style={{ backgroundColor: previewInk(color) }}
                 />
               </Button>
               {showColorPicker && (
-                <div className="absolute top-full left-0 mt-1 py-2 px-1 w-32 bg-grey border border-divide rounded-lg shadow-lg z-10">
+                <div className="absolute top-full left-0 mt-1 py-2 px-1 w-32 bg-surface-inset border border-border rounded-lg shadow-lg z-10">
                   <div className="grid grid-cols-5 gap-2">
                     {colors.map((c) => (
                       <button
                         key={c}
                         className={cn(
                           "w-4 h-4 rounded border-1",
-                          color === c
-                            ? "border-primary"
+                          color === c || (!color.startsWith('drawing-ink-') && resolvedInk(c).toUpperCase() === color.toUpperCase())
+                            ? "border-foreground"
                             : "border-transparent"
                         )}
-                        style={{ backgroundColor: c }}
+                        style={{ backgroundColor: cssColor(c) }}
                         onClick={() => {
                           setColor(c);
                           setShowColorPicker(false);
@@ -514,23 +514,23 @@ export function Whiteboard({
             </div>
 
             <div className="flex items-center gap-1">
-              <span className="text-sm text-secondary">Size:</span>
+              <span className="text-sm text-muted-foreground">Size:</span>
               <input
                 type="range"
                 min="1"
                 max="10"
                 value={strokeWidth}
                 onChange={(e) => setStrokeWidth(Number(e.target.value))}
-                className="w-16 accent-blue"
+                className="w-16 accent-action"
               />
-              <span className="text-sm w-4 text-secondary">{strokeWidth}</span>
+              <span className="text-sm w-4 text-muted-foreground">{strokeWidth}</span>
             </div>
           </div>
         </div>
 
         {/* Row 2 (wraps on smaller screens): Action Buttons */}
         <div className="flex items-center gap-2 ml-auto sm:ml-0 mt-2 sm:mt-0">
-          <Separator orientation="vertical" className="h-6 bg-divide opacity-70 hidden sm:block" />
+          <Separator orientation="vertical" className="h-6 bg-border opacity-70 hidden sm:block" />
 
           <div className="flex items-center gap-1">
             {selectedElements.size > 0 && (
@@ -538,7 +538,7 @@ export function Whiteboard({
                 variant="outline" 
                 size="sm" 
                 onClick={deleteSelected}
-                className="text-error hover:bg-hardbg border-divide"
+                className="bg-transparent text-status-error hover:text-status-error hover:bg-difficulty-hard-background border-border"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -547,7 +547,7 @@ export function Whiteboard({
               variant="outline" 
               size="sm" 
               onClick={clearCanvas}
-              className="text-secondary hover:text-primary border-divide whitespace-nowrap"
+              className="bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border whitespace-nowrap"
             >
               Clear
             </Button>
@@ -555,7 +555,7 @@ export function Whiteboard({
               variant="outline" 
               size="sm" 
               onClick={downloadCanvas}
-              className="text-secondary hover:text-primary border-divide"
+              className="bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"
             >
               <Download className="w-4 h-4" />
             </Button>
@@ -570,7 +570,7 @@ export function Whiteboard({
           width={1200}
           height={600}
           className={cn(
-            "absolute inset-0 w-full h-full bg-white border border-divide",
+            "absolute inset-0 w-full h-full bg-drawing-surface border border-border",
             tool === "draw" && "cursor-crosshair",
             tool === "erase" && "cursor-default",
             tool === "select" && "cursor-move"
@@ -583,10 +583,10 @@ export function Whiteboard({
       </div>
 
       {/* Status Bar */}
-      <div className="px-4 py-2 border-t border-divide bg-tertiary text-sm text-secondary flex-shrink-0">
-        <span className="text-primary font-medium">Tool:</span> {tool} | 
-        <span className="text-primary font-medium ml-2">Elements:</span> {elements.length} | 
-        <span className="text-primary font-medium ml-2">Selected:</span> {selectedElements.size}
+      <div className="px-4 py-2 border-t border-border bg-surface text-sm text-muted-foreground flex-shrink-0">
+        <span className="text-foreground font-medium">Tool:</span> {tool} |
+        <span className="text-foreground font-medium ml-2">Elements:</span> {elements.length} |
+        <span className="text-foreground font-medium ml-2">Selected:</span> {selectedElements.size}
         {tool === "select" &&
           " | Draw selection box to select multiple elements"}
       </div>

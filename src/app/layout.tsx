@@ -23,7 +23,6 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         {children}
-        <script async src="../../node_modules/preline/dist/preline.js"></script>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"></link>
       </body>
     </html>

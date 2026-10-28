@@ -1,3 +1,4 @@
+import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useState, useContext, useEffect } from 'react';
 import { auth } from '../../firebaseConfig';
@@ -65,7 +66,7 @@ const Settings = () => {
         showToast(
           <>
             <span
-              className="inline-block mr-2 bg-success rounded-full"
+              className="inline-block mr-2 bg-status-success rounded-full"
               style={{ width: '10px', height: '10px' }}
             ></span>
             Settings updated
@@ -175,35 +176,35 @@ const Settings = () => {
         type={type}
         id={id}
         defaultValue={defaultValue}
-        className="w-full px-3 py-2 bg-[#2A303C] border border-[#3A4150]/70 rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 text-primary h-11"
+        className="w-full px-3 py-2 bg-background border border-border-subtle/70 rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70 focus:ring-1 focus:ring-app-action-end/50 transition-all duration-200 text-foreground h-11"
         style={{ outline: 'none' }}
       />
-      <div className="absolute inset-0 rounded-md border border-[#3b82f6]/0 group-focus-within:border-[#3b82f6]/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgba(59,130,246,0)] group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"></div>
+      <div className="absolute inset-0 rounded-md border border-app-action-end/0 group-focus-within:border-app-action-end/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)] group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"></div>
     </div>
   );
 
   if (error) {
-    return <div className="text-[#f87171]">Error: {(error as Error).message}</div>;
+    return <div className="text-status-danger-soft">Error: {(error as Error).message}</div>;
   }
   if (isLoading || !data) {
     return (
         <div className="flex justify-center items-center h-[60vh]">
           <div className="relative flex flex-col items-center">
             {/* Outer glow effect */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] blur-xl opacity-20 animate-pulse"></div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start to-app-action-end blur-xl opacity-20 animate-pulse"></div>
             
             {/* Spinner container */}
             <div className="relative">
               {/* Gradient ring */}
               <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                             bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] opacity-20"></div>
+                             bg-gradient-to-r from-app-action-start to-app-action-end opacity-20"></div>
               
               {/* Spinning gradient arc */}
               <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
                              rounded-full animate-spin duration-1000" 
                    style={{
-                     borderTopColor: '#06b6d4',
-                     borderRightColor: '#3b82f6',
+                     borderTopColor: cssColor('app-action-start'),
+                     borderRightColor: cssColor('app-action-end'),
                      animationDuration: '1s'
                    }}>
               </div>
@@ -213,7 +214,7 @@ const Settings = () => {
             </div>
             
             {/* Loading text with shimmer effect */}
-            <div className="mt-4 text-sm font-medium text-[#B0B7C3] relative overflow-hidden">
+            <div className="mt-4 text-sm font-medium text-muted-foreground relative overflow-hidden">
               <span>Loading</span>
               <span className="inline-flex overflow-hidden ml-1">
                 <span className="animate-ellipsis">.</span>
@@ -230,39 +231,39 @@ const Settings = () => {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* New Cards Section */}
-        <div className="bg-[#343B4A] border-[#3A4253] rounded-xl border p-6 shadow-lg space-y-6">
+        <div className="bg-surface border-border rounded-xl border p-6 shadow-lg space-y-6">
           <div className="flex items-center mb-4">
-            <BrainIcon className="w-5 h-5 mr-2" style={{ color: '#3b82f6' }} />
-            <h2 className="text-lg font-medium text-[#ffffff]">New Cards</h2>
+            <BrainIcon className="w-5 h-5 mr-2" style={{ color: cssColor('app-action-end') }} />
+            <h2 className="text-lg font-medium text-foreground">New Cards</h2>
           </div>
           
           <div className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="learnSteps" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="learnSteps" className="block text-sm font-medium text-muted-foreground">
                 Learning Steps
               </label>
               <StyledInput id="learnSteps" defaultValue={data.learnSteps} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 One or more delays, separated by spaces. Example: &apos;10m 3d&apos;.
               </p>
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="graduatingInterval" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="graduatingInterval" className="block text-sm font-medium text-muted-foreground">
                 Graduating Interval
               </label>
               <StyledInput id="graduatingInterval" defaultValue={data.graduatingInterval} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 Days to wait after the final learning step.
               </p>
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="easyInterval" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="easyInterval" className="block text-sm font-medium text-muted-foreground">
                 Easy Interval
               </label>
               <StyledInput id="easyInterval" defaultValue={data.easyInterval} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 Days to wait if you press Easy.
               </p>
             </div>
@@ -270,29 +271,29 @@ const Settings = () => {
         </div>
 
         {/* Lapses Section */}
-        <div className="bg-[#343B4A] border-[#3A4253] rounded-xl border p-6 shadow-lg space-y-6">
+        <div className="bg-surface border-border rounded-xl border p-6 shadow-lg space-y-6">
           <div className="flex items-center mb-4">
-            <RefreshIcon className="w-5 h-5 mr-2" style={{ color: '#f59e0b' }} />
-            <h2 className="text-lg font-medium text-[#ffffff]">Lapses</h2>
+            <RefreshIcon className="w-5 h-5 mr-2" style={{ color: cssColor('settings-lapses') }} />
+            <h2 className="text-lg font-medium text-foreground">Lapses</h2>
           </div>
           
           <div className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="relearnSteps" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="relearnSteps" className="block text-sm font-medium text-muted-foreground">
                 Relearning Steps
               </label>
               <StyledInput id="relearnSteps" defaultValue={data.relearnSteps} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 Steps for a problem after pressing Again.
               </p>
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="relearnGraduatingInterval" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="relearnGraduatingInterval" className="block text-sm font-medium text-muted-foreground">
                 New Interval
               </label>
               <StyledInput id="relearnGraduatingInterval" defaultValue={data.relearnGraduatingInterval} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 Multiplier when answering Again on a review problem.
               </p>
             </div>
@@ -300,59 +301,59 @@ const Settings = () => {
         </div>
 
         {/* Advanced Section */}
-        <div className="bg-[#343B4A] border-[#3A4253] rounded-xl border p-6 shadow-lg space-y-6">
+        <div className="bg-surface border-border rounded-xl border p-6 shadow-lg space-y-6">
           <div className="flex items-center mb-4">
-            <CogIcon className="w-5 h-5 mr-2" style={{ color: '#10b981' }} />
-            <h2 className="text-lg font-medium text-[#ffffff]">Advanced</h2>
+            <CogIcon className="w-5 h-5 mr-2" style={{ color: cssColor('settings-advanced') }} />
+            <h2 className="text-lg font-medium text-foreground">Advanced</h2>
           </div>
           
           <div className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="maximumInterval" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="maximumInterval" className="block text-sm font-medium text-muted-foreground">
                 Maximum Interval
               </label>
               <StyledInput id="maximumInterval" defaultValue={data.maximumInterval} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 Maximum days a review problem can be scheduled.
               </p>
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="startingEase" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="startingEase" className="block text-sm font-medium text-muted-foreground">
                 Starting Ease
               </label>
               <StyledInput id="startingEase" defaultValue={data.startingEase} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 Default ease multiplier new problems start with.
               </p>
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="easyBonus" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="easyBonus" className="block text-sm font-medium text-muted-foreground">
                 Easy Bonus
               </label>
               <StyledInput id="easyBonus" defaultValue={data.easyBonus} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 Extra multiplier when rating Easy.
               </p>
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="intervalModifier" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="intervalModifier" className="block text-sm font-medium text-muted-foreground">
                 Interval Modifier
               </label>
               <StyledInput id="intervalModifier" defaultValue={data.intervalModifier} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 A multiplier to adjust algorithm aggressiveness.
               </p>
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="overdueWarningThreshold" className="block text-sm font-medium text-[#B0B7C3]">
+              <label htmlFor="overdueWarningThreshold" className="block text-sm font-medium text-muted-foreground">
                 Overdue Warning Threshold (months)
               </label>
               <StyledInput id="overdueWarningThreshold" defaultValue={data.overdueWarningThreshold} />
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 Problems overdue by this many months will show a lapse warning in Study Mode
               </p>
             </div>
@@ -360,21 +361,21 @@ const Settings = () => {
         </div>
 
         {/* API Settings Section */}
-        <div className="bg-[#343B4A] border-[#3A4253] rounded-xl border p-6 shadow-lg space-y-6">
+        <div className="bg-surface border-border rounded-xl border p-6 shadow-lg space-y-6">
           <div className="flex items-center mb-4">
-            <KeyIcon className="w-5 h-5 mr-2" style={{ color: '#8b5cf6' }} />
-            <h2 className="text-lg font-medium text-[#ffffff]">API Settings</h2>
+            <KeyIcon className="w-5 h-5 mr-2" style={{ color: cssColor('settings-api') }} />
+            <h2 className="text-lg font-medium text-foreground">API Settings</h2>
           </div>
           
           <div className="space-y-5">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-[#B0B7C3]">
+              <label className="block text-sm font-medium text-muted-foreground">
                 OpenAI API Key
               </label>
               <div className="relative">
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[rgba(6,182,212,0.1)] to-[rgba(59,130,246,0.1)]" />
-                <div className="relative flex rounded-lg overflow-hidden transition-colors border border-[#3A4150]/70 group">
-                  <span className="inline-flex items-center px-4 border-r border-[#3A4253] bg-[rgba(42,48,60,0.5)] text-[#8A94A6]">
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-app-action-start/10 to-app-action-end/10" />
+                <div className="relative flex rounded-lg overflow-hidden transition-colors border border-border-subtle/70 group">
+                  <span className="inline-flex items-center px-4 border-r border-border bg-background/50 text-placeholder">
                     <KeyIcon className="w-4 h-4" />
                   </span>
                   <input
@@ -383,20 +384,20 @@ const Settings = () => {
                     defaultValue=""
                     placeholder={data.hasApiKey ? 'Saved key — enter a replacement' : 'Enter your OpenAI API key'}
                     autoComplete="off"
-                    className="flex-1 px-4 py-2.5 bg-[#1E232C] text-[#ffffff] focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 h-11"
+                    className="flex-1 px-4 py-2.5 bg-surface-field text-foreground focus:outline-none focus:border-app-action-start/70 focus:ring-1 focus:ring-app-action-end/50 transition-all duration-200 h-11"
                     style={{ outline: 'none' }}
                   />
                   <button
                     type="button"
                     onClick={toggleApiKeyVisibility}
-                    className="px-3 text-[#8A94A6] hover:text-[#ffffff] transition-colors"
+                    className="px-3 text-placeholder hover:text-foreground transition-colors"
                   >
                     {isApiKeyVisible ? 'Hide' : 'Show'}
                   </button>
-                  <div className="absolute inset-0 rounded-lg border border-[#3b82f6]/0 group-focus-within:border-[#3b82f6]/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgba(59,130,246,0)] group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"></div>
+                  <div className="absolute inset-0 rounded-lg border border-app-action-end/0 group-focus-within:border-app-action-end/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)] group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"></div>
                 </div>
               </div>
-              <p className="text-xs text-[#8A94A6]">
+              <p className="text-xs text-placeholder">
                 {data.hasApiKey
                   ? 'A key is saved. Leave this field blank to keep it.'
                   : 'Enter your OpenAI API key to enable AI-based features.'}
@@ -409,7 +410,7 @@ const Settings = () => {
                     setIsSaving(true);
                     updateSettingsMutation.mutate({ apiKey: null });
                   }}
-                  className="text-xs text-error hover:underline disabled:opacity-50"
+                  className="text-xs text-status-error hover:underline disabled:opacity-50"
                 >
                   Remove saved key
                 </button>
@@ -420,13 +421,13 @@ const Settings = () => {
       </div>
 
       {/* Save Button */}
-      <div className="mt-6 bg-[#343B4A] border-[#3A4253] rounded-xl border p-4 shadow-lg flex justify-between items-center">
+      <div className="mt-6 bg-surface border-border rounded-xl border p-4 shadow-lg flex justify-between items-center">
         {lastSaved ? (
-          <span className="text-sm text-[#8A94A6]">
+          <span className="text-sm text-placeholder">
             Saved
           </span>
         ) : (
-          <span className="text-sm text-[#8A94A6]">
+          <span className="text-sm text-placeholder">
             Not yet saved
           </span>
         )}
@@ -434,10 +435,10 @@ const Settings = () => {
           onClick={handleSave}
           disabled={isSaving}
           className={`
-            flex items-center px-4 py-2 rounded-lg shadow-lg transition-all duration-200 text-[#ffffff]
+            flex items-center px-4 py-2 rounded-lg shadow-lg transition-all duration-200 text-foreground
             ${isSaving 
-              ? 'bg-[rgba(59,130,246,0.5)] cursor-not-allowed' 
-              : 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0891b2] hover:to-[#2563eb] cursor-pointer'}
+              ? 'bg-app-action-end/50 cursor-not-allowed'
+              : 'bg-gradient-to-r from-app-action-start to-app-action-end hover:from-app-action-hover-start hover:to-app-action-hover-end cursor-pointer'}
           `}
         >
           {isSaving ? (
@@ -445,7 +446,7 @@ const Settings = () => {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="w-4 h-4 rounded-full mr-2 border-2 border-[rgba(255,255,255,0.3)] border-t-[#ffffff]"
+                className="w-4 h-4 rounded-full mr-2 border-2 border-foreground/30 border-t-foreground"
               />
               Saving...
             </>

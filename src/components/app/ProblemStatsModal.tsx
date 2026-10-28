@@ -1,3 +1,4 @@
+import { canvasColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useEffect, useContext } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -62,7 +63,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
   // Prepare data for DonutChart format
   const chartLabels = ['Again', 'Hard', 'Good', 'Easy'];
   const chartData = [problem.againCount, problem.hardCount, problem.goodCount, problem.easyCount];
-  const chartColors = ['#FF395F', '#FFBF1A', '#87cf3a', '#59FF00'];
+  const chartColors = [canvasColor('feedback-again-chart'), canvasColor('feedback-hard-chart'), canvasColor('status-success'), canvasColor('feedback-easy-chart')];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -89,13 +90,13 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
     customValue?: React.ReactNode
   }) => (
     <div className={`flex items-start gap-3 ${className || ''}`}>
-      <div className="mt-0.5 p-2 rounded-md bg-[#1E232C] text-[#3b82f6]">{icon}</div>
+      <div className="mt-0.5 p-2 rounded-md bg-surface-field text-app-action-end">{icon}</div>
       <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium text-primary">{label}</p>
+        <p className="text-sm font-medium text-foreground">{label}</p>
         {customValue ? (
           customValue
         ) : (
-          <p className="text-base font-semibold text-sm text-[#8A94A6]">{value}</p>
+          <p className="text-base font-semibold text-sm text-placeholder">{value}</p>
         )}
       </div>
     </div>
@@ -105,7 +106,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
     <>
       {/* Modal Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 bg-overlay/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={onClose}
       />
 
@@ -113,14 +114,14 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
       <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-500 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
         {/* Modal */}
         <div
-          className={`w-full max-w-4xl rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] 
+          className={`w-full max-w-4xl rounded-xl shadow-[0_10px_40px_rgb(var(--overlay)/0.3)]
                      transition-all duration-500 max-h-[90vh] overflow-hidden
-                     bg-gradient-to-b from-[#2A303C] to-[#252B38] border border-[#3A4150]/50 text-primary
+                     bg-gradient-to-b from-background to-surface-dialog-end border border-border-subtle/50 text-foreground
                      relative ${isOpen ? "opacity-100 -translate-y-0" : "opacity-0 -translate-y-[40px]"}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Decorative accent line at top */}
-          <div className="h-1 w-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6]"></div>
+          <div className="h-1 w-full bg-gradient-to-r from-app-action-start to-app-action-end"></div>
 
           {/* Scrollable content area */}
           <div className="overflow-y-auto max-h-[calc(90vh-1px)]">
@@ -130,7 +131,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                 <h2 className="text-xl font-semibold tracking-tight">{problem.name}</h2>
                 <button
                   onClick={onClose}
-                  className="h-8 w-8 rounded-full hover:bg-[#3A4150]/70 transition-colors duration-200 flex items-center justify-center"
+                  className="h-8 w-8 rounded-full hover:bg-border-subtle/70 transition-colors duration-200 flex items-center justify-center"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -142,7 +143,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                 <div className="space-y-6">
                   {/* Basic Info */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-300">Basic Information</h3>
+                    <h3 className="text-sm font-medium text-foreground-soft">Basic Information</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <StatItem 
                         icon={<Calendar className="h-4 w-4" />} 
@@ -168,11 +169,11 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                   </div>
 
                   {/* Divider */}
-                  <div className="h-px bg-gradient-to-r from-transparent via-[#3A4150]/70 to-transparent" />
+                  <div className="h-px bg-gradient-to-r from-transparent via-border-subtle/70 to-transparent" />
 
                   {/* Advanced Stats */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-300">Advanced Statistics</h3>
+                    <h3 className="text-sm font-medium text-foreground-soft">Advanced Statistics</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <StatItem
                         icon={<Percent className="h-4 w-4" />}
@@ -203,7 +204,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                       <button
                         onClick={() => manualLapseMutation.mutate(problem.id)}
                         disabled={manualLapseMutation.isLoading || problem.type !== 'Review'}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-errorBorder text-error hover:bg-errorBg transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-status-error-border text-status-error hover:bg-status-error-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                       >
                         <RotateCcw className="h-4 w-4" />
                         {manualLapseMutation.isLoading ? 'Lapsing...' : 'Lapse Manually'}
@@ -211,32 +212,32 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                       <div className="relative group">
                         <HelpCircleIcon
                           size={14}
-                          className="text-secondary/50 hover:text-secondary cursor-help transition-colors"
+                          className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors"
                         />
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-base_100 border border-divide rounded-lg shadow-xl text-xs text-secondary w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-background border border-border rounded-lg shadow-xl text-xs text-muted-foreground w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                           Manually lapse this problem to reset due date and cap intervals at your max setting.
-                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-divide"></div>
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-border"></div>
                         </div>
                       </div>
                     </div>
                     {manualLapseMutation.isError && (
-                      <p className="mt-2 text-xs text-error">Failed to lapse. Please try again.</p>
+                      <p className="mt-2 text-xs text-status-error">Failed to lapse. Please try again.</p>
                     )}
                   </div>
                 </div>
 
                 {/* Right Column - Feedback Breakdown Chart */}
-                <div className="border border-[#3A4150]/70 bg-[#1E232C] rounded-lg h-full flex flex-col">
+                <div className="border border-border-subtle/70 bg-surface-field rounded-lg h-full flex flex-col">
                   <div className="p-4 flex-1 flex flex-col">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-sm font-medium text-gray-300">Feedback Breakdown</h3>
-                      <PieChart className="h-4 w-4 text-[#3b82f6]" />
+                      <h3 className="text-sm font-medium text-foreground-soft">Feedback Breakdown</h3>
+                      <PieChart className="h-4 w-4 text-app-action-end" />
                     </div>
 
                     <div className="flex-1 flex justify-center items-center">
                       {isDataEmpty ? (
                         <div className="h-full flex items-center justify-center">
-                          <p className="text-gray-400 text-sm">No data available yet</p>
+                          <p className="text-foreground-quiet text-sm">No data available yet</p>
                         </div>
                       ) : (
                         <DonutChart 

@@ -1,3 +1,4 @@
+import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext } from 'react';
 import { auth } from '../../firebaseConfig';
@@ -63,8 +64,8 @@ function SidebarItem({
   );
 
   const className = `block w-full py-1.5 px-2 rounded-lg transition-all duration-300 ${active
-      ? "bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-primary"
-      : "text-[#8A94A6] hover:bg-[#343B4A] hover:text-primary"
+      ? "bg-gradient-to-r from-app-action-start to-app-action-end text-foreground"
+      : "text-placeholder hover:bg-surface hover:text-foreground"
     }`;
 
   return (
@@ -220,11 +221,11 @@ const SideBar = () => {
 
   return (
     <aside
-      className={`h-screen bg-[#222831] border-r border-[#3A4253] transition-all duration-300 ease-in-out flex flex-col overflow-hidden ${isExpanded ? "w-64" : "w-[69px]"} sticky left-0 top-0 z-10`}
+      className={`h-screen bg-surface-sidebar border-r border-border transition-all duration-300 ease-in-out flex flex-col overflow-hidden ${isExpanded ? "w-64" : "w-[69px]"} sticky left-0 top-0 z-10`}
       style={{ flexShrink: 0 }}
     >
       <div
-        className={`flex items-center h-16 border-b border-[#3A4253] overflow-hidden ${isExpanded ? "justify-between px-6" : "justify-center px-3"}`}
+        className={`flex items-center h-16 border-b border-border overflow-hidden ${isExpanded ? "justify-between px-6" : "justify-center px-3"}`}
       >
         {isExpanded && (
           <div className="flex items-center gap-3">
@@ -233,14 +234,14 @@ const SideBar = () => {
               alt="Repcode"
               className="w-8 h-8 object-contain"
             />
-            <h2 className="text-xl font-bold text-primary tracking-tight truncate">
+            <h2 className="text-xl font-bold text-foreground tracking-tight truncate">
               Repcode
             </h2>
           </div>
         )}
         <button
           onClick={() => { setIsExpanded(!isExpanded); setMasterCollectionsDropdownOpen(false); }}
-          className="p-1.5 rounded-lg text-[#8A94A6] hover:text-primary hover:bg-[#343B4A] transition-colors flex-shrink-0"
+          className="p-1.5 rounded-lg text-placeholder hover:text-foreground hover:bg-surface transition-colors flex-shrink-0"
         >
           {isExpanded ? <ChevronLeftIcon size={20} /> : <ChevronRightIcon size={20} />}
         </button>
@@ -299,19 +300,19 @@ const SideBar = () => {
 
       </nav>
 
-      <div className="p-3 border-t border-[#3A4253] mt-auto overflow-hidden">
+      <div className="p-3 border-t border-border mt-auto overflow-hidden">
         <div
           className={`
           relative p-3
-          ${isExpanded ? 'bg-[#343B4A]/50 backdrop-blur-sm border border-[#3A4253] rounded-lg' : 'flex flex-col items-center'}
+          ${isExpanded ? 'bg-surface/50 backdrop-blur-sm border border-border rounded-lg' : 'flex flex-col items-center'}
         `}
         >
           <div className={`flex ${isExpanded ? 'items-center' : 'flex-col gap-2'}`}>
             <div className="relative">
               {/* Add subtle glow and animation to the avatar */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#06b6d4]/40 to-[#3b82f6]/40 blur-md opacity-70 animate-pulse"></div>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start/40 to-app-action-end/40 blur-md opacity-70 animate-pulse"></div>
 
-              <div className="w-11 h-11 rounded-full overflow-hidden shadow-lg shadow-[#3b82f6]/20 relative">
+              <div className="w-11 h-11 rounded-full overflow-hidden shadow-lg shadow-app-action-end/20 relative">
                 <img
                   src={avatarUrl}
                   alt={userName}
@@ -323,9 +324,9 @@ const SideBar = () => {
                   className={`
                   absolute -bottom-1 left-1/2 -translate-x-1/2
                   px-1.5 py-0.5 text-[10px] font-medium
-                  rounded-sm text-primary
-                  bg-gradient-to-r from-[#06b6d4] to-[#3b82f6]
-                  border border-[#3b82f6]/20
+                  rounded-sm text-foreground
+                  bg-gradient-to-r from-app-action-start to-app-action-end
+                  border border-app-action-end/20
                   hover:scale-110 transition-transform duration-200
                   cursor-default
                 `}
@@ -338,14 +339,14 @@ const SideBar = () => {
               <div className="ml-3 overflow-hidden flex-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-primary truncate">{userName}</p>
+                    <p className="font-medium text-foreground truncate">{userName}</p>
                     {isPro && (
                       <div
                         className={`
                         px-1.5 py-0.5 text-[10px] font-medium
-                        rounded-sm text-primary
-                        bg-gradient-to-r from-[#06b6d4] to-[#3b82f6]
-                        border border-[#3b82f6]/20
+                        rounded-sm text-foreground
+                        bg-gradient-to-r from-app-action-start to-app-action-end
+                        border border-app-action-end/20
                         hover:scale-110 transition-transform duration-200
                         cursor-default
                       `}
@@ -355,7 +356,7 @@ const SideBar = () => {
                     )}
                   </div>
                 </div>
-                <p className="text-sm text-[#B0B7C3] truncate">{userEmail}</p>
+                <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
               </div>
             ) : null /* No content for collapsed state - just showing the avatar */}
           </div>
@@ -365,7 +366,7 @@ const SideBar = () => {
           <div className="mt-3">
             <button
               onClick={logOut}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-transparent border border-[#ef4444]/30 text-[#ef4444] hover:bg-[#ef4444]/10 hover:border-[#ef4444]/50 hover:text-[#f87171] transition-all duration-200 text-sm font-medium"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-transparent border border-status-danger/30 text-status-danger hover:bg-status-danger/10 hover:border-status-danger/50 hover:text-status-danger-soft transition-all duration-200 text-sm font-medium"
             >
               <LogOutIcon size={16} />
               Sign out
@@ -378,7 +379,7 @@ const SideBar = () => {
       <ReactTooltip
         id="sidebar-tooltip"
         place="right"
-        style={{ backgroundColor: "#343B4A", color: "primary" }}
+        style={{ backgroundColor: cssColor('surface'), color: "primary" }}
       />
     </aside>
   );

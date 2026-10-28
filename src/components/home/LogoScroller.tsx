@@ -21,7 +21,7 @@ const LogoScroller = () => {
       <Marquee
         speed={40}
         gradient={true}
-        gradientColor="#343B4A"
+        gradientColor="rgb(var(--surface))"
         gradientWidth={50}
         pauseOnHover={false}
       >

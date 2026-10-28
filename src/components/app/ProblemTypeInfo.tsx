@@ -37,7 +37,7 @@ const ProblemTypeInfo = () => {
         <div role="status">
           <svg
             aria-hidden="true"
-            className="w-12 h-12 text-base_100 animate-spin dark:text-base_100 fill-load"
+            className="w-12 h-12 text-background animate-spin dark:text-background fill-action"
             viewBox="0 0 100 101"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -59,30 +59,30 @@ const ProblemTypeInfo = () => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="text-secondary text-lg text-center">
-        <div className="container mx-auto p-4 text-primary">
+      <div className="text-muted-foreground text-lg text-center">
+        <div className="container mx-auto p-4 text-foreground">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             {[
-              { name: 'New', count: problemCounts.New.length, color: 'bg-blue', problems: problemCounts.New },
-              { name: 'Learning', count: problemCounts.Learning.length + problemCounts.Relearning.length, color: 'bg-learning', problems: problemCounts.Learning.concat(problemCounts.Relearning) },
-              { name: 'Review', count: problemCounts.Review.length, color: 'bg-review', problems: problemCounts.Review },
+              { name: 'New', count: problemCounts.New.length, color: 'bg-action', problems: problemCounts.New },
+              { name: 'Learning', count: problemCounts.Learning.length + problemCounts.Relearning.length, color: 'bg-study-learning', problems: problemCounts.Learning.concat(problemCounts.Relearning) },
+              { name: 'Review', count: problemCounts.Review.length, color: 'bg-study-review', problems: problemCounts.Review },
             ].map((category) => (
               <div
                 key={category.name}
-                className="overflow-hidden bg-base_100 border-divide border rounded-lg"
+                className="overflow-hidden bg-background border-border border rounded-lg"
               >
-                <div className={`${category.color} text-primary px-4 py-3 flex justify-between items-center`}>
+                <div className={`${category.color} text-foreground px-4 py-3 flex justify-between items-center`}>
                   <h2 className="text-lg font-bold">{category.name}</h2>
-                  <span className="bg-feintwhite px-2 py-1 rounded-full text-sm text-primary">{category.count}</span>
+                  <span className="bg-faint px-2 py-1 rounded-full text-sm text-foreground">{category.count}</span>
                 </div>
                 <div className="p-0 max-h-64 overflow-y-auto"> {/* Added max-height and overflow */}
                   {category.problems.length > 0 ? (
                     <ul className="divide-y divide-divide">
                       {category.problems.map((problem: any, index: number) => (
-                        <li key={index} className="p-4 hover:bg-hover2 transition duration-150 ease-in-out">
+                        <li key={index} className="p-4 hover:bg-surface-hover-alt transition duration-150 ease-in-out">
                           <div className="flex justify-between items-center">
-                            <span className="font-medium text-primary text-sm">{problem.name}</span>
-                            <div className="flex items-center text-sm text-secondary">
+                            <span className="font-medium text-foreground text-sm">{problem.name}</span>
+                            <div className="flex items-center text-sm text-muted-foreground">
                               {<span className="material-icons mr-1" style={{ fontSize: '15px' }}>calendar_today</span>}
                               {new Date(problem.dueDate).toLocaleDateString()}
                             </div>
@@ -91,7 +91,7 @@ const ProblemTypeInfo = () => {
                       ))}
                     </ul>
                   ) : (
-                    <div className="p-4 text-center text-secondary">No problems in this category</div>
+                    <div className="p-4 text-center text-muted-foreground">No problems in this category</div>
                   )}
                 </div>
               </div>

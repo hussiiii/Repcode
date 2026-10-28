@@ -28,7 +28,7 @@ export default function Changelog() {
           {
             date: "V 2.25 - March 31st, 2026",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/88" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #88</a> merged, credit @darshangoswami </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/88" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #88</a> merged, credit @darshangoswami </>,
               "⚙️Small UI updates to problem modal component",
             ],
           },
@@ -110,8 +110,8 @@ export default function Changelog() {
           {
             date: "V 2.17 - January 9th, 2026",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/83" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #83</a> merged, credit @OmkarSathish </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/82" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #82</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/83" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #83</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/82" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #82</a> merged, credit @OmkarSathish </>,
             ],
           },
         ],
@@ -122,8 +122,8 @@ export default function Changelog() {
           {
             date: "V 2.16 - December 2nd, 2025",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/78" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #78</a> merged, credit @OmkarSathish </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/77" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #77</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/78" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #78</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/77" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #77</a> merged, credit @OmkarSathish </>,
             ],
           },
           {
@@ -152,7 +152,7 @@ export default function Changelog() {
           {
             date: "V 2.13 - November 5th, 2025",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/71" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #71</a> merged, credit @Ad4mlars </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/71" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #71</a> merged, credit @Ad4mlars </>,
               "⚙️Adjusted styling of floating code snippets in landing page",
             ],
           },
@@ -183,8 +183,8 @@ export default function Changelog() {
           {
             date: "V 2.10 - September 1st, 2025",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/68" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #68</a> merged, credit @OmkarSathish </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/65" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #65</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/68" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #68</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/65" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #65</a> merged, credit @OmkarSathish </>,
             ],
           },
         ],
@@ -195,7 +195,7 @@ export default function Changelog() {
           {
             date: "V 2.9 - August 31st, 2025",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/62" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #62</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/62" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #62</a> merged, credit @OmkarSathish </>,
               "⚙️Adjusted landing page styling",
               "⚙️Adjusted guide page styling",
             ],
@@ -203,9 +203,9 @@ export default function Changelog() {
           {
             date: "V 2.8 - August 6th, 2025",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/44" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #44</a> merged, credit @ZidanCorson </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/46" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #46</a> merged, credit @OmkarSathish </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/43" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #43</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/44" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #44</a> merged, credit @ZidanCorson </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/46" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #46</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/43" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #43</a> merged, credit @OmkarSathish </>,
             ],
           },
         ],
@@ -216,23 +216,23 @@ export default function Changelog() {
           {
             date: "V 2.7 - July 30th, 2025",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/39" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #39</a> merged, credit @ajinkya8010 </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/42" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #42</a> merged, credit @OmkarSathish </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/40" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #40</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/39" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #39</a> merged, credit @ajinkya8010 </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/42" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #42</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/40" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #40</a> merged, credit @OmkarSathish </>,
             ],
           },
           {
             date: "V 2.6 - July 21st, 2025",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/33" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #33</a> merged, credit @OmkarSathish </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/27" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #27</a> merged, credit @OmkarSathish </>,
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/30" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #30</a> merged, credit @Pragyan14 </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/33" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #33</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/27" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #27</a> merged, credit @OmkarSathish </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/30" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #30</a> merged, credit @Pragyan14 </>,
             ],
           },
           {
             date: "V 2.5 - July 20th, 2025",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/23" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #23</a> merged, credit @ajinkya8010 </>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/23" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #23</a> merged, credit @ajinkya8010 </>,
               "➕Added first time user video to guide page (Issue #29, Credit: @poorvijn)", 
               "⚙️Adjusted README/Contributing document to be more detailed for first time contributors",
               "⚙️Adjusted first time user pop-up styling",
@@ -369,7 +369,7 @@ export default function Changelog() {
           {
             date: "V 1.9 - December 17th, 2024",
             changes: [
-              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/1" target="_blank" rel="noopener noreferrer" className="text-new underline">PR #1</a> merged, credit @knownotunknown</>,
+              <>⭐<a href="https://github.com/hussiiii/Repcode/pull/1" target="_blank" rel="noopener noreferrer" className="text-study-new underline">PR #1</a> merged, credit @knownotunknown</>,
               "➖Removed limit for only being able to delete collections with under 20 problems", 
             ],
           },
@@ -665,18 +665,18 @@ export default function Changelog() {
     ];
 
     return (
-      <div className="flex flex-col min-h-screen bg-base_100">
+      <div className="flex flex-col min-h-screen bg-background">
           <NavBar />
           <div className="pt-40 sm:pt-24 flex-grow">
             {/* Top Banner Legend for md screens and smaller */}
             <div className="lg:hidden w-full max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-              <div className="w-full bg-base_100 border border-divide rounded-lg p-4 shadow-sm">
-                <h3 className="text-primary font-medium mb-3 text-lg text-center">Legend</h3>
+              <div className="w-full bg-background border border-border rounded-lg p-4 shadow-sm">
+                <h3 className="text-foreground font-medium mb-3 text-lg text-center">Legend</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {legendItems.map((item) => (
-                        <div key={item.emoji} className="flex items-center bg-base_100 rounded-md p-2 border border-divide">
+                        <div key={item.emoji} className="flex items-center bg-background rounded-md p-2 border border-border">
                             <span className="text-xl mr-2">{item.emoji}</span>
-                            <span className="text-secondary text-sm">{item.description}</span>
+                            <span className="text-muted-foreground text-sm">{item.description}</span>
                         </div>
                     ))}
                 </div>
@@ -688,7 +688,7 @@ export default function Changelog() {
                 {/* Main content area with left sidebar */}
                 <div className="flex flex-1 relative">
                   {/* Left sidebar (month navigation) */}
-                  <div className="hidden md:block w-1/4 p-4 border-r border-divide overflow-auto">
+                  <div className="hidden md:block w-1/4 p-4 border-r border-border overflow-auto">
                       {changelogData.map((log, index) => {
                           const currentYear = log.month.split(' ')[1];
                           const prevYear = index > 0 ? changelogData[index - 1].month.split(' ')[1] : null;
@@ -698,18 +698,18 @@ export default function Changelog() {
                               <div key={log.month}>
                                   {showYearDivider && (
                                       <div className="flex items-center justify-center mb-6 mt-2">
-                                          <div className="flex-grow border-t border-divide"></div>
-                                          <span className="px-3 text-primary font-bold text-lg">{currentYear}</span>
-                                          <div className="flex-grow border-t border-divide"></div>
+                                          <div className="flex-grow border-t border-border"></div>
+                                          <span className="px-3 text-foreground font-bold text-lg">{currentYear}</span>
+                                          <div className="flex-grow border-t border-border"></div>
                                       </div>
                                   )}
                                   <div className="mb-4">
-                                      <div className="py-2 px-4 w-full text-left text-primary font-bold">
+                                      <div className="py-2 px-4 w-full text-left text-foreground font-bold">
                                           {log.month}
                                       </div>
                                       <ul className="pl-4">
                                           {log.updates.map((update) => (
-                                              <li key={update.date} className="list-disc text-secondary">{update.date}</li>
+                                              <li key={update.date} className="list-disc text-muted-foreground">{update.date}</li>
                                           ))}
                                       </ul>
                                   </div>
@@ -722,11 +722,11 @@ export default function Changelog() {
                   <div className="w-full md:w-3/4 p-4 lg:pr-72">
                       {changelogData.map((log) => (
                           <div key={log.month} className="mb-12">
-                              <h2 className="inline-block font-bold text-2xl text-primary border-b-2 border-divide mb-2">{log.month}</h2>
+                              <h2 className="inline-block font-bold text-2xl text-foreground border-b-2 border-border mb-2">{log.month}</h2>
                               {log.updates.map((update) => (
                                   <div key={update.date} className="mb-4">
-                                      <h3 className="font-bold text-xl text-secondary">{update.date}</h3>
-                                      <ul className="pl-5 text-secondary list-none">
+                                      <h3 className="font-bold text-xl text-muted-foreground">{update.date}</h3>
+                                      <ul className="pl-5 text-muted-foreground list-none">
                                           {update.changes.map((change, index) => (
                                               <li key={index} className="mb-1">{change}</li>
                                           ))}
@@ -738,13 +738,13 @@ export default function Changelog() {
                   </div>
                   
                   {/* Sticky Legend */}
-                  <div className="hidden lg:block fixed top-32 right-8 w-72 p-4 bg-base_100 border border-divide rounded-lg shadow-sm">
-                    <h3 className="text-primary font-medium mb-3 text-lg text-center">Legend</h3>
+                  <div className="hidden lg:block fixed top-32 right-8 w-72 p-4 bg-background border border-border rounded-lg shadow-sm">
+                    <h3 className="text-foreground font-medium mb-3 text-lg text-center">Legend</h3>
                     <div className="flex flex-col gap-3">
                         {legendItems.map((item) => (
-                            <div key={item.emoji} className="flex items-center bg-base_100 rounded-md p-2 border border-divide">
+                            <div key={item.emoji} className="flex items-center bg-background rounded-md p-2 border border-border">
                                 <span className="text-xl mr-2">{item.emoji}</span>
-                                <span className="text-secondary text-sm">{item.description}</span>
+                                <span className="text-muted-foreground text-sm">{item.description}</span>
                             </div>
                         ))}
                     </div>

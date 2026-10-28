@@ -1,3 +1,4 @@
+import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext } from 'react';
@@ -71,27 +72,27 @@ const ProblemDetailPage = () => {
   );
 
   return (
-    <div className="flex min-h-screen h-screen max-h-screen overflow-hidden bg-[#2A303C]">
+    <div className="flex min-h-screen h-screen max-h-screen overflow-hidden bg-background">
       <SideBar />
       <div className="flex-1 overflow-hidden">
         {isLoadingCollection || isLoadingProblem || isLoadingUser ? (
             <div className="flex justify-center items-center h-[80vh]">
             <div className="relative flex flex-col items-center">
               {/* Outer glow effect */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] blur-xl opacity-20 animate-pulse"></div>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start to-app-action-end blur-xl opacity-20 animate-pulse"></div>
               
               {/* Spinner container */}
               <div className="relative">
                 {/* Gradient ring */}
                 <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                                bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] opacity-20"></div>
+                                bg-gradient-to-r from-app-action-start to-app-action-end opacity-20"></div>
                 
                 {/* Spinning gradient arc */}
                 <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
                                 rounded-full animate-spin duration-1000" 
                       style={{
-                        borderTopColor: '#06b6d4',
-                        borderRightColor: '#3b82f6',
+                        borderTopColor: cssColor('app-action-start'),
+                        borderRightColor: cssColor('app-action-end'),
                         animationDuration: '1s'
                       }}>
                 </div>
@@ -101,7 +102,7 @@ const ProblemDetailPage = () => {
               </div>
               
               {/* Loading text with shimmer effect */}
-              <div className="mt-4 text-sm font-medium text-[#B0B7C3] relative overflow-hidden">
+              <div className="mt-4 text-sm font-medium text-muted-foreground relative overflow-hidden">
                 <span>Loading</span>
                 <span className="inline-flex overflow-hidden ml-1">
                   <span className="animate-ellipsis">.</span>
@@ -112,7 +113,7 @@ const ProblemDetailPage = () => {
             </div>
           </div>
         ) : collectionError || problemError || userError ? (
-          <div className="text-primary p-8">Error: {(collectionError as Error || problemError as Error || userError as Error).message}</div>
+          <div className="text-foreground p-8">Error: {(collectionError as Error || problemError as Error || userError as Error).message}</div>
         ) : (
           <>
             <VideoModal

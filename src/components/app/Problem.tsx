@@ -1,3 +1,4 @@
+import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext, useRef } from 'react';
@@ -35,10 +36,10 @@ const sanitizeCodeBlocks = (html: string) => {
       const textNode = document.createTextNode(code.textContent || '');
       code.parentNode?.replaceChild(textNode, code);
     }
-    pre.style.color = '#FFFFFF'; // Force white text for pre blocks
+    pre.style.color = cssColor('foreground'); // Force white text for pre blocks
   }
 
-  return div.innerHTML.replace(/color:\s*[^;]+;/gi, 'color: #FFFFFF;');
+  return div.innerHTML.replace(/color:\s*[^;]+;/gi, 'color: rgb(var(--foreground)/1);');
 };
 
 type TabButtonProps = {
@@ -55,16 +56,16 @@ const TabButton: React.FC<TabButtonProps> = ({ active, label, onClick, icon }) =
       px-4 py-2 text-sm font-medium rounded-full flex items-center space-x-2
       transition-all duration-200
       ${active 
-        ? 'bg-[#3b82f6]/15 text-white' 
-        : 'text-white hover:text-white hover:bg-[#2A303C]/50'}
+        ? 'bg-app-action-end/15 text-foreground'
+        : 'text-foreground hover:text-foreground hover:bg-background/50'}
     `}
-    style={{ color: '#FFFFFF' }} // Explicitly enforce white text
+    style={{ color: cssColor('foreground') }} // Explicitly enforce white text
   >
     {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
-      className: `w-5 h-5 ${active ? 'text-white' : getIconColor(label)}`,
+      className: `w-5 h-5 ${active ? 'text-foreground' : getIconColor(label)}`,
       style: { transition: 'color 0.2s' }
     })}
-    <span className={`text-white ${active ? 'font-semibold' : ''}`} style={{ color: '#FFFFFF' }}>{label}</span>
+    <span className={`text-foreground ${active ? 'font-semibold' : ''}`} style={{ color: cssColor('foreground') }}>{label}</span>
   </button>
 );
 
@@ -77,70 +78,70 @@ type ActionButtonProps = {
 const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => (
   <button
     onClick={onClick}
-    className="px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-2 text-white hover:text-white hover:bg-[#2A303C]/50 transition-all duration-200"
-    style={{ color: '#FFFFFF' }} // Explicitly enforce white text
+    className="px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-2 text-foreground hover:text-foreground hover:bg-background/50 transition-all duration-200"
+    style={{ color: cssColor('foreground') }} // Explicitly enforce white text
   >
     {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
       className: `w-5 h-5 ${getIconColor(label)}`,
       style: { transition: 'color 0.2s' }
     })}
-    <span className="text-white" style={{ color: '#FFFFFF' }}>{label}</span>
+    <span className="text-foreground" style={{ color: cssColor('foreground') }}>{label}</span>
   </button>
 );
 
 // Function to determine icon color based on label
 const getIconColor = (label: string): string => {
   switch (label.toLowerCase()) {
-    case 'description': return 'text-[#FF5252]'; // Red
-    case 'notes': return 'text-[#FF9800]'; // Orange
-    case 'whiteboard': return 'text-[#2196F3]'; // Blue
-    case 'solution': return 'text-[#FFCA28]'; // Yellow
-    case 'repcode ai': return 'text-[#FF5722]'; // Deep Orange
-    case 'edit': return 'text-[#FF9800]'; // Orange
-    case 'stats': return 'text-[#2196F3]'; // Blue
-    case 'run on leetcode': return 'text-[#4CAF50]'; // Green
-    default: return 'text-white'; // Default white
+    case 'description': return 'text-editor-icon-description'; // Red
+    case 'notes': return 'text-editor-icon-notes'; // Orange
+    case 'whiteboard': return 'text-editor-icon-tools'; // Blue
+    case 'solution': return 'text-editor-icon-solution'; // Yellow
+    case 'repcode ai': return 'text-editor-icon-ai'; // Deep Orange
+    case 'edit': return 'text-editor-icon-notes'; // Orange
+    case 'stats': return 'text-editor-icon-tools'; // Blue
+    case 'run on leetcode': return 'text-editor-icon-run'; // Green
+    default: return 'text-foreground'; // Default white
   }
 };
 
 const preBlockStyles = `
   .problem-content pre {
-    background-color: #343B4A !important;
-    border: 1px solid #3A4253 !important;
+    background-color: rgb(var(--surface)/1) !important;
+    border: 1px solid rgb(var(--border)/1) !important;
     border-radius: 6px !important;
     padding: 12px !important;
     margin: 12px 0 !important;
     overflow-x: auto !important;
-    color: #E2E8F0 !important;
+    color: rgb(var(--foreground-code-body)/1) !important;
   }
 
   .problem-content pre code {
-    color: #E2E8F0 !important;
+    color: rgb(var(--foreground-code-body)/1) !important;
     font-family: monospace !important;
   }
 
   /* Style for inline code elements (not inside pre) */
   .problem-content code:not(pre code) {
-    background-color: #3A4253 !important;
-    color: #FFFFFF !important;
+    background-color: rgb(var(--border)/1) !important;
+    color: rgb(var(--foreground)/1) !important;
     padding: 2px 5px !important;
     border-radius: 4px !important;
     font-family: monospace !important;
     font-size: 0.9em !important;
-    border: 1px solid #4A5267 !important;
+    border: 1px solid rgb(var(--border-strong)/1) !important;
   }
   .prose-invert {
-    color: #FFFFFF !important; /* Force white text for prose content */
+    color: rgb(var(--foreground)/1) !important; /* Force white text for prose content */
   }
   .prose-invert a {
-    color: #4CAF50 !important; /* Ensure links are green, not black */
+    color: rgb(var(--editor-link)/1) !important; /* Ensure links are green, not black */
   }
   /* Ensure AceEditor text is white */
   .ace_editor {
-    color: #FFFFFF !important;
+    color: rgb(var(--foreground)/1) !important;
   }
   .ace_cursor {
-    color: #FFFFFF !important;
+    color: rgb(var(--foreground)/1) !important;
   }
 
 `;
@@ -332,20 +333,20 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
       <div className="flex justify-center items-center h-[80vh]">
         <div className="relative flex flex-col items-center">
           {/* Outer glow effect */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] blur-xl opacity-20 animate-pulse"></div>
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start to-app-action-end blur-xl opacity-20 animate-pulse"></div>
           
           {/* Spinner container */}
           <div className="relative">
             {/* Gradient ring */}
             <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                           bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] opacity-20"></div>
+                           bg-gradient-to-r from-app-action-start to-app-action-end opacity-20"></div>
             
             {/* Spinning gradient arc */}
             <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
                            rounded-full animate-spin duration-1000" 
                  style={{
-                   borderTopColor: '#06b6d4',
-                   borderRightColor: '#3b82f6',
+                   borderTopColor: cssColor('app-action-start'),
+                   borderRightColor: cssColor('app-action-end'),
                    animationDuration: '1s'
                  }}>
             </div>
@@ -355,7 +356,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           </div>
           
           {/* Loading text with shimmer effect */}
-          <div className="mt-4 text-sm font-medium text-[#B0B7C3] relative overflow-hidden">
+          <div className="mt-4 text-sm font-medium text-muted-foreground relative overflow-hidden">
             <span>Loading</span>
             <span className="inline-flex overflow-hidden ml-1">
               <span className="animate-ellipsis">.</span>
@@ -370,11 +371,11 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
 
   const renderTabContent = () => {
     if (contentActive === 'notes')
-      return <p className="text-white mt-4 whitespace-pre-wrap text-lg wrap-text bg-base_100">{localProblem.notes}</p>;
+      return <p className="text-foreground mt-4 whitespace-pre-wrap text-lg wrap-text bg-background">{localProblem.notes}</p>;
     if (contentActive === 'question')
       return (
         <div
-          className="text-white mt-4 problem-content prose prose-invert max-w-none bg-base_100"
+          className="text-foreground mt-4 problem-content prose prose-invert max-w-none bg-background"
           dangerouslySetInnerHTML={{
             __html: sanitizeCodeBlocks(localProblem.question)
           }}
@@ -413,45 +414,45 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
       );
     if (contentActive === 'solution')
       return (
-        <pre className="wrap-text bg-base_100"><code className={`language-${localProblem.language} mr-5`}>{localProblem.solution}</code></pre>
+        <pre className="wrap-text bg-background"><code className={`language-${localProblem.language} mr-5`}>{localProblem.solution}</code></pre>
       );
     return null;
   };
 
   return (
-    <div className="h-screen bg-[#2A303C] flex flex-col">
+    <div className="h-screen bg-background flex flex-col">
       {/* Add the style tag to include the CSS */}
       <style>{preBlockStyles}</style>
 
       {/* Top Navigation */}
-      <div className="flex items-center justify-between px-6 h-16 border-b border-[#3A4253] bg-[#343B4A]" style={{ color: '#FFFFFF' }}>
+      <div className="flex items-center justify-between px-6 h-16 border-b border-border bg-surface" style={{ color: cssColor('foreground') }}>
         <div className="flex items-center">
           <button 
             onClick={handleGoBack} 
-            className="flex items-center text-white hover:text-[#2196F3] transition-colors mr-4" style={{ color: '#FFFFFF' }}>
+            className="flex items-center text-foreground hover:text-editor-icon-tools transition-colors mr-4" style={{ color: cssColor('foreground') }}>
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl font-semibold text-white mr-4" style={{ color: '#FFFFFF' }}>
+          <h1 className="text-2xl font-semibold text-foreground mr-4" style={{ color: cssColor('foreground') }}>
             {localProblem.name}
           </h1>
           <div className="flex gap-2">
             <Badge
               type="difficulty"
               value={localProblem.difficulty}
-              className="text-white text-sm py-1.5 px-4 bg-[#3A4253]"
+              className="text-foreground py-1.5 px-4"
             />
             <Badge
               type="problemType"
               value={localProblem.type}
-              className="text-white text-sm py-1.5 px-4 bg-[#3A4253]"
+              className="text-foreground py-1.5 px-4"
             />
           </div>
         </div>
-        <div className="flex items-center text-xs text-white" style={{ color: '#FFFFFF' }}>
+        <div className="flex items-center text-xs text-foreground" style={{ color: cssColor('foreground') }}>
           <Stopwatch resetKey={localProblem.id} />
           <div className="relative mr-2">
-            <div className="w-2.5 h-2.5 bg-review rounded-full"></div>
-            <div className="absolute inset-0 w-2.5 h-2.5 bg-[#00FF00] rounded-full opacity-70 animate-pulse" style={{ filter: "blur(1px)" }}></div>
+            <div className="w-2.5 h-2.5 bg-study-review rounded-full"></div>
+            <div className="absolute inset-0 w-2.5 h-2.5 bg-presence-online rounded-full opacity-70 animate-pulse" style={{ filter: "blur(1px)" }}></div>
           </div>
           <a
             href="/changelog"
@@ -467,15 +468,15 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
       {/* Main Content with Resizable Panels */}
       <div 
         className="flex-1 flex overflow-hidden" 
-        onMouseMove={handleMouseMove} style={{ color: '#FFFFFF' }}
+        onMouseMove={handleMouseMove} style={{ color: cssColor('foreground') }}
       >
         {/* Left Panel */}
         <div 
-          className="h-full overflow-auto bg-base_100" 
-          style={{ width: `${panelWidth}%`, color: '#FFFFFF' }}
+          className="h-full overflow-auto bg-background"
+          style={{ width: `${panelWidth}%`, color: cssColor('foreground') }}
         >
-          <div className="h-full border-r border-[#3A4253] bg-base_100 flex flex-col" style={{ color: '#FFFFFF' }}>
-            <div className="border-b border-[#3A4253] bg-base_100 sticky top-0 z-10 p-2" style={{ color: '#FFFFFF' }}>
+          <div className="h-full border-r border-border bg-background flex flex-col" style={{ color: cssColor('foreground') }}>
+            <div className="border-b border-border bg-background sticky top-0 z-10 p-2" style={{ color: cssColor('foreground') }}>
               <div className="flex items-center gap-1 px-2">
                 <TabButton 
                   active={contentActive === 'question'} 
@@ -510,8 +511,8 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                       px-3 py-2 text-sm font-medium rounded-full flex items-center gap-1.5
                       transition-all duration-200
                       ${isMoreMenuOpen || contentActive === 'ai-assistant'
-                        ? 'bg-[#3b82f6]/15 text-white' 
-                        : 'text-[#B0B7C3] hover:text-[#FFFFFF] hover:bg-[#2A303C]/50'}
+                        ? 'bg-app-action-end/15 text-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}
                     `}
                   >
                     <span>More</span>
@@ -520,7 +521,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                   
                   {/* Dropdown Menu */}
                   {isMoreMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-52 bg-[#2A303C] border border-[#3A4253] rounded-xl shadow-2xl overflow-hidden z-50">
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-50">
                       <div className="p-1.5">
                         {/* Repcode AI */}
                         <button
@@ -530,11 +531,11 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
                             contentActive === 'ai-assistant' 
-                              ? 'bg-[#3b82f6]/15 text-white' 
-                              : 'text-[#B0B7C3] hover:text-white hover:bg-[#343B4A]'
+                              ? 'bg-app-action-end/15 text-foreground'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-surface'
                           }`}
                         >
-                          <BotMessageSquare className="w-4 h-4 text-[#FF5722]" />
+                          <BotMessageSquare className="w-4 h-4 text-editor-icon-ai" />
                           <span className="text-sm font-medium">Repcode AI</span>
                         </button>
                         
@@ -544,9 +545,9 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                             setIsEditModalOpen(true);
                             setIsMoreMenuOpen(false);
                           }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
                         >
-                          <Edit3 className="w-4 h-4 text-[#FF9800]" />
+                          <Edit3 className="w-4 h-4 text-editor-icon-notes" />
                           <span className="text-sm font-medium">Edit</span>
                         </button>
                         
@@ -556,9 +557,9 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                             setIsStatsModalOpen(true);
                             setIsMoreMenuOpen(false);
                           }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
                         >
-                          <BarChart2 className="w-4 h-4 text-[#2196F3]" />
+                          <BarChart2 className="w-4 h-4 text-editor-icon-tools" />
                           <span className="text-sm font-medium">Stats</span>
                         </button>
                         
@@ -568,9 +569,9 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
                             window.open(localProblem.link, '_blank');
                             setIsMoreMenuOpen(false);
                           }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
                         >
-                          <ExternalLink className="w-4 h-4 text-[#4CAF50]" />
+                          <ExternalLink className="w-4 h-4 text-editor-icon-run" />
                           <span className="text-sm font-medium">Run on Leetcode</span>
                         </button>
                       </div>
@@ -580,14 +581,14 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               </div>
             </div>
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-4 bg-base_100" style={{ color: '#FFFFFF' }}>{renderTabContent()}</div>
+            <div className="flex-1 overflow-y-auto p-4 bg-background" style={{ color: cssColor('foreground') }}>{renderTabContent()}</div>
           </div>
         </div>
 
         {/* Resize Handle */}
         <div
           className={`
-            w-1 hover:w-2 bg-[#3A4253] cursor-col-resize relative group
+            w-1 hover:w-2 bg-border cursor-col-resize relative group
             transition-all duration-200
             ${isDragging ? 'w-2' : ''}
           `}
@@ -598,11 +599,11 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             absolute top-1/2 -translate-y-1/2 
             transition-all duration-200 opacity-0 
             group-hover:opacity-100">
-            <div className="bg-[#4A5267] rounded-md p-1 -ml-3">
-              <span className="material-icons text-[#B0B7C3]" style={{ fontSize: '16px' }}>chevron_left</span>
+            <div className="bg-border-strong rounded-md p-1 -ml-3">
+              <span className="material-icons text-muted-foreground" style={{ fontSize: '16px' }}>chevron_left</span>
             </div>
-            <div className="bg-[#4A5267] rounded-md p-1 -ml-3 mt-1">
-              <span className="material-icons text-[#B0B7C3]" style={{ fontSize: '16px' }}>chevron_right</span>
+            <div className="bg-border-strong rounded-md p-1 -ml-3 mt-1">
+              <span className="material-icons text-muted-foreground" style={{ fontSize: '16px' }}>chevron_right</span>
             </div>
           </div>
         </div>
@@ -643,7 +644,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
       <ReactTooltip
         id="my-tooltip-1"
         place="bottom"
-        style={{ backgroundColor: "#111111" }}
+        style={{ backgroundColor: cssColor('tooltip-background') }}
       />
       
       {/* Always render modals but control visibility with isOpen prop */}

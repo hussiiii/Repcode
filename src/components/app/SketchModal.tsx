@@ -2,6 +2,7 @@
 
 
 // import dynamic from 'next/dynamic';
+// import { canvasColor } from '@/lib/colors';
 // import React, { useState, useRef } from 'react';
 
 // // Dynamically import 'Stage', 'Layer', 'Line', 'Rect', and 'Group' components from Konva
@@ -117,39 +118,39 @@
 //   };
 
 //   return (
-//     <div className={`${isOpen ? '' : 'hidden'} fixed inset-0 bg-base_100 bg-opacity-50 flex items-center justify-center`}>
-//       <div className="relative w-[90%] max-w-4xl bg-white rounded-lg shadow-lg p-5">
-//         <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+//     <div className={`${isOpen ? '' : 'hidden'} fixed inset-0 bg-background bg-opacity-50 flex items-center justify-center`}>
+//       <div className="relative w-[90%] max-w-4xl bg-foreground rounded-lg shadow-lg p-5">
+//         <button onClick={onClose} className="absolute top-3 right-3 text-dimmed hover:text-foreground-strong-muted">
 //           Close
 //         </button>
 //         <div className="mb-4 flex justify-center">
 //           <button
 //             onClick={() => setTool('pen')}
-//             className={`px-4 py-2 mr-2 ${tool === 'pen' ? 'bg-blue-500 text-primary' : 'bg-gray-200 text-black'} rounded`}
+//             className={`px-4 py-2 mr-2 ${tool === 'pen' ? 'bg-app-action-end text-foreground' : 'bg-drawing-tool-inactive text-overlay'} rounded`}
 //           >
 //             Draw
 //           </button>
 //           <button
 //             onClick={() => setTool('eraser')}
-//             className={`px-4 py-2 mr-2 ${tool === 'eraser' ? 'bg-red-500 text-primary' : 'bg-gray-200 text-black'} rounded`}
+//             className={`px-4 py-2 mr-2 ${tool === 'eraser' ? 'bg-status-danger text-foreground' : 'bg-drawing-tool-inactive text-overlay'} rounded`}
 //           >
 //             Erase
 //           </button>
 //           <button
 //             onClick={() => setTool('select')}
-//             className={`px-4 py-2 ${tool === 'select' ? 'bg-green-500 text-primary' : 'bg-gray-200 text-black'} rounded`}
+//             className={`px-4 py-2 ${tool === 'select' ? 'bg-calendar-active text-foreground' : 'bg-drawing-tool-inactive text-overlay'} rounded`}
 //           >
 //             Select/Move
 //           </button>
 //         </div>
-//         <div className="border border-gray-300">
+//         <div className="border border-foreground-soft">
 //           <Stage
 //             width={800}
 //             height={600}
 //             onMouseDown={handleMouseDown}
 //             onMouseMove={handleMouseMove}
 //             onMouseUp={handleMouseUp}
-//             style={{ border: '1px solid black' }}
+//             style={{ border: '1px solid rgb(var(--drawing-ink-black))' }}
 //           >
 //             <Layer>
 //               {lines.map((line, i) => (
@@ -157,7 +158,7 @@
 //                   <Line
 //                     key={i}
 //                     points={line.points}
-//                     stroke={line.tool === 'pen' ? 'black' : 'white'}
+//                     stroke={line.tool === 'pen' ? canvasColor('drawing-ink-black') : canvasColor('drawing-surface')}
 //                     strokeWidth={line.tool === 'pen' ? 4 : 20}
 //                     tension={0.5}
 //                     lineCap="round"
@@ -176,7 +177,7 @@
 //                     <Line
 //                       key={i}
 //                       points={lines[i].points}
-//                       stroke={lines[i].tool === 'pen' ? 'black' : 'white'}
+//                       stroke={lines[i].tool === 'pen' ? canvasColor('drawing-ink-black') : canvasColor('drawing-surface')}
 //                       strokeWidth={lines[i].tool === 'pen' ? 4 : 20}
 //                       tension={0.5}
 //                       lineCap="round"
@@ -191,9 +192,9 @@
 //                   y={selectionBox.y}
 //                   width={selectionBox.width}
 //                   height={selectionBox.height}
-//                   stroke="blue"
+//                   stroke={canvasColor('drawing-ink-blue')}
 //                   dash={[4, 4]}
-//                   fill="rgba(0, 0, 255, 0.1)"
+//                   fill={canvasColor('drawing-ink-blue', 0.1)}
 //                 />
 //               )}
 //             </Layer>

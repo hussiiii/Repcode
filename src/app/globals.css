@@ -2,6 +2,316 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Fixed current palette. RGB channels support /opacity utilities. */
+    --background: 42 48 60;
+    --foreground: 255 255 255;
+    --muted-foreground: 176 183 195;
+    --foreground-inverse: 27 29 29;
+    --foreground-subtle: 165 169 174;
+    --foreground-faint: 74 74 74;
+    --foreground-placeholder: 138 148 166;
+    --foreground-dimmed: 107 114 128;
+    --overlay: 0 0 0;
+    --shadow-color: 0 0 0;
+    --placeholder-default: var(--foreground-quiet);
+    --ring-default: 59 130 246;
+    --ring-offset-default: 255 255 255;
+    --surface: 52 59 74;
+    --surface-raised: 58 58 59;
+    --surface-inset: 34 37 38;
+    --surface-navigation: 17 17 17;
+    --surface-hover: 27 27 27;
+    --surface-hover-alt: 41 41 41;
+    --surface-preview-hover: var(--border);
+    --border: 58 66 83;
+    --action: 37 99 235;
+    --action-foreground: var(--foreground);
+    --link: 121 173 220;
+    --brand-accent: 255 134 91;
+    --brand-accent-alt: 196 180 84;
+    --disabled-background: 36 39 40;
+    --disabled-foreground: 124 124 123;
+
+    /* Domain colors are separate from surfaces and text roles. */
+    --difficulty-easy: 52 191 143;
+    --difficulty-easy-background: 49 73 80;
+    --difficulty-medium: 246 144 60;
+    --difficulty-medium-background: 74 68 73;
+    --difficulty-hard: 251 113 133;
+    --difficulty-hard-background: 74 62 81;
+    --difficulty-easy-border: 41 108 98;
+    --difficulty-easy-hover: 134 207 172;
+    --difficulty-medium-border: 129 89 84;
+    --difficulty-medium-hover: 255 180 150;
+    --difficulty-hard-border: 125 62 85;
+    --difficulty-hard-hover: 253 164 175;
+    --study-new: 96 165 250;
+    --study-new-background: 58 73 96;
+    --study-learning: 250 204 21;
+    --study-review: 15 178 12;
+    --study-new-border: 57 90 121;
+    --study-new-hover: 147 197 253;
+    --study-learning-background: var(--status-warning-background);
+    --study-learning-border: 107 96 58;
+    --study-learning-hover: 254 240 138;
+    /* Review badges historically use the softer easy palette. */
+    --study-review-foreground: var(--difficulty-easy);
+    --study-review-background: var(--difficulty-easy-background);
+    --study-review-border: var(--difficulty-easy-border);
+    --study-review-hover: 167 243 208;
+    --badge-background: var(--border);
+    --status-success: 135 207 58;
+    --status-success-background: 57 71 35;
+    --status-error: 255 107 107;
+    --status-error-background: 58 42 42;
+    --status-error-border: 139 58 58;
+    --status-warning: 225 212 96;
+    --status-warning-background: 73 74 68;
+
+    /* Marketing roles stay independent of application actions and statuses. */
+    --marketing-action-start: 6 182 212;
+    --marketing-action-end: 59 130 246;
+    --marketing-action-hover-start: 8 145 178;
+    --marketing-action-hover-end: 37 99 235;
+    --marketing-action-foreground: var(--foreground);
+    --marketing-highlight: 34 211 238;
+    --marketing-highlight-secondary: 96 165 250;
+    --marketing-highlight-success: 74 222 128;
+    --marketing-highlight-insights: 167 139 250;
+    --marketing-welcome: 52 191 143;
+    --marketing-glow: var(--marketing-action-end);
+    --marketing-glow-secondary: var(--marketing-highlight);
+    --marketing-glow-insights: 168 85 247;
+    --marketing-feedback-success: 74 222 128;
+    --marketing-feedback-error: 248 113 113;
+    --marketing-feedback-warning: 250 204 21;
+    --marketing-streak: 248 113 113;
+    --marketing-link: 96 165 250;
+    --marketing-focus: 59 130 246;
+    --marketing-rating: 250 204 21;
+    --marketing-chart-start: 8 145 178;
+    --marketing-chart-end: 56 189 248;
+    --marketing-comparison-included: 58 179 87;
+    --marketing-comparison-excluded: 255 0 0;
+    --marketing-announcement: var(--overlay);
+    --marketing-navigation-border: 75 85 99;
+    --marketing-navigation-hover: 75 85 99;
+    --marketing-navigation-badge: 15 23 42;
+    --marketing-navigation-badge-foreground: 229 231 235;
+    --marketing-navigation-status: 16 185 129;
+
+    /* Code roles also cover the shared problem-description formatting. */
+    --code-background: 40 44 52;
+    --code-foreground: 212 212 212;
+    --code-comment: 106 153 85;
+    --code-keyword: 86 156 214;
+    --code-type: 78 201 176;
+    --code-function: 220 220 170;
+    --code-string: 206 145 120;
+    --code-number: 181 206 168;
+    --code-inline-background: 45 45 45;
+    --code-inline-foreground: 230 230 230;
+    --code-border: 64 64 64;
+
+    /* Application controls, editor, charts, providers, and drawing tools. */
+    --border-subtle: 58 65 80;
+    --border-strong: 74 82 103;
+    --surface-dialog-end: 37 43 56;
+    --surface-field: 30 35 44;
+    --surface-emphasis: 63 71 90;
+    --surface-ai-message: 30 36 48;
+    --surface-ai-input: 35 40 48;
+    --surface-report-bug: 35 43 58;
+    --surface-sidebar: 34 40 49;
+    --surface-profile: 30 30 32;
+    --surface-control-disabled: 90 98 112;
+    --foreground-control-disabled: 106 114 128;
+    --foreground-soft: 209 213 219;
+    --foreground-quiet: 156 163 175;
+    --foreground-code-body: 226 232 240;
+    --foreground-nearwhite: 250 250 250;
+    --foreground-strong-muted: 55 65 81;
+    --app-action-start: 6 182 212;
+    --app-action-end: 59 130 246;
+    --app-action-hover-start: 8 145 178;
+    --app-action-hover-end: 37 99 235;
+    --app-action-dialog-hover-start: 14 165 196;
+    --app-action-dialog-hover-end: 45 116 231;
+    --app-highlight: 96 165 250;
+    --app-link-soft: 147 197 253;
+    --app-glow: 59 130 246;
+    --tooltip-background: 17 17 17;
+    --surface-video: 17 17 17;
+    --status-import-error-background: 74 62 81;
+    --status-danger: 239 68 68;
+    --status-danger-soft: 248 113 113;
+    --status-danger-hover: 220 38 38;
+    --status-attention: 250 204 21;
+    --status-critical: 244 63 94;
+    --status-critical-foreground: 253 164 175;
+    --status-gold: 255 215 0;
+    --status-reminder: 255 153 153;
+    --presence-online: 0 255 0;
+    --editor-icon-description: 255 82 82;
+    --editor-icon-notes: 255 152 0;
+    --editor-icon-tools: 33 150 243;
+    --editor-icon-solution: 255 202 40;
+    --editor-icon-ai: 255 87 34;
+    --editor-icon-run: 76 175 80;
+    --editor-link: 76 175 80;
+    --feedback-hard-label: 246 144 60;
+    --feedback-easy-label: 37 99 235;
+    --feedback-hard: 255 169 77;
+    --feedback-hard-border: 140 94 42;
+    --feedback-hard-background: 58 51 42;
+    --feedback-good: 105 219 124;
+    --feedback-good-label: 52 191 143;
+    --feedback-good-border: 45 106 57;
+    --feedback-good-background: 42 58 46;
+    --feedback-easy: 116 192 252;
+    --feedback-easy-border: 42 90 140;
+    --feedback-easy-background: 32 44 58;
+    --feedback-again-chart: 255 57 95;
+    --feedback-hard-chart: 255 191 26;
+    --feedback-easy-chart: 89 255 0;
+    --reminder-start: 245 158 11;
+    --reminder-end: 249 115 22;
+    --reminder-hover-start: 217 119 6;
+    --reminder-hover-end: 234 88 12;
+    --settings-lapses: 245 158 11;
+    --settings-advanced: 16 185 129;
+    --settings-api: 139 92 246;
+    --metric-total: 99 102 241;
+    --metric-total-foreground: 129 140 248;
+    --metric-due: 6 182 212;
+    --metric-due-foreground: 34 211 238;
+    --metric-streak: 34 197 94;
+    --metric-streak-foreground: 74 222 128;
+    --calendar-active: 34 197 94;
+    --calendar-inactive: 58 65 80;
+    --calendar-hover: 74 81 96;
+    --calendar-offset: 36 39 42;
+    --calendar-legacy-low: 22 102 52;
+    --calendar-legacy-medium: 47 154 95;
+    --calendar-legacy-high: 26 88 46;
+    --chart-tooltip: 30 30 30;
+    --chart-legend: 189 189 189;
+    --chart-grid: 255 255 255;
+    --chart-tick: 176 183 195;
+    --chart-tick-soft: 209 213 219;
+    --chart-due: 56 189 248;
+    --chart-loading: 55 176 231;
+    --chart-series-blue: 59 130 246;
+    --chart-series-cyan: 6 182 212;
+    --chart-series-red: 239 68 68;
+    --chart-series-orange: 249 115 22;
+    --chart-series-yellow: 234 179 8;
+    --chart-series-green: 34 197 94;
+    --chart-series-indigo: 99 102 241;
+    --chart-series-emerald: 52 211 153;
+    --chart-series-violet: 139 92 246;
+    --chart-series-pink: 236 72 153;
+    --chart-series-amber: 251 191 36;
+    --chart-series-purple: 168 85 247;
+    --chart-series-lavender: 167 139 250;
+    --chart-series-red-soft: 248 113 113;
+    --drawing-surface: 255 255 255;
+    --drawing-ink-black: 0 0 0;
+    --drawing-ink-red: 255 0 0;
+    --drawing-ink-lime: 0 255 0;
+    --drawing-ink-blue: 0 0 255;
+    --drawing-ink-yellow: 255 255 0;
+    --drawing-ink-magenta: 255 0 255;
+    --drawing-ink-cyan: 0 255 255;
+    --drawing-ink-orange: 255 165 0;
+    --drawing-ink-purple: 128 0 128;
+    --drawing-ink-green: 0 128 0;
+    --drawing-selection: 0 102 255;
+    --drawing-legacy-selection: 0 0 255;
+    --drawing-tool-inactive: 229 231 235;
+    --provider-google-blue: 66 133 244;
+    --provider-google-green: 52 168 83;
+    --provider-google-yellow: 251 188 5;
+    --provider-google-red: 235 67 53;
+    --warning-banner: 255 165 0;
+    --media-shadow: 255 165 0;
+    --animated-surface-start: 51 34 17;
+    --animated-surface-top: 51 32 0;
+    --animated-surface-middle: 51 34 0;
+    --animated-surface-end: 51 42 17;
+    --animated-border: 255 128 0;
+    --chart-collection-hue-offset: 200;
+    --chart-collection-saturation: 70%;
+    --chart-collection-lightness: 60%;
+
+    /* Library syntax themes, route progress, and shared button roles. */
+    --syntax-bracket: 116 115 105;
+    --syntax-background: 40 44 52;
+    --syntax-foreground: 171 178 191;
+    --syntax-gutter: 106 111 122;
+    --syntax-print-margin: 232 232 232;
+    --syntax-cursor: 82 139 255;
+    --syntax-selection: 61 67 80;
+    --syntax-step: 198 219 174;
+    --syntax-function: 97 175 239;
+    --syntax-keyword: 198 120 221;
+    --syntax-number: 209 154 102;
+    --syntax-literal: 86 182 194;
+    --syntax-class: 229 192 123;
+    --syntax-invalid-foreground: 255 255 255;
+    --syntax-invalid-background: 242 119 122;
+    --syntax-deprecated-foreground: 39 43 51;
+    --syntax-deprecated-background: 210 123 83;
+    --syntax-string: 152 195 121;
+    --syntax-variable: 224 108 117;
+    --syntax-comment: 92 99 112;
+    --highlight-keyword: 249 38 114;
+    --highlight-function: 97 174 238;
+    --highlight-parameter: 166 226 46;
+    --highlight-typing: 253 151 31;
+    --highlight-module: 126 87 194;
+    --highlight-constructor: 226 185 61;
+    --highlight-constructor-string: 156 204 101;
+    --highlight-comment: 177 142 177;
+    --highlight-class: 230 192 123;
+    --syntax-active-line: 76 87 103;
+    --progress: 34 153 221;
+    --button-background: var(--foreground);
+    --button-foreground: var(--background);
+    --button-secondary-background: var(--muted-foreground);
+    --button-secondary-foreground: var(--background);
+
+    /* React Tooltip's installed defaults, kept independent of app status colors. */
+    --tooltip-foreground: 255 255 255;
+    --tooltip-default-background: 34 34 34;
+    --tooltip-success: 141 197 114;
+    --tooltip-error: 190 100 100;
+    --tooltip-warning: 240 173 78;
+    --tooltip-info: 51 122 183;
+
+    /* Shared component roles, retaining legacy primary/secondary meanings. */
+    --primary: var(--foreground);
+    --primary-foreground: var(--background);
+    --secondary: var(--muted-foreground);
+    --secondary-foreground: var(--background);
+    --muted: var(--surface);
+    --accent: var(--surface-hover-alt);
+    --accent-foreground: var(--foreground);
+    --destructive: var(--status-error);
+    --destructive-foreground: var(--background);
+    --input: var(--border);
+    --ring: var(--action);
+  }
+
+  /* Preserve Tailwind's original default placeholder shade through the palette. */
+  input::placeholder,
+  textarea::placeholder {
+    color: rgb(var(--placeholder-default));
+  }
+}
+
 
 /* Prevent weird white right side on pages when screen is too small */
 body {
@@ -47,21 +357,6 @@ body {
     animation: slideDown 0.5s ease-out forwards;
   }
 
-  @keyframes slideInLeft {
-    from {
-      transform: translateX(-50%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0%);
-      opacity: 1;
-    }
-  }
-  
-  .hs-dropdown-enter {
-    animation: slideInLeft 0.5s ease-out forwards;
-  }
-
   @keyframes toastEnter {
     from {
       transform: translateY(100%); /* Start from off-screen bottom */
@@ -93,36 +388,6 @@ body {
   
   .modalBounceFadeIn {
     animation: bounceFadeIn 0.5s ease-out forwards;
-  }
-
-  /* Slide down/up animation for accordion */
-  .accordion-content {
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.5s ease, opacity 0.3s ease;
-    opacity: 0;
-  }
-
-  .accordion-open {
-    opacity: 1;
-    transition: max-height 0.5s ease, opacity 0.3s ease;
-  }
-
-  .accordion-closed {
-    opacity: 0;
-  }
-
-  /* Style changes for open accordion */
-  button.accordion-open {
-    background-color: #ffffff;
-    color: #000000;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  button.accordion-closed {
-    background-color: #101010;
-    color: #E1E1E1;
-    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* Slide in from left */
@@ -213,20 +478,16 @@ body {
   border-radius: 4px;
 }
 
-.bg-grey {
-  background-color: #222526;
-}
-
 .bg-light-green {
-  background-color: #166634;
+  background-color: rgb(var(--calendar-legacy-low)/1);
 }
 
 .bg-medium-green {
-  background-color: #2F9A5F;
+  background-color: rgb(var(--calendar-legacy-medium)/1);
 }
 
 .bg-dark-green {
-  background-color: #1A582E;
+  background-color: rgb(var(--calendar-legacy-high)/1);
 }
 
 /* Legend styles */
@@ -260,18 +521,18 @@ body {
   .animated-button {
     display: grid;
     place-content: center;
-    color: white;
-    text-shadow: 0 1px 0 #000;
+    color: rgb(var(--foreground));
+    text-shadow: 0 1px 0 rgb(var(--overlay)/1);
     --border-angle: 0turn; /* For animation. */
     --main-bg: conic-gradient(from var(--border-angle),
-            rgb(51, 34, 17),
-            rgb(51, 32, 0) 5%,
-            rgb(51, 34, 0) 60%,
-            rgb(51, 42, 17) 95%);
+            rgb(var(--animated-surface-start)/1),
+            rgb(var(--animated-surface-top)/1) 5%,
+            rgb(var(--animated-surface-middle)/1) 60%,
+            rgb(var(--animated-surface-end)/1) 95%);
     border: solid 2px transparent;
     --gradient-border: conic-gradient(from var(--border-angle),
             transparent 25%,
-            rgb(255, 128, 0),
+            rgb(var(--animated-border)/1),
             transparent 99%,
             transparent);
     background:
@@ -297,8 +558,8 @@ body {
 
   /* shadow for main video on homepage */
   .shadow-orange {
-    box-shadow: 0 4px 8px rgba(255, 165, 0, 0.3), 
-                0 6px 20px rgba(255, 165, 0, 0.3);
+    box-shadow: 0 4px 8px rgb(var(--media-shadow)/0.3),
+                0 6px 20px rgb(var(--media-shadow)/0.3);
   }
 
   /* rounded corners for collection cards */
@@ -325,13 +586,13 @@ body {
   }
 
   .problem-content code {
-    background-color: #2d2d2d;
-    color: #e6e6e6;
+    background-color: rgb(var(--code-inline-background));
+    color: rgb(var(--code-inline-foreground));
     padding: 2px 6px;
     border-radius: 4px;
     font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
     font-size: 0.95em;
-    border: 1px solid #404040;
+    border: 1px solid rgb(var(--code-border));
   }
   
   .problem-content pre code {
@@ -342,11 +603,11 @@ body {
   }
   
   .problem-content pre {
-    background-color: #2d2d2d;
+    background-color: rgb(var(--code-inline-background));
     padding: 16px;
     border-radius: 8px;
     overflow-x: auto;  /* Allow horizontal scroll for long code blocks */
-    border: 1px solid #404040;
+    border: 1px solid rgb(var(--code-border));
     white-space: pre-wrap; /* Allow text wrapping in pre blocks */
     word-break: break-word; /* Break long words if needed */
     max-width: 100%;  /* Prevent pre blocks from expanding container */
@@ -359,8 +620,8 @@ body {
   
 
 .warning-banner {
-  background-color: rgba(255, 165, 0, 0.1);
-  border-left: 4px solid #ffa500;
+  background-color: rgb(var(--warning-banner)/0.1);
+  border-left: 4px solid rgb(var(--warning-banner)/1);
   padding: 16px;
   margin-bottom: 16px;
   border-radius: 4px;
@@ -370,7 +631,7 @@ body {
 }
 
 .warning-banner .material-icons {
-  color: #ffa500;
+  color: rgb(var(--warning-banner)/1);
   flex-shrink: 0;
 }
   

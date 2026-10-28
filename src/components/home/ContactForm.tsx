@@ -47,23 +47,23 @@ const ContactForm = () => {
     <div className="max-w-4xl mx-auto">
       <div className="max-w-xl mx-auto">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-primary sm:text-4xl mb-4">
+          <h1 className="text-3xl font-bold text-foreground sm:text-4xl mb-4">
             Contact us
           </h1>
-          <p className="text-[#B0B7C3] mb-2">
+          <p className="text-muted-foreground mb-2">
             Questions? Bugs? Want to contribute? Let us know!
           </p>
-          <p className="text-[#B0B7C3]">
+          <p className="text-muted-foreground">
             Email repcode.io@gmail.com, or fill out the form below.
           </p>
         </div>
       </div>
 
       <div className="mt-12 max-w-lg mx-auto">
-        <div className="bg-[#2A303C] rounded-xl border border-[#3A4253] shadow-lg overflow-hidden p-6">
+        <div className="bg-background rounded-xl border border-border shadow-lg overflow-hidden p-6">
           {state.succeeded ? (
-            <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-lg p-4 mb-6">
-              <p className="text-[#4ade80] flex items-center">
+            <div className="bg-marketing-feedback-success/10 border border-marketing-feedback-success/30 rounded-lg p-4 mb-6">
+              <p className="text-marketing-feedback-success flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
@@ -81,8 +81,8 @@ const ContactForm = () => {
               </p>
             </div>
           ) : state.errors ? (
-            <div className="bg-[#f87171]/10 border border-[#f87171]/30 rounded-lg p-4 mb-6">
-              <p className="text-[#f87171] flex items-center">
+            <div className="bg-marketing-feedback-error/10 border border-marketing-feedback-error/30 rounded-lg p-4 mb-6">
+              <p className="text-marketing-feedback-error flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
@@ -105,7 +105,7 @@ const ContactForm = () => {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label htmlFor="firstname" className="block text-[#B0B7C3] text-sm font-medium mb-2">
+                <label htmlFor="firstname" className="block text-muted-foreground text-sm font-medium mb-2">
                   First Name
                 </label>
                 <input
@@ -115,12 +115,12 @@ const ContactForm = () => {
                   value={formData.firstname}
                   onChange={handleChange}
                   required
-                  className="w-full bg-[#343B4A] border border-[#3A4253] rounded-lg px-4 py-2.5 text-primary placeholder-[#8A94A6] focus:outline-none focus:border-[#3b82f6] transition-colors"
+                  className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-placeholder focus:outline-none focus:border-marketing-focus transition-colors"
                   placeholder="First name"
                 />
               </div>
               <div>
-                <label htmlFor="lastname" className="block text-[#B0B7C3] text-sm font-medium mb-2">
+                <label htmlFor="lastname" className="block text-muted-foreground text-sm font-medium mb-2">
                   Last Name
                 </label>
                 <input
@@ -130,14 +130,14 @@ const ContactForm = () => {
                   value={formData.lastname}
                   onChange={handleChange}
                   required
-                  className="w-full bg-[#343B4A] border border-[#3A4253] rounded-lg px-4 py-2.5 text-primary placeholder-[#8A94A6] focus:outline-none focus:border-[#3b82f6] transition-colors"
+                  className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-placeholder focus:outline-none focus:border-marketing-focus transition-colors"
                   placeholder="Last name"
                 />
               </div>
             </div>
 
             <div className="mb-6">
-              <label htmlFor="email" className="block text-[#B0B7C3] text-sm font-medium mb-2">
+              <label htmlFor="email" className="block text-muted-foreground text-sm font-medium mb-2">
                 Email
               </label>
               <input
@@ -147,13 +147,13 @@ const ContactForm = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full bg-[#343B4A] border border-[#3A4253] rounded-lg px-4 py-2.5 text-primary placeholder-[#8A94A6] focus:outline-none focus:border-[#3b82f6] transition-colors"
+                className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-placeholder focus:outline-none focus:border-marketing-focus transition-colors"
                 placeholder="your.email@example.com"
               />
             </div>
 
             <div className="mb-6">
-              <label htmlFor="details" className="block text-[#B0B7C3] text-sm font-medium mb-2">
+              <label htmlFor="details" className="block text-muted-foreground text-sm font-medium mb-2">
                 Details
               </label>
               <textarea
@@ -163,7 +163,7 @@ const ContactForm = () => {
                 onChange={handleChange}
                 required
                 rows={5}
-                className="w-full bg-[#343B4A] border border-[#3A4253] rounded-lg px-4 py-2.5 text-primary placeholder-[#8A94A6] focus:outline-none focus:border-[#3b82f6] transition-colors"
+                className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-placeholder focus:outline-none focus:border-marketing-focus transition-colors"
                 placeholder="Your message..."
               ></textarea>
             </div>
@@ -171,12 +171,12 @@ const ContactForm = () => {
             <button
               type="submit"
               disabled={state.submitting}
-              className="w-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0891b2] hover:to-[#2563eb] text-primary py-3 px-4 rounded-lg font-medium transition-all duration-200 shadow-lg shadow-[0_4px_14px_0_rgba(59,130,246,0.2)] hover:shadow-[0_4px_14px_0_rgba(59,130,246,0.3)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full bg-gradient-to-r from-marketing-action-start to-marketing-action-end hover:from-marketing-action-hover-start hover:to-marketing-action-hover-end text-marketing-action-foreground py-3 px-4 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-marketing-action-hover disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {state.submitting ? (
                 <>
                   <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-foreground"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -196,7 +196,7 @@ const ContactForm = () => {
             </button>
             
             <div className="mt-3 text-center">
-              <p className="text-sm text-[#B0B7C3]">
+              <p className="text-sm text-muted-foreground">
                 We will get back to you in 1-2 business days.
               </p>
             </div>

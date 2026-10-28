@@ -5,9 +5,9 @@ import "../app/globals.css";
 
 export default function Terms() {
     return (
-        <div className="flex flex-col min-h-screen bg-base_100">
+        <div className="flex flex-col min-h-screen bg-background">
             <NavBar />
-            <main className="flex-grow flex flex-col items-center justify-center px-4 py-8 text-primary">
+            <main className="flex-grow flex flex-col items-center justify-center px-4 py-8 text-foreground">
                 <h1 className="text-4xl font-bold text-center mb-8">Terms</h1>
                 <div className="max-w-4xl text-center space-y-6">
                     <h2 className="text-2xl font-semibold mt-8">Terms</h2>

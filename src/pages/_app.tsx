@@ -6,7 +6,9 @@ import { SidebarProvider } from '../auth/SidebarContext';
 import { loadStripe } from '@stripe/stripe-js';
 import Router from 'next/router';
 import NProgress from 'nprogress';
-import 'nprogress/nprogress.css'; 
+import '../app/globals.css';
+import 'nprogress/nprogress.css';
+import '../styles/vendor-colors.css';
 import { Analytics } from '@vercel/analytics/react'; 
 import { Inter } from 'next/font/google'; 
 

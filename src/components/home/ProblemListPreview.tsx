@@ -14,26 +14,26 @@ const ProblemListPreview = () => {
 
   return (
     <div className="p-6 overflow-hidden">
-      <div className="py-5 border-b border-[#3A4253] flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-primary">Algorithm Problems</h2>
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#2A303C] text-[#B0B7C3]">
+      <div className="py-5 border-b border-border flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-foreground">Algorithm Problems</h2>
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-background text-muted-foreground">
           {problems.length} problems
         </span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[#3A4253]">
-              <th className="text-left py-4 text-[#B0B7C3] font-medium text-sm">Problem Name</th>
-              <th className="text-right py-4 text-[#B0B7C3] font-medium text-sm">Difficulty</th>
-              <th className="text-right py-4 text-[#B0B7C3] font-medium text-sm">Type</th>
+            <tr className="border-b border-border">
+              <th className="text-left py-4 text-muted-foreground font-medium text-sm">Problem Name</th>
+              <th className="text-right py-4 text-muted-foreground font-medium text-sm">Difficulty</th>
+              <th className="text-right py-4 text-muted-foreground font-medium text-sm">Type</th>
             </tr>
           </thead>
           <tbody>
             {problems.map((problem) => (
-              <tr key={problem.id} className="border-b border-[#3A4253] hover:bg-[#3A4253]/50 transition-colors">
+              <tr key={problem.id} className="border-b border-border hover:bg-surface-preview-hover/50 transition-colors">
                 <td className="py-4">
-                  <span className="font-medium text-primary hover:text-[#60a5fa] transition-colors cursor-pointer">
+                  <span className="font-medium text-foreground hover:text-marketing-link transition-colors cursor-pointer">
                     {problem.name}
                   </span>
                 </td>

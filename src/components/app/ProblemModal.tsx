@@ -1,3 +1,4 @@
+import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useContext } from 'react';
 import { auth } from '../../firebaseConfig';
@@ -198,7 +199,7 @@ const ProblemModal = ({
 
         showToast?.(
           <>
-            <span className="inline-block mr-2 bg-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
+            <span className="inline-block mr-2 bg-status-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
             {isEditMode ? 'Problem updated successfully' : 'Problem created successfully'}
           </>
         );
@@ -208,7 +209,7 @@ const ProblemModal = ({
         console.error('Failed to submit problem:', error);
         showToast?.(
           <>
-            <span className="inline-block mr-2 bg-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
+            <span className="inline-block mr-2 bg-status-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
             {error.message}
           </>
         );
@@ -240,7 +241,7 @@ const ProblemModal = ({
 
         showToast?.(
           <>
-            <span className="inline-block mr-2 bg-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
+            <span className="inline-block mr-2 bg-status-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
             Problem autofilled successfully
           </>
         );
@@ -259,7 +260,7 @@ const ProblemModal = ({
     if (!theUser?.hasApiKey) {
       showToast?.(
         <>
-          <span className="inline-block mr-2 bg-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
+          <span className="inline-block mr-2 bg-status-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
           Please add your OpenAI API key in settings first
         </>
       );
@@ -269,7 +270,7 @@ const ProblemModal = ({
     if (!question.trim()) {
       showToast?.(
         <>
-          <span className="inline-block mr-2 bg-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
+          <span className="inline-block mr-2 bg-status-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
           Please enter a question first
         </>
       );
@@ -323,7 +324,7 @@ const ProblemModal = ({
 
       showToast?.(
         <>
-          <span className="inline-block mr-2 bg-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
+          <span className="inline-block mr-2 bg-status-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
           Solution generated successfully
         </>
       );
@@ -331,7 +332,7 @@ const ProblemModal = ({
       console.error('Error generating solution:', error);
       showToast?.(
         <>
-          <span className="inline-block mr-2 bg-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
+          <span className="inline-block mr-2 bg-status-error rounded-full" style={{ width: '10px', height: '10px' }}></span>
           Failed to generate solution. Please try again.
         </>
       );
@@ -374,7 +375,7 @@ const ProblemModal = ({
       {/* Backdrop */}
       <div
         className={`
-          fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-all duration-300 
+          fixed inset-0 bg-overlay/60 backdrop-blur-sm z-50 transition-all duration-300
           ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
         `}
         onClick={onClose}
@@ -384,21 +385,21 @@ const ProblemModal = ({
       <div
         className={`
           fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl rounded-xl 
-          shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-500 
-          bg-gradient-to-b from-[#2A303C] to-[#252B38] border border-[#3A4150]/50 
-          text-primary overflow-hidden max-h-[90vh] flex flex-col
+          shadow-[0_10px_40px_rgb(var(--overlay)/0.3)] transition-all duration-500
+          bg-gradient-to-b from-background to-surface-dialog-end border border-border-subtle/50
+          text-foreground overflow-hidden max-h-[90vh] flex flex-col
           ${isOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}
         `}
         onClick={(e) => e.stopPropagation()} 
       >
         {/* Top accent line */}
-        <div className="h-1 w-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6]" />
+        <div className="h-1 w-full bg-gradient-to-r from-app-action-start to-app-action-end" />
 
         <div className="p-6 relative overflow-y-auto">
           {/* Header with close button and curved gradient line */}
           <div className="flex items-center justify-between mb-6 relative z-10">
             <div className="flex items-center">
-              <h2 className="text-xl font-semibold tracking-tight text-primary">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
                 {isEditMode ? 'Edit Problem' : 'Add New Problem'}
               </h2>
               
@@ -415,8 +416,8 @@ const ProblemModal = ({
                   <path d="M0 10C80 20 180 0 400 10" stroke="url(#blueGradient)" strokeWidth="1.5" strokeLinecap="round" />
                   <defs>
                     <linearGradient id="blueGradient" x1="0" y1="10" x2="400" y2="10" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#06b6d4" />
-                      <stop offset="1" stopColor="#3b82f6" />
+                      <stop stopColor={cssColor('app-action-start')} />
+                      <stop offset="1" stopColor={cssColor('app-action-end')} />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -425,7 +426,7 @@ const ProblemModal = ({
             
             <button
               onClick={onClose}
-              className="h-8 w-8 rounded-full hover:bg-[#3A4150]/70 transition-colors duration-200 flex items-center justify-center"
+              className="h-8 w-8 rounded-full hover:bg-border-subtle/70 transition-colors duration-200 flex items-center justify-center"
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -442,9 +443,9 @@ const ProblemModal = ({
 
           <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
             {/* QUICK IMPORT SECTION */}
-            <div className="p-4 rounded-lg bg-[#343B4A]/50">
-              <h3 className="text-lg font-semibold text-primary mb-2 text-center">Quick Import</h3>
-              <p className="text-gray-300 text-sm mb-4 text-center">
+            <div className="p-4 rounded-lg bg-surface/50">
+              <h3 className="text-lg font-semibold text-foreground mb-2 text-center">Quick Import</h3>
+              <p className="text-foreground-soft text-sm mb-4 text-center">
                 Enter a Leetcode problem number to automatically fill out the details
               </p>
 
@@ -455,15 +456,15 @@ const ProblemModal = ({
                     type="text"
                     value={problemNumber}
                     onChange={(e) => setProblemNumber(e.target.value)}
-                    className="w-36 px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 rounded-md shadow-sm 
-                               outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 
-                               transition-colors duration-75 text-primary h-11 text-center"
+                    className="w-36 px-3 py-2 bg-surface-field border border-border-subtle/70 rounded-md shadow-sm
+                               outline-none focus:outline-none focus:border-app-action-start/70 focus:ring-1 focus:ring-app-action-end/50
+                               transition-colors duration-75 text-foreground h-11 text-center"
                     placeholder="e.g. 1337"
                   />
-                  <div className="absolute inset-0 rounded-md border border-[#3b82f6]/0 
-                                  group-focus-within:border-[#3b82f6]/30 pointer-events-none 
-                                  transition-all duration-75 shadow-[0_0_0_0_rgba(59,130,246,0)]
-                                  group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"
+                  <div className="absolute inset-0 rounded-md border border-app-action-end/0
+                                  group-focus-within:border-app-action-end/30 pointer-events-none
+                                  transition-all duration-75 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)]
+                                  group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"
                   />
                 </div>
 
@@ -473,7 +474,7 @@ const ProblemModal = ({
                   onClick={handleAutofill}
                   disabled={isAutofilling}
                   className={`
-                    relative overflow-hidden bg-[#FAFAFA] text-neutral px-6 py-2 rounded-md 
+                    relative overflow-hidden bg-foreground-nearwhite text-inverse px-6 py-2 rounded-md
                     transition duration-200 border border-transparent
                     hover:opacity-90
                     ${isAutofilling ? 'opacity-50 cursor-not-allowed' : ''}
@@ -482,7 +483,7 @@ const ProblemModal = ({
                   {isAutofilling ? (
                     <div className="flex items-center gap-2">
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-neutral inline-block"
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-inverse inline-block"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -509,20 +510,20 @@ const ProblemModal = ({
                       Autofill
                     </div>
                   )}
-                  <span className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-10 transition-opacity duration-300" />
+                  <span className="absolute inset-0 bg-overlay/10 opacity-0 hover:opacity-10 transition-opacity duration-300" />
                 </button>
               </div>
             </div>
 
             {/* MANUAL ENTRY SECTION */}
-            <div className="bg-[#343B4A]/50 p-4 rounded-lg border border-[#3A4150]/30">
+            <div className="bg-surface/50 p-4 rounded-lg border border-border-subtle/30">
               <div
                 onClick={() => setIsManualEntryOpen(!isManualEntryOpen)}
-                className="p-2 rounded-md hover:bg-[#3A4150]/50 cursor-pointer transition-colors duration-200 flex items-center justify-between"
+                className="p-2 rounded-md hover:bg-border-subtle/50 cursor-pointer transition-colors duration-200 flex items-center justify-between"
               >
-                <span className="text-lg font-semibold text-primary">Manual Entry</span>
+                <span className="text-lg font-semibold text-foreground">Manual Entry</span>
                 <span
-                  className={`material-icons transition-transform duration-300 text-secondary ${
+                  className={`material-icons transition-transform duration-300 text-muted-foreground ${
                     isManualEntryOpen ? 'rotate-180' : ''
                   }`}
                 >
@@ -539,45 +540,45 @@ const ProblemModal = ({
                 <div className="space-y-4">
                   {/* NAME */}
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 flex items-center">
-                      Name <span className="ml-1 text-error">*</span>
+                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                      Name <span className="ml-1 text-status-error">*</span>
                     </label>
                     <div className="relative group">
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 
-                                   focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
-                                   text-primary h-11"
+                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
+                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
+                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
+                                   text-foreground h-11"
                         placeholder="Enter the name of the problem"
                       />
-                      <div className="absolute inset-0 rounded-md border border-[#3b82f6]/0 
-                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none 
-                                      transition-all duration-75 shadow-[0_0_0_0_rgba(59,130,246,0)]
-                                      group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"
+                      <div className="absolute inset-0 rounded-md border border-app-action-end/0
+                                      group-focus-within:border-app-action-end/30 pointer-events-none
+                                      transition-all duration-75 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)]
+                                      group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"
                       />
                     </div>
                   </div>
 
                   {/* QUESTION */}
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 flex items-center">
-                      Question <span className="ml-1 text-error">*</span>
+                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                      Question <span className="ml-1 text-status-error">*</span>
                     </label>
                     <div className="relative group">
                       <textarea
                         value={question}
                         onChange={(e) => setQuestion(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 
-                                   focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
-                                   text-primary min-h-[8rem] resize-y"
+                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
+                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
+                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
+                                   text-foreground min-h-[8rem] resize-y"
                         placeholder={`Copy/paste the actual question here. Use HTML tags (<code>, <pre>, <p>, etc.) if needed.`}
                       />
                       <div className="absolute inset-0 rounded-md 
-                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none 
+                                      group-focus-within:border-app-action-end/30 pointer-events-none
                                       transition-all duration-75"
                       />
                     </div>
@@ -586,8 +587,8 @@ const ProblemModal = ({
                   {/* SOLUTION */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-300 flex items-center">
-                        Solution <span className="ml-1 text-error">*</span>
+                      <label className="text-sm font-medium text-foreground-soft flex items-center">
+                        Solution <span className="ml-1 text-status-error">*</span>
                       </label>
                       <button
                         type="button"
@@ -597,14 +598,14 @@ const ProblemModal = ({
                           flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium
                           transition-all duration-200
                           ${isGeneratingSolution || !question.trim()
-                            ? 'bg-[#3A4150]/50 text-gray-400 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white hover:from-[#0ea5c4] hover:to-[#2d74e7]'
+                            ? 'bg-border-subtle/50 text-foreground-quiet cursor-not-allowed'
+                            : 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground hover:from-app-action-dialog-hover-start hover:to-app-action-dialog-hover-end'
                           }
                         `}
                       >
                         {isGeneratingSolution ? (
                           <>
-                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-3 h-3 border-2 border-foreground border-t-transparent rounded-full animate-spin"></div>
                             <span>Generating...</span>
                           </>
                         ) : (
@@ -619,14 +620,14 @@ const ProblemModal = ({
                       <textarea
                         value={solution}
                         onChange={(e) => setSolution(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70
-                                   focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
-                                   text-primary min-h-[12rem] resize-y"
+                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
+                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
+                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
+                                   text-foreground min-h-[12rem] resize-y"
                         placeholder="Copy/paste the solution here (syntax highlighting is applied after creation)."
                       />
                       <div className="absolute inset-0 rounded-md
-                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none
+                                      group-focus-within:border-app-action-end/30 pointer-events-none
                                       transition-all duration-75"
                       />
                     </div>
@@ -634,21 +635,21 @@ const ProblemModal = ({
 
                   {/* FUNCTION SIGNATURE */}
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 flex items-center">
+                    <label className="text-sm font-medium text-foreground-soft flex items-center">
                       Function Signature
                     </label>
                     <div className="relative group">
                       <textarea
                         value={functionSignature}
                         onChange={(e) => setFunctionSignature(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 
-                                   focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
-                                   text-primary min-h-[4rem]"
+                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
+                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
+                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
+                                   text-foreground min-h-[4rem]"
                         placeholder="Paste the boilerplate code or function signature here."
                       />
                       <div className="absolute inset-0 rounded-md 
-                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none 
+                                      group-focus-within:border-app-action-end/30 pointer-events-none
                                       transition-all duration-75 "
                       />
                     </div>
@@ -656,34 +657,34 @@ const ProblemModal = ({
 
                   {/* PROGRAMMING LANGUAGE */}
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 flex items-center">
-                      Programming Language <span className="ml-1 text-error">*</span>
+                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                      Programming Language <span className="ml-1 text-status-error">*</span>
                     </label>
                     <div className="relative group">
                       <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 
-                                   focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
-                                   text-primary h-11"
+                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
+                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
+                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
+                                   text-foreground h-11"
                       >
                         <option value="javascript">JavaScript</option>
                         <option value="python">Python3</option>
                         <option value="c_cpp">C/C++</option>
                         <option value="java">Java</option>
                       </select>
-                      <div className="absolute inset-0 rounded-md border border-[#3b82f6]/0 
-                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none 
-                                      transition-all duration-75 shadow-[0_0_0_0_rgba(59,130,246,0)]
-                                      group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"
+                      <div className="absolute inset-0 rounded-md border border-app-action-end/0
+                                      group-focus-within:border-app-action-end/30 pointer-events-none
+                                      transition-all duration-75 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)]
+                                      group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"
                       />
                     </div>
                   </div>
 
                   {/* LINK */}
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 flex items-center">
+                    <label className="text-sm font-medium text-foreground-soft flex items-center">
                       Link to Problem
                     </label>
                     <div className="relative group">
@@ -691,37 +692,37 @@ const ProblemModal = ({
                         type="text"
                         value={link}
                         onChange={(e) => setLink(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 
-                                   focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
-                                   text-primary h-11"
+                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
+                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
+                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
+                                   text-foreground h-11"
                         placeholder="https://leetcode.com/problems/two-sum/"
                       />
-                      <div className="absolute inset-0 rounded-md border border-[#3b82f6]/0 
-                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none 
-                                      transition-all duration-75 shadow-[0_0_0_0_rgba(59,130,246,0)]
-                                      group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"
+                      <div className="absolute inset-0 rounded-md border border-app-action-end/0
+                                      group-focus-within:border-app-action-end/30 pointer-events-none
+                                      transition-all duration-75 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)]
+                                      group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"
                       />
                     </div>
                   </div>
 
                   {/* NOTES */}
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 flex items-center">
+                    <label className="text-sm font-medium text-foreground-soft flex items-center">
                       Additional Notes
                     </label>
                     <div className="relative group">
                       <textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 
-                                   focus:ring-1 focus:ring-[#3b82f6]/50 transition-colors duration-75
-                                   text-primary min-h-[4rem]"
+                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
+                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
+                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
+                                   text-foreground min-h-[4rem]"
                         placeholder="- Add any notes for yourself about this problem"
                       />
                       <div className="absolute inset-0 rounded-md 
-                                      group-focus-within:border-[#3b82f6]/30 pointer-events-none 
+                                      group-focus-within:border-app-action-end/30 pointer-events-none
                                       transition-all duration-75"
                       />
                     </div>
@@ -729,8 +730,8 @@ const ProblemModal = ({
 
                   {/* DIFFICULTY */}
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-300 flex items-center">
-                      Difficulty <span className="ml-1 text-error">*</span>
+                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                      Difficulty <span className="ml-1 text-status-error">*</span>
                     </label>
                     <div className="flex gap-4 pt-2">
                       <label className="inline-flex items-center">
@@ -745,8 +746,8 @@ const ProblemModal = ({
                         <span 
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
                                      ${difficulty === 'Easy' 
-                                       ? 'text-easy bg-easybg border-[#296C62]' 
-                                       : 'text-[#B0B7C3] bg-[#3A4253] border-[#3A4253]'} 
+                                       ? 'text-difficulty-easy bg-difficulty-easy-background border-difficulty-easy-border'
+                                       : 'text-muted-foreground bg-border border-border'}
                                      transition-all duration-200 cursor-pointer`}
                         >
                           <span className="material-icons mr-1.5 fill-current" style={{ fontSize: '12px' }}>circle</span>
@@ -765,8 +766,8 @@ const ProblemModal = ({
                         <span 
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
                                      ${difficulty === 'Medium' 
-                                       ? 'text-medium bg-mediumbg border-[#815954]' 
-                                       : 'text-[#B0B7C3] bg-[#3A4253] border-[#3A4253]'} 
+                                       ? 'text-difficulty-medium bg-difficulty-medium-background border-difficulty-medium-border'
+                                       : 'text-muted-foreground bg-border border-border'}
                                      transition-all duration-200 cursor-pointer`}
                         >
                           <span className="material-icons mr-1.5 fill-current" style={{ fontSize: '12px' }}>circle</span>
@@ -785,8 +786,8 @@ const ProblemModal = ({
                         <span 
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
                                      ${difficulty === 'Hard' 
-                                       ? 'text-hard bg-hardbg border-[#7D3E55]' 
-                                       : 'text-[#B0B7C3] bg-[#3A4253] border-[#3A4253]'} 
+                                       ? 'text-difficulty-hard bg-difficulty-hard-background border-difficulty-hard-border'
+                                       : 'text-muted-foreground bg-border border-border'}
                                      transition-all duration-200 cursor-pointer`}
                         >
                           <span className="material-icons mr-1.5 fill-current" style={{ fontSize: '12px' }}>circle</span>
@@ -800,7 +801,7 @@ const ProblemModal = ({
             </div>
 
             {/* FOOTER / STATUS & BUTTONS */}
-            <div className="border-t border-[#3A4150]/70 pt-4 flex items-center justify-between">
+            <div className="border-t border-border-subtle/70 pt-4 flex items-center justify-between">
               {/* Status Indicator */}
               <div className="flex items-center">
                 {(() => {
@@ -811,30 +812,30 @@ const ProblemModal = ({
                     return (
                       <div className="flex items-center">
                         <span
-                          className="inline-block mr-2 bg-error rounded-full"
+                          className="inline-block mr-2 bg-status-error rounded-full"
                           style={{ width: '10px', height: '10px' }}
                         />
-                        <span className="text-secondary text-sm">No problem selected</span>
+                        <span className="text-muted-foreground text-sm">No problem selected</span>
                       </div>
                     );
                   } else if (filledFields.length < requiredFields.length) {
                     return (
                       <div className="flex items-center">
                         <span
-                          className="inline-block mr-2 bg-warning rounded-full"
+                          className="inline-block mr-2 bg-status-warning rounded-full"
                           style={{ width: '10px', height: '10px' }}
                         />
-                        <span className="text-secondary text-sm">Partially filled out</span>
+                        <span className="text-muted-foreground text-sm">Partially filled out</span>
                       </div>
                     );
                   } else {
                     return (
                       <div className="flex items-center">
                         <span
-                          className="inline-block mr-2 bg-success rounded-full"
+                          className="inline-block mr-2 bg-status-success rounded-full"
                           style={{ width: '10px', height: '10px' }}
                         />
-                        <span className="text-secondary text-sm">{name}</span>
+                        <span className="text-muted-foreground text-sm">{name}</span>
                       </div>
                     );
                   }
@@ -847,18 +848,18 @@ const ProblemModal = ({
                   type="submit"
                   disabled={!name.trim() || !question.trim() || !solution.trim() || isSubmitting}
                   className={`
-                    relative overflow-hidden bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] 
-                    text-primary px-6 py-2 rounded-md transition-all duration-200
+                    relative overflow-hidden bg-gradient-to-r from-app-action-start to-app-action-end
+                    text-foreground px-6 py-2 rounded-md transition-all duration-200
                     ${(!name.trim() || !question.trim() || !solution.trim() || isSubmitting)
                       ? "opacity-50 cursor-not-allowed"
-                      : "hover:from-[#0ea5c4] hover:to-[#2d74e7]"
+                      : "hover:from-app-action-dialog-hover-start hover:to-app-action-dialog-hover-end"
                     }
                   `}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary inline-block"
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-foreground inline-block"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -882,7 +883,7 @@ const ProblemModal = ({
                   ) : (
                     isEditMode ? 'Update' : 'Create'
                   )}
-                  <span className="absolute inset-0 w-full h-full bg-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                  <span className="absolute inset-0 w-full h-full bg-foreground/10 opacity-0 hover:opacity-100 transition-opacity duration-300" />
                 </button>
               </div>
             </div>

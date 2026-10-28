@@ -1,3 +1,4 @@
+import { canvasColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useContext } from 'react';
 import { AuthContext } from '@/auth/AuthContext';
@@ -38,10 +39,10 @@ const BarGraphMonth = () => {
                 display: false
             },
             tooltip: {
-                backgroundColor: '#1e1e1e',
-                titleColor: '#fff',
-                bodyColor: '#fff',
-                borderColor: '#3A4253',
+                backgroundColor: canvasColor('chart-tooltip'),
+                titleColor: canvasColor('foreground'),
+                bodyColor: canvasColor('foreground'),
+                borderColor: canvasColor('border'),
                 borderWidth: 1,
                 padding: 10,
                 displayColors: false,
@@ -59,7 +60,7 @@ const BarGraphMonth = () => {
             y: {
                 beginAtZero: true,
                 grid: {
-                    color: "rgba(255, 255, 255, 0.1)",
+                    color: canvasColor('chart-grid', 0.1),
                     display: true, 
                 },
                 ticks: {
@@ -70,7 +71,7 @@ const BarGraphMonth = () => {
                         }
                     },
                     stepSize: 1, 
-                    color: "#D1D5DB", 
+                    color: canvasColor('chart-tick-soft'),
                 }
             }, 
             x: {
@@ -78,7 +79,7 @@ const BarGraphMonth = () => {
                     display: false, 
                 },
                 ticks: {
-                    color: "#D1D5DB",
+                    color: canvasColor('chart-tick-soft'),
                 },
             }, 
         }
@@ -132,11 +133,11 @@ const BarGraphMonth = () => {
                 {
                     label: 'Problems Due',
                     data: dueCounts, 
-                    backgroundColor: 'rgba(56, 189, 248, 0.7)',
-                    borderColor: 'rgba(56, 189, 248, 1)',
+                    backgroundColor: canvasColor('chart-due', 0.7),
+                    borderColor: canvasColor('chart-due'),
                     borderWidth: 1,
                     borderRadius: 4,
-                    hoverBackgroundColor: 'rgba(56, 189, 248, 0.9)',
+                    hoverBackgroundColor: canvasColor('chart-due', 0.9),
                 },
             ],
         };
@@ -146,7 +147,7 @@ const BarGraphMonth = () => {
                 <div style={{ height: '300px', width: '100%' }}>
                     {isLoading ? (
                         <div className="flex items-center justify-center h-full">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-app-action-end"></div>
                         </div>
                     ) : (
                         <Bar 
