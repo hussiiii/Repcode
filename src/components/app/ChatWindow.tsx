@@ -180,8 +180,8 @@ const ChatWindow = ({
     return (
       <div key={index} className={`message ${msg.sender} animate-fade-in my-2 p-3 rounded-lg w-full ${
         msg.sender === "ai"
-          ? "bg-[#343B4A] text-primary border-l-2 border-blue-400"
-          : "bg-gradient-to-r from-[#0891b2] to-[#2563eb] text-primary"
+          ? "bg-surface text-foreground border-l-2 border-app-highlight"
+          : "bg-gradient-to-r from-app-action-hover-start to-app-action-hover-end text-foreground"
       }`}>
         <div className="markdown-content">
           <ReactMarkdown
@@ -192,7 +192,7 @@ const ChatWindow = ({
                 const language = match ? match[1] : 'plaintext';
 
                 return !inline ? (
-                  <div className="mt-2 rounded-md bg-[#1E2430] overflow-hidden w-full">
+                  <div className="mt-2 rounded-md bg-surface-ai-message overflow-hidden w-full">
                     <pre className="overflow-x-auto max-w-full">
                       <code className={`language-${language} p-3 block text-sm`} {...props}>
                         {children}
@@ -200,7 +200,7 @@ const ChatWindow = ({
                     </pre>
                   </div>
                 ) : (
-                  <code className="bg-[#1E2430] px-1.5 py-0.5 rounded text-sm" {...props}>
+                  <code className="bg-surface-ai-message px-1.5 py-0.5 rounded text-sm" {...props}>
                     {children}
                   </code>
                 );
@@ -233,7 +233,7 @@ const ChatWindow = ({
                 <em className="italic">{children}</em>
               ),
               blockquote: ({ children }) => (
-                <blockquote className="border-l-4 border-blue-400 pl-4 py-2 my-2 bg-[#1E2430]/50">
+                <blockquote className="border-l-4 border-app-highlight pl-4 py-2 my-2 bg-surface-ai-message/50">
                   {children}
                 </blockquote>
               ),
@@ -264,11 +264,11 @@ const ChatWindow = ({
       ref={chatContainerRef}
       className={`${isTab ? 'w-full h-full min-h-[800px]' : 'fixed z-30 w-96 h-[450px] chat-animation'} rounded-lg ${!isTab && 'shadow-2xl'} flex flex-col overflow-hidden`}
       style={{
-        background: 'linear-gradient(to bottom, #343B4A, #2A303C)',
+        background: 'linear-gradient(to bottom, rgb(var(--surface)/1), rgb(var(--background)/1))',
       }}
     >
       {/* Chat header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#3A4253] text-primary">
+      <div className="flex items-center justify-between px-4 py-3 bg-border text-foreground">
         <div className="flex items-center">
           <span className="material-icons mr-2" style={{ fontSize: '20px' }}>auto_awesome</span>
           <h3 className="font-medium">AI Assistant</h3>
@@ -276,7 +276,7 @@ const ChatWindow = ({
       </div>
 
       {/* Chat messages */}
-      <div className={`flex-1 overflow-y-auto p-4 bg-[#2A303C]/60 ${isTab ? 'mt-4' : ''} scrollbar-thin scrollbar-thumb-[#4A5267] scrollbar-track-transparent`}>
+      <div className={`flex-1 overflow-y-auto p-4 bg-background/60 ${isTab ? 'mt-4' : ''} scrollbar-thin scrollbar-thumb-[rgb(var(--border-strong)/1)] scrollbar-track-transparent`}>
         {isAnalyzing ? (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="analysis-animation mb-4">
@@ -291,8 +291,8 @@ const ChatWindow = ({
                 <div className="scanner"></div>
               </div>
             </div>
-            <div className="text-primary text-lg font-medium">Analyzing your code...</div>
-            <div className="text-[#B0B7C3] mt-2 text-sm">Preparing AI assistant</div>
+            <div className="text-foreground text-lg font-medium">Analyzing your code...</div>
+            <div className="text-muted-foreground mt-2 text-sm">Preparing AI assistant</div>
           </div>
         ) : (
           <>
@@ -307,9 +307,9 @@ const ChatWindow = ({
                   <button
                     key={idx}
                     onClick={() => sendMessage(question)}
-                    className="w-full text-left p-2.5 rounded-md bg-[#3A4253] hover:bg-[#4A5267] text-primary text-sm font-medium transition-colors flex items-center"
+                    className="w-full text-left p-2.5 rounded-md bg-border hover:bg-border-strong text-foreground text-sm font-medium transition-colors flex items-center"
                   >
-                    <span className="material-icons mr-2 text-blue-300" style={{ fontSize: '18px' }}>
+                    <span className="material-icons mr-2 text-app-link-soft" style={{ fontSize: '18px' }}>
                       help_outline
                     </span>
                     {question}
@@ -319,7 +319,7 @@ const ChatWindow = ({
             )}
             
             {isTyping && (
-              <div className="my-2 p-3 rounded-lg bg-[#343B4A] text-primary border-l-2 border-blue-400 animate-pulse">
+              <div className="my-2 p-3 rounded-lg bg-surface text-foreground border-l-2 border-app-highlight animate-pulse">
                 <div className="flex items-center">
                   <div className="typing-indicator">
                     <span></span>
@@ -336,14 +336,14 @@ const ChatWindow = ({
       </div>
 
       {/* Chat input */}
-      <form onSubmit={handleSubmit} className="p-3 bg-[#343B4A] border-t border-[#4A5267]">
-        <div className="flex rounded-lg border border-[#4A5267] bg-[#2A303C] overflow-hidden">
+      <form onSubmit={handleSubmit} className="p-3 bg-surface border-t border-border-strong">
+        <div className="flex rounded-lg border border-border-strong bg-background overflow-hidden">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your code..."
-            className="flex-1 px-4 py-2 bg-transparent text-base_100 outline-none placeholder:text-[#B0B7C3]"
+            className="flex-1 px-4 py-2 bg-transparent text-background outline-none placeholder:text-muted-foreground"
             disabled={isAnalyzing || isTyping}
           />
           <button
@@ -351,8 +351,8 @@ const ChatWindow = ({
             disabled={!input.trim() || isAnalyzing || isTyping}
             className={`px-4 flex items-center justify-center ${
               input.trim() && !isTyping && !isAnalyzing
-                ? 'text-primary hover:bg-[#4A5267]' 
-                : 'text-[#B0B7C3] cursor-not-allowed'
+                ? 'text-foreground hover:bg-border-strong'
+                : 'text-muted-foreground cursor-not-allowed'
             } transition-colors`}
           >
             <span className="material-icons transform">send</span>
@@ -411,7 +411,7 @@ const ChatWindow = ({
         }
         
         .scrollbar-thin::-webkit-scrollbar-thumb {
-          background-color: #4A5267;
+          background-color: rgb(var(--border-strong)/1);
           border-radius: 3px;
         }
         
@@ -424,7 +424,7 @@ const ChatWindow = ({
           height: 8px;
           width: 8px;
           margin: 0 1px;
-          background-color: #B0B7C3;
+          background-color: rgb(var(--muted-foreground)/1);
           border-radius: 50%;
           display: inline-block;
           animation: bounce 1.5s infinite ease-in-out;
@@ -465,7 +465,7 @@ const ChatWindow = ({
           height: 0;
           border-top: 6px solid transparent;
           border-bottom: 6px solid transparent;
-          border-right: 6px solid #343B4A;
+          border-right: 6px solid rgb(var(--surface)/1);
         }
         
         .message.user::after {
@@ -477,7 +477,7 @@ const ChatWindow = ({
           height: 0;
           border-top: 6px solid transparent;
           border-bottom: 6px solid transparent;
-          border-left: 6px solid #0891b2;
+          border-left: 6px solid rgb(var(--app-action-hover-start)/1);
         }
         
         /* Code analysis animation */
@@ -491,11 +491,11 @@ const ChatWindow = ({
           position: relative;
           width: 100%;
           height: 100%;
-          background: #232830;
+          background: rgb(var(--surface-ai-input)/1);
           border-radius: 8px;
           overflow: hidden;
           padding: 12px;
-          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 8px 16px rgb(var(--overlay)/0.2);
         }
         
         .code-lines {
@@ -506,7 +506,7 @@ const ChatWindow = ({
         
         .code-lines div {
           height: 10px;
-          background: #343B4A;
+          background: rgb(var(--surface)/1);
           border-radius: 2px;
           opacity: 0.7;
         }
@@ -524,13 +524,13 @@ const ChatWindow = ({
           width: 100%;
           height: 4px;
           background: linear-gradient(90deg, 
-            rgba(6, 182, 212, 0.1), 
-            rgba(6, 182, 212, 0.8),
-            rgba(59, 130, 246, 0.8),
-            rgba(59, 130, 246, 0.1)
+            rgb(var(--app-action-start)/0.1),
+            rgb(var(--app-action-start)/0.8),
+            rgb(var(--app-action-end)/0.8),
+            rgb(var(--app-action-end)/0.1)
           );
           animation: scan 1.5s ease-in-out infinite;
-          box-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
+          box-shadow: 0 0 10px rgb(var(--app-action-start)/0.7);
         }
         
         @keyframes scan {
@@ -559,9 +559,9 @@ const ChatWindow = ({
           height: 100%;
           background: linear-gradient(
             90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.05) 50%,
-            rgba(255, 255, 255, 0) 100%
+            rgb(var(--foreground)/0) 0%,
+            rgb(var(--foreground)/0.05) 50%,
+            rgb(var(--foreground)/0) 100%
           );
           transition: left 0.5s ease-in-out;
         }

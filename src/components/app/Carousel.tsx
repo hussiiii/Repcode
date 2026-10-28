@@ -31,14 +31,14 @@ const Carousel = ({ components, headers }: { components: React.ReactNode[], head
 
     return (
         <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-center px-8"> {/* Added flex-col */}
-            <h2 className="text-2xl font-bold mb-4 text-secondary">{headers[currentIndex]}</h2> {/* Header */}
+            <h2 className="text-2xl font-bold mb-4 text-muted-foreground">{headers[currentIndex]}</h2> {/* Header */}
             <div className="relative w-full h-full flex items-center justify-center">
                 <button 
                     onClick={handlePrev} 
                     className="absolute left-8 transform -translate-y-1/2 z-10" // Adjusted left position
                     style={{ top: '50%' }}
                 >
-                    <span className="material-icons transition duration-300 ease-in-out hover:scale-110 text-primary" style={{ fontSize: '45px' }}>arrow_back_ios</span>
+                    <span className="material-icons transition duration-300 ease-in-out hover:scale-110 text-foreground" style={{ fontSize: '45px' }}>arrow_back_ios</span>
                 </button>
                 <div className={`flex justify-center items-center w-full ${animationClass}`}>
                     {components[currentIndex]}
@@ -48,7 +48,7 @@ const Carousel = ({ components, headers }: { components: React.ReactNode[], head
                     className="absolute right-8 transform -translate-y-1/2 z-10" // Adjusted right position
                     style={{ top: '50%' }}
                 >
-                    <span className="material-icons transition duration-300 ease-in-out hover:scale-110 text-primary" style={{ fontSize: '45px' }}>arrow_forward_ios</span>
+                    <span className="material-icons transition duration-300 ease-in-out hover:scale-110 text-foreground" style={{ fontSize: '45px' }}>arrow_forward_ios</span>
                 </button>
             </div>
         </div>

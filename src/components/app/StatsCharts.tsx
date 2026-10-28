@@ -1,3 +1,4 @@
+import { cssColor, canvasColor, collectionChartColor, withColorOpacity } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useContext, useState, useMemo, useRef, useEffect } from 'react';
 import { AuthContext } from '@/auth/AuthContext';
@@ -47,17 +48,17 @@ interface ChartConfig {
   id: ChartType;
   label: string;
   icon: string;
-  color: string;
+  colorToken: string;
   description: string;
 }
 
 const chartConfigs: ChartConfig[] = [
-  { id: 'creationDate', label: 'By Creation Date', icon: '', color: '#3b82f6', description: 'Every problem plotted by creation date' },
-  { id: 'interval', label: 'By Interval Size', icon: '', color: '#06b6d4', description: 'Problems grouped by review interval' },
-  { id: 'lapses', label: 'By Lapses', icon: '', color: '#f87171', description: 'Distribution by times forgotten' },
-  { id: 'collection', label: 'By Collection', icon: '', color: '#a78bfa', description: 'Problems per collection' },
-  { id: 'totalFeedback', label: 'By Total Reviews', icon: '', color: '#34d399', description: 'Problems grouped by review count' },
-  { id: 'dueDate', label: 'By Due Date', icon: '', color: '#fbbf24', description: 'When problems are due' },
+  { id: 'creationDate', label: 'By Creation Date', icon: '', colorToken: 'chart-series-blue', description: 'Every problem plotted by creation date' },
+  { id: 'interval', label: 'By Interval Size', icon: '', colorToken: 'chart-series-cyan', description: 'Problems grouped by review interval' },
+  { id: 'lapses', label: 'By Lapses', icon: '', colorToken: 'chart-series-red-soft', description: 'Distribution by times forgotten' },
+  { id: 'collection', label: 'By Collection', icon: '', colorToken: 'chart-series-lavender', description: 'Problems per collection' },
+  { id: 'totalFeedback', label: 'By Total Reviews', icon: '', colorToken: 'chart-series-emerald', description: 'Problems grouped by review count' },
+  { id: 'dueDate', label: 'By Due Date', icon: '', colorToken: 'chart-series-amber', description: 'When problems are due' },
 ];
 
 const StatsCharts = () => {
@@ -132,10 +133,10 @@ const StatsCharts = () => {
         display: false,
       },
       tooltip: {
-        backgroundColor: '#1e1e1e',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        borderColor: '#3A4253',
+        backgroundColor: canvasColor('chart-tooltip'),
+        titleColor: canvasColor('foreground'),
+        bodyColor: canvasColor('foreground'),
+        borderColor: canvasColor('border'),
         borderWidth: 1,
         padding: 12,
         titleFont: { size: 14 },
@@ -145,10 +146,10 @@ const StatsCharts = () => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
           maxRotation: 45,
           minRotation: 0,
@@ -156,10 +157,10 @@ const StatsCharts = () => {
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
         beginAtZero: true,
@@ -192,13 +193,13 @@ const StatsCharts = () => {
         {
           label: 'Problems',
           data: scatterData,
-          backgroundColor: 'rgba(59, 130, 246, 0.7)',
-          borderColor: '#3b82f6',
+          backgroundColor: canvasColor('chart-series-blue', 0.7),
+          borderColor: canvasColor('chart-series-blue'),
           borderWidth: 2,
           pointRadius: 6,
           pointHoverRadius: 10,
-          pointHoverBackgroundColor: '#3b82f6',
-          pointHoverBorderColor: '#fff',
+          pointHoverBackgroundColor: canvasColor('chart-series-blue'),
+          pointHoverBorderColor: canvasColor('foreground'),
           pointHoverBorderWidth: 2,
         },
       ],
@@ -214,10 +215,10 @@ const StatsCharts = () => {
         display: false,
       },
       tooltip: {
-        backgroundColor: '#1e1e1e',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        borderColor: '#3A4253',
+        backgroundColor: canvasColor('chart-tooltip'),
+        titleColor: canvasColor('foreground'),
+        bodyColor: canvasColor('foreground'),
+        borderColor: canvasColor('border'),
         borderWidth: 1,
         padding: 12,
         displayColors: false,
@@ -243,26 +244,26 @@ const StatsCharts = () => {
           },
         },
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 11 },
           maxRotation: 45,
         },
         title: {
           display: true,
           text: 'Creation Date',
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
           stepSize: 1,
         },
@@ -270,7 +271,7 @@ const StatsCharts = () => {
         title: {
           display: true,
           text: 'Problem # (by creation order)',
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
       },
@@ -301,30 +302,30 @@ const StatsCharts = () => {
           label: 'Problems',
           data: counts,
           backgroundColor: [
-            'rgba(239, 68, 68, 0.8)',
-            'rgba(249, 115, 22, 0.8)',
-            'rgba(234, 179, 8, 0.8)',
-            'rgba(34, 197, 94, 0.8)',
-            'rgba(6, 182, 212, 0.8)',
-            'rgba(99, 102, 241, 0.8)',
+            canvasColor('chart-series-red', 0.8),
+            canvasColor('chart-series-orange', 0.8),
+            canvasColor('chart-series-yellow', 0.8),
+            canvasColor('chart-series-green', 0.8),
+            canvasColor('chart-series-cyan', 0.8),
+            canvasColor('chart-series-indigo', 0.8),
           ],
           borderColor: [
-            '#ef4444',
-            '#f97316',
-            '#eab308',
-            '#22c55e',
-            '#06b6d4',
-            '#6366f1',
+            canvasColor('chart-series-red'),
+            canvasColor('chart-series-orange'),
+            canvasColor('chart-series-yellow'),
+            canvasColor('chart-series-green'),
+            canvasColor('chart-series-cyan'),
+            canvasColor('chart-series-indigo'),
           ],
           borderWidth: 2,
           borderRadius: 8,
           hoverBackgroundColor: [
-            'rgba(239, 68, 68, 1)',
-            'rgba(249, 115, 22, 1)',
-            'rgba(234, 179, 8, 1)',
-            'rgba(34, 197, 94, 1)',
-            'rgba(6, 182, 212, 1)',
-            'rgba(99, 102, 241, 1)',
+            canvasColor('chart-series-red'),
+            canvasColor('chart-series-orange'),
+            canvasColor('chart-series-yellow'),
+            canvasColor('chart-series-green'),
+            canvasColor('chart-series-cyan'),
+            canvasColor('chart-series-indigo'),
           ],
         },
       ],
@@ -349,12 +350,12 @@ const StatsCharts = () => {
 
     // Get color based on interval range
     const getColor = (interval: number) => {
-      if (interval < 1440) return 'rgba(239, 68, 68, 0.8)'; // < 1 day - red
-      if (interval < 10080) return 'rgba(249, 115, 22, 0.8)'; // 1-7 days - orange
-      if (interval < 40320) return 'rgba(234, 179, 8, 0.8)'; // 1-4 weeks - yellow
-      if (interval < 131040) return 'rgba(34, 197, 94, 0.8)'; // 1-3 months - green
-      if (interval < 262080) return 'rgba(6, 182, 212, 0.8)'; // 3-6 months - cyan
-      return 'rgba(99, 102, 241, 0.8)'; // 6+ months - indigo
+      if (interval < 1440) return canvasColor('chart-series-red', 0.8); // < 1 day - red
+      if (interval < 10080) return canvasColor('chart-series-orange', 0.8); // 1-7 days - orange
+      if (interval < 40320) return canvasColor('chart-series-yellow', 0.8); // 1-4 weeks - yellow
+      if (interval < 131040) return canvasColor('chart-series-green', 0.8); // 1-3 months - green
+      if (interval < 262080) return canvasColor('chart-series-cyan', 0.8); // 3-6 months - cyan
+      return canvasColor('chart-series-indigo', 0.8); // 6+ months - indigo
     };
 
     // Each problem becomes a point
@@ -374,7 +375,7 @@ const StatsCharts = () => {
           label: 'Problems',
           data: scatterData,
           backgroundColor: colors,
-          borderColor: colors.map((c: string) => c.replace('0.8', '1')),
+          borderColor: colors.map((c: string) => withColorOpacity(c, 1)),
           borderWidth: 2,
           pointRadius: 8,
           pointHoverRadius: 12,
@@ -392,10 +393,10 @@ const StatsCharts = () => {
         display: false,
       },
       tooltip: {
-        backgroundColor: '#1e1e1e',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        borderColor: '#3A4253',
+        backgroundColor: canvasColor('chart-tooltip'),
+        titleColor: canvasColor('foreground'),
+        bodyColor: canvasColor('foreground'),
+        borderColor: canvasColor('border'),
         borderWidth: 1,
         padding: 12,
         displayColors: false,
@@ -414,26 +415,26 @@ const StatsCharts = () => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 11 },
         },
         title: {
           display: true,
           text: 'Problem # (sorted by interval)',
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
       },
       y: {
         type: 'logarithmic' as const,
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
           callback: function(value: any) {
             if (value < 1) return `${Math.round(value * 24)}h`;
@@ -445,7 +446,7 @@ const StatsCharts = () => {
         title: {
           display: true,
           text: 'Interval (log scale)',
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
       },
@@ -477,13 +478,13 @@ const StatsCharts = () => {
         {
           data: counts,
           backgroundColor: [
-            'rgba(34, 197, 94, 0.85)',
-            'rgba(6, 182, 212, 0.85)',
-            'rgba(234, 179, 8, 0.85)',
-            'rgba(249, 115, 22, 0.85)',
-            'rgba(239, 68, 68, 0.85)',
+            canvasColor('chart-series-green', 0.85),
+            canvasColor('chart-series-cyan', 0.85),
+            canvasColor('chart-series-yellow', 0.85),
+            canvasColor('chart-series-orange', 0.85),
+            canvasColor('chart-series-red', 0.85),
           ],
-          borderColor: '#2A303C',
+          borderColor: canvasColor('background'),
           borderWidth: 3,
           hoverOffset: 8,
         },
@@ -500,11 +501,11 @@ const StatsCharts = () => {
 
     // Get color based on lapse count
     const getColor = (lapses: number) => {
-      if (lapses === 0) return 'rgba(34, 197, 94, 0.85)'; // green
-      if (lapses <= 2) return 'rgba(6, 182, 212, 0.85)'; // cyan
-      if (lapses <= 5) return 'rgba(234, 179, 8, 0.85)'; // yellow
-      if (lapses <= 10) return 'rgba(249, 115, 22, 0.85)'; // orange
-      return 'rgba(239, 68, 68, 0.85)'; // red
+      if (lapses === 0) return canvasColor('chart-series-green', 0.85); // green
+      if (lapses <= 2) return canvasColor('chart-series-cyan', 0.85); // cyan
+      if (lapses <= 5) return canvasColor('chart-series-yellow', 0.85); // yellow
+      if (lapses <= 10) return canvasColor('chart-series-orange', 0.85); // orange
+      return canvasColor('chart-series-red', 0.85); // red
     };
 
     const scatterData = sorted.map((p: any, index: number) => ({
@@ -521,7 +522,7 @@ const StatsCharts = () => {
           label: 'Problems',
           data: scatterData,
           backgroundColor: colors,
-          borderColor: colors.map((c: string) => c.replace('0.85', '1')),
+          borderColor: colors.map((c: string) => withColorOpacity(c, 1)),
           borderWidth: 2,
           pointRadius: 8,
           pointHoverRadius: 12,
@@ -539,10 +540,10 @@ const StatsCharts = () => {
         display: false,
       },
       tooltip: {
-        backgroundColor: '#1e1e1e',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        borderColor: '#3A4253',
+        backgroundColor: canvasColor('chart-tooltip'),
+        titleColor: canvasColor('foreground'),
+        bodyColor: canvasColor('foreground'),
+        borderColor: canvasColor('border'),
         borderWidth: 1,
         padding: 12,
         displayColors: false,
@@ -561,25 +562,25 @@ const StatsCharts = () => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 11 },
         },
         title: {
           display: true,
           text: 'Problem # (sorted by lapses)',
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
           stepSize: 1,
         },
@@ -587,7 +588,7 @@ const StatsCharts = () => {
         title: {
           display: true,
           text: 'Lapses',
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
       },
@@ -597,8 +598,7 @@ const StatsCharts = () => {
   // Helper function to generate consistent color based on string
   const getColorForName = (name: string, totalCount: number, index: number) => {
     // Use index in alphabetical list for consistent hue
-    const hue = (index * 360 / totalCount + 200) % 360;
-    return `hsla(${hue}, 70%, 60%, 0.85)`;
+    return collectionChartColor(index, totalCount);
   };
 
   // 4. Problems by Collection (Horizontal Bar)
@@ -679,7 +679,7 @@ const StatsCharts = () => {
           label: 'Problems',
           data: scatterData,
           backgroundColor: pointColors,
-          borderColor: pointColors.map((c: string) => c.replace('0.85', '1')),
+          borderColor: pointColors.map((c: string) => withColorOpacity(c, 1)),
           borderWidth: 2,
           pointRadius: 8,
           pointHoverRadius: 12,
@@ -714,10 +714,10 @@ const StatsCharts = () => {
           display: false,
         },
         tooltip: {
-          backgroundColor: '#1e1e1e',
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          borderColor: '#3A4253',
+          backgroundColor: canvasColor('chart-tooltip'),
+          titleColor: canvasColor('foreground'),
+          bodyColor: canvasColor('foreground'),
+          borderColor: canvasColor('border'),
           borderWidth: 1,
           padding: 12,
           displayColors: false,
@@ -736,26 +736,26 @@ const StatsCharts = () => {
       scales: {
         x: {
           grid: {
-            color: 'rgba(255, 255, 255, 0.05)',
+            color: canvasColor('chart-grid', 0.05),
           },
           ticks: {
-            color: '#B0B7C3',
+            color: canvasColor('chart-tick'),
             font: { size: 11 },
           },
           beginAtZero: true,
           title: {
             display: true,
             text: 'Problem # in collection',
-            color: '#B0B7C3',
+            color: canvasColor('chart-tick'),
             font: { size: 12 },
           },
         },
         y: {
           grid: {
-            color: 'rgba(255, 255, 255, 0.05)',
+            color: canvasColor('chart-grid', 0.05),
           },
           ticks: {
-            color: '#B0B7C3',
+            color: canvasColor('chart-tick'),
             font: { size: 11 },
             callback: function(value: any) {
               return sortedCollections[value] || '';
@@ -795,11 +795,11 @@ const StatsCharts = () => {
         {
           label: 'Problems',
           data: counts,
-          backgroundColor: 'rgba(52, 211, 153, 0.8)',
-          borderColor: '#34d399',
+          backgroundColor: canvasColor('chart-series-emerald', 0.8),
+          borderColor: canvasColor('chart-series-emerald'),
           borderWidth: 2,
           borderRadius: 8,
-          hoverBackgroundColor: 'rgba(52, 211, 153, 1)',
+          hoverBackgroundColor: canvasColor('chart-series-emerald'),
         },
       ],
     };
@@ -817,12 +817,12 @@ const StatsCharts = () => {
 
     // Get color based on review count
     const getColor = (reviews: number) => {
-      if (reviews === 0) return 'rgba(156, 163, 175, 0.85)'; // gray
-      if (reviews <= 5) return 'rgba(52, 211, 153, 0.85)'; // green
-      if (reviews <= 10) return 'rgba(6, 182, 212, 0.85)'; // cyan
-      if (reviews <= 20) return 'rgba(59, 130, 246, 0.85)'; // blue
-      if (reviews <= 50) return 'rgba(139, 92, 246, 0.85)'; // purple
-      return 'rgba(236, 72, 153, 0.85)'; // pink (heavily reviewed)
+      if (reviews === 0) return canvasColor('foreground-quiet', 0.85); // gray
+      if (reviews <= 5) return canvasColor('chart-series-emerald', 0.85); // green
+      if (reviews <= 10) return canvasColor('chart-series-cyan', 0.85); // cyan
+      if (reviews <= 20) return canvasColor('chart-series-blue', 0.85); // blue
+      if (reviews <= 50) return canvasColor('chart-series-violet', 0.85); // purple
+      return canvasColor('chart-series-pink', 0.85); // pink (heavily reviewed)
     };
 
     const scatterData = withFeedback.map((p: any, index: number) => ({
@@ -839,7 +839,7 @@ const StatsCharts = () => {
           label: 'Problems',
           data: scatterData,
           backgroundColor: colors,
-          borderColor: colors.map((c: string) => c.replace('0.85', '1')),
+          borderColor: colors.map((c: string) => withColorOpacity(c, 1)),
           borderWidth: 2,
           pointRadius: 8,
           pointHoverRadius: 12,
@@ -862,10 +862,10 @@ const StatsCharts = () => {
         display: false,
       },
       tooltip: {
-        backgroundColor: '#1e1e1e',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        borderColor: '#3A4253',
+        backgroundColor: canvasColor('chart-tooltip'),
+        titleColor: canvasColor('foreground'),
+        bodyColor: canvasColor('foreground'),
+        borderColor: canvasColor('border'),
         borderWidth: 1,
         padding: 12,
         displayColors: false,
@@ -884,32 +884,32 @@ const StatsCharts = () => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 11 },
         },
         title: {
           display: true,
           text: 'Problem # (sorted by reviews)',
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: canvasColor('chart-grid', 0.05),
         },
         ticks: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
         beginAtZero: true,
         title: {
           display: true,
           text: 'Total Reviews',
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           font: { size: 12 },
         },
       },
@@ -957,18 +957,18 @@ const StatsCharts = () => {
           label: 'Problems',
           data: buckets.map(b => b.count),
           backgroundColor: [
-            'rgba(251, 191, 36, 0.8)',
-            'rgba(34, 197, 94, 0.8)',
-            'rgba(6, 182, 212, 0.8)',
-            'rgba(99, 102, 241, 0.8)',
-            'rgba(168, 85, 247, 0.8)',
+            canvasColor('chart-series-amber', 0.8),
+            canvasColor('chart-series-green', 0.8),
+            canvasColor('chart-series-cyan', 0.8),
+            canvasColor('chart-series-indigo', 0.8),
+            canvasColor('chart-series-purple', 0.8),
           ],
           borderColor: [
-            '#fbbf24',
-            '#22c55e',
-            '#06b6d4',
-            '#6366f1',
-            '#a855f7',
+            canvasColor('chart-series-amber'),
+            canvasColor('chart-series-green'),
+            canvasColor('chart-series-cyan'),
+            canvasColor('chart-series-indigo'),
+            canvasColor('chart-series-purple'),
           ],
           borderWidth: 2,
           borderRadius: 8,
@@ -1022,11 +1022,11 @@ const StatsCharts = () => {
       const diff = date.getTime() - now.getTime();
       const days = Math.round(diff / (24 * 60 * 60 * 1000));
       
-      if (days === 0) return 'rgba(251, 191, 36, 0.85)'; // Today - yellow
-      if (days <= 7) return 'rgba(34, 197, 94, 0.85)'; // This week - green
-      if (days <= 30) return 'rgba(6, 182, 212, 0.85)'; // This month - cyan
-      if (days <= 60) return 'rgba(99, 102, 241, 0.85)'; // Next month - indigo
-      return 'rgba(168, 85, 247, 0.85)'; // Later - purple
+      if (days === 0) return canvasColor('chart-series-amber', 0.85); // Today - yellow
+      if (days <= 7) return canvasColor('chart-series-green', 0.85); // This week - green
+      if (days <= 30) return canvasColor('chart-series-cyan', 0.85); // This month - cyan
+      if (days <= 60) return canvasColor('chart-series-indigo', 0.85); // Next month - indigo
+      return canvasColor('chart-series-purple', 0.85); // Later - purple
     };
 
     // Create scatter data - dots stacking UP with actual date timestamps on X
@@ -1052,7 +1052,7 @@ const StatsCharts = () => {
           label: 'Problems',
           data: scatterData,
           backgroundColor: pointColors,
-          borderColor: pointColors.map((c: string) => c.replace('0.85', '1')),
+          borderColor: pointColors.map((c: string) => withColorOpacity(c, 1)),
           borderWidth: 1,
           pointRadius: 6,
           pointHoverRadius: 10,
@@ -1114,10 +1114,10 @@ const StatsCharts = () => {
           display: false,
         },
         tooltip: {
-          backgroundColor: '#1e1e1e',
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          borderColor: '#3A4253',
+          backgroundColor: canvasColor('chart-tooltip'),
+          titleColor: canvasColor('foreground'),
+          bodyColor: canvasColor('foreground'),
+          borderColor: canvasColor('border'),
           borderWidth: 1,
           padding: 12,
           displayColors: false,
@@ -1147,10 +1147,10 @@ const StatsCharts = () => {
           min: startDate.getTime(),
           max: endDate.getTime(),
           grid: {
-            color: 'rgba(255, 255, 255, 0.05)',
+            color: canvasColor('chart-grid', 0.05),
           },
           ticks: {
-            color: '#B0B7C3',
+            color: canvasColor('chart-tick'),
             font: { size: 10 },
             maxRotation: 45,
             minRotation: 45,
@@ -1160,16 +1160,16 @@ const StatsCharts = () => {
           title: {
             display: true,
             text: 'Due Date',
-            color: '#B0B7C3',
+            color: canvasColor('chart-tick'),
             font: { size: 12 },
           },
         },
         y: {
           grid: {
-            color: 'rgba(255, 255, 255, 0.05)',
+            color: canvasColor('chart-grid', 0.05),
           },
           ticks: {
-            color: '#B0B7C3',
+            color: canvasColor('chart-tick'),
             font: { size: 12 },
             stepSize: 1,
           },
@@ -1178,7 +1178,7 @@ const StatsCharts = () => {
           title: {
             display: true,
             text: 'Problems',
-            color: '#B0B7C3',
+            color: canvasColor('chart-tick'),
             font: { size: 12 },
           },
         },
@@ -1195,7 +1195,7 @@ const StatsCharts = () => {
         display: true,
         position: 'right' as const,
         labels: {
-          color: '#B0B7C3',
+          color: canvasColor('chart-tick'),
           padding: 20,
           usePointStyle: true,
           pointStyle: 'circle',
@@ -1203,10 +1203,10 @@ const StatsCharts = () => {
         },
       },
       tooltip: {
-        backgroundColor: '#1e1e1e',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        borderColor: '#3A4253',
+        backgroundColor: canvasColor('chart-tooltip'),
+        titleColor: canvasColor('foreground'),
+        bodyColor: canvasColor('foreground'),
+        borderColor: canvasColor('border'),
         borderWidth: 1,
         padding: 12,
       },
@@ -1286,8 +1286,8 @@ const StatsCharts = () => {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 border-2 border-[#3b82f6] border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-secondary">Loading stats...</span>
+          <div className="w-6 h-6 border-2 border-app-action-end border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-muted-foreground">Loading stats...</span>
         </div>
       </div>
     );
@@ -1295,8 +1295,8 @@ const StatsCharts = () => {
 
   if (!problems.length) {
     return (
-      <div className="bg-tertiary rounded-xl border border-divide p-8 text-center">
-        <p className="text-secondary">Add some problems to see your stats!</p>
+      <div className="bg-surface rounded-xl border border-border p-8 text-center">
+        <p className="text-muted-foreground">Add some problems to see your stats!</p>
       </div>
     );
   }
@@ -1304,19 +1304,19 @@ const StatsCharts = () => {
   return (
     <div className="space-y-6">
       {/* Main Chart Container */}
-      <div className="bg-tertiary rounded-xl border border-divide shadow-lg overflow-hidden">
+      <div className="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
         {/* Header with Dropdown */}
-        <div className="p-5 border-b border-divide">
+        <div className="p-5 border-b border-border">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <div 
                 className="w-10 h-10 rounded-lg"
-                style={{ backgroundColor: `${selectedConfig.color}30` }}
+                style={{ backgroundColor: cssColor(selectedConfig.colorToken, 48 / 255) }}
               >
               </div>
               <div>
-                <h3 className="font-semibold text-primary text-lg">{selectedConfig.label}</h3>
-                <p className="text-sm text-secondary">
+                <h3 className="font-semibold text-foreground text-lg">{selectedConfig.label}</h3>
+                <p className="text-sm text-muted-foreground">
                   {selectedChart === 'interval' 
                     ? (intervalViewMode === 'grouped' ? 'Problems grouped by review interval' : 'Every problem with its exact interval')
                     : selectedChart === 'lapses'
@@ -1336,13 +1336,13 @@ const StatsCharts = () => {
             <div className="flex items-center gap-3">
               {/* Sub-toggle for Interval chart */}
               {selectedChart === 'interval' && (
-                <div className="flex bg-base_100 rounded-lg p-1 border border-divide">
+                <div className="flex bg-background rounded-lg p-1 border border-border">
                   <button
                     onClick={() => setIntervalViewMode('grouped')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       intervalViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Grouped
@@ -1351,8 +1351,8 @@ const StatsCharts = () => {
                     onClick={() => setIntervalViewMode('individual')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       intervalViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Individual
@@ -1362,13 +1362,13 @@ const StatsCharts = () => {
 
               {/* Sub-toggle for Lapses chart */}
               {selectedChart === 'lapses' && (
-                <div className="flex bg-base_100 rounded-lg p-1 border border-divide">
+                <div className="flex bg-background rounded-lg p-1 border border-border">
                   <button
                     onClick={() => setLapsesViewMode('grouped')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       lapsesViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Grouped
@@ -1377,8 +1377,8 @@ const StatsCharts = () => {
                     onClick={() => setLapsesViewMode('individual')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       lapsesViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Individual
@@ -1388,13 +1388,13 @@ const StatsCharts = () => {
 
               {/* Sub-toggle for Collection chart */}
               {selectedChart === 'collection' && (
-                <div className="flex bg-base_100 rounded-lg p-1 border border-divide">
+                <div className="flex bg-background rounded-lg p-1 border border-border">
                   <button
                     onClick={() => setCollectionViewMode('grouped')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       collectionViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Grouped
@@ -1403,8 +1403,8 @@ const StatsCharts = () => {
                     onClick={() => setCollectionViewMode('individual')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       collectionViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Individual
@@ -1414,13 +1414,13 @@ const StatsCharts = () => {
 
               {/* Sub-toggle for Total Reviews chart */}
               {selectedChart === 'totalFeedback' && (
-                <div className="flex bg-base_100 rounded-lg p-1 border border-divide">
+                <div className="flex bg-background rounded-lg p-1 border border-border">
                   <button
                     onClick={() => setTotalReviewsViewMode('grouped')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       totalReviewsViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Grouped
@@ -1429,8 +1429,8 @@ const StatsCharts = () => {
                     onClick={() => setTotalReviewsViewMode('individual')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       totalReviewsViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Individual
@@ -1440,13 +1440,13 @@ const StatsCharts = () => {
 
               {/* Sub-toggle for Due Date chart */}
               {selectedChart === 'dueDate' && (
-                <div className="flex bg-base_100 rounded-lg p-1 border border-divide">
+                <div className="flex bg-background rounded-lg p-1 border border-border">
                   <button
                     onClick={() => setDueDateViewMode('grouped')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       dueDateViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Grouped
@@ -1455,8 +1455,8 @@ const StatsCharts = () => {
                     onClick={() => setDueDateViewMode('individual')}
                     className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
                       dueDateViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] text-white font-medium shadow-sm'
-                        : 'text-secondary hover:text-primary'
+                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Individual
@@ -1468,16 +1468,16 @@ const StatsCharts = () => {
               <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-base_100 border border-divide rounded-lg
-                           hover:border-[#3b82f6]/50 transition-colors duration-200 min-w-[200px]"
+                className="flex items-center gap-2 px-4 py-2.5 bg-background border border-border rounded-lg
+                           hover:border-app-action-end/50 transition-colors duration-200 min-w-[200px]"
               >
                 <div 
                   className="w-4 h-4 rounded"
-                  style={{ backgroundColor: selectedConfig.color }}
+                  style={{ backgroundColor: cssColor(selectedConfig.colorToken) }}
                 />
-                <span className="text-primary flex-1 text-left">{selectedConfig.label}</span>
+                <span className="text-foreground flex-1 text-left">{selectedConfig.label}</span>
                 <svg 
-                  className={`w-4 h-4 text-secondary transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                  className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
                   fill="none" 
                   viewBox="0 0 24 24" 
                   stroke="currentColor"
@@ -1487,7 +1487,7 @@ const StatsCharts = () => {
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-tertiary border border-divide rounded-lg shadow-xl z-50 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-64 bg-surface border border-border rounded-lg shadow-xl z-50 overflow-hidden">
                   {chartConfigs.map(config => (
                     <button
                       key={config.id}
@@ -1497,23 +1497,23 @@ const StatsCharts = () => {
                       }}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150
                         ${selectedChart === config.id 
-                          ? 'bg-gradient-to-r from-[#06b6d4]/10 to-[#3b82f6]/10 border-l-2 border-l-[#3b82f6]' 
-                          : 'hover:bg-base_100 border-l-2 border-l-transparent'
+                          ? 'bg-gradient-to-r from-app-action-start/10 to-app-action-end/10 border-l-2 border-l-app-action-end'
+                          : 'hover:bg-background border-l-2 border-l-transparent'
                         }
                       `}
                     >
                       <div 
                         className="w-4 h-4 rounded"
-                        style={{ backgroundColor: config.color }}
+                        style={{ backgroundColor: cssColor(config.colorToken) }}
                       />
                       <div className="flex-1">
-                        <div className={`font-medium ${selectedChart === config.id ? 'text-primary' : 'text-secondary'}`}>
+                        <div className={`font-medium ${selectedChart === config.id ? 'text-foreground' : 'text-muted-foreground'}`}>
                           {config.label}
                         </div>
-                        <div className="text-xs text-secondary/70">{config.description}</div>
+                        <div className="text-xs text-muted-foreground/70">{config.description}</div>
                       </div>
                       {selectedChart === config.id && (
-                        <svg className="w-4 h-4 text-[#3b82f6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4 text-app-action-end" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       )}

@@ -9,45 +9,45 @@ const StudyDashboardPreview = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-bold text-primary mb-6">Study Dashboard</h2>
+      <h2 className="text-xl font-bold text-foreground mb-6">Study Dashboard</h2>
 
       <div className="flex flex-col md:flex-row gap-6">
         {/* Left Column - Stats and Chart */}
         <div className="md:w-1/2 space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#343B4A] rounded-xl p-4 border border-[#3A4253] shadow-lg">
+            <div className="bg-surface rounded-xl p-4 border border-border shadow-lg">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-[#B0B7C3] text-sm font-medium">Daily Streak</h3>
-                <div className="bg-[#f87171]/10 p-2 rounded-md">
-                  <FlameIcon size={16} className="text-[#f87171]" />
+                <h3 className="text-muted-foreground text-sm font-medium">Daily Streak</h3>
+                <div className="bg-marketing-streak/10 p-2 rounded-md">
+                  <FlameIcon size={16} className="text-marketing-streak" />
                 </div>
               </div>
               <div className="flex items-baseline">
-                <span className="text-xl font-bold text-primary">7</span>
-                <span className="ml-1 text-[#B0B7C3] text-sm">days</span>
+                <span className="text-xl font-bold text-foreground">7</span>
+                <span className="ml-1 text-muted-foreground text-sm">days</span>
               </div>
             </div>
 
-            <div className="bg-[#343B4A] rounded-xl p-4 border border-[#3A4253] shadow-lg">
+            <div className="bg-surface rounded-xl p-4 border border-border shadow-lg">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-[#B0B7C3] text-sm font-medium">Due Today</h3>
-                <div className="bg-[#facc15]/10 p-2 rounded-md">
-                  <TriangleAlertIcon size={16} className="text-[#facc15]" />
+                <h3 className="text-muted-foreground text-sm font-medium">Due Today</h3>
+                <div className="bg-marketing-feedback-warning/10 p-2 rounded-md">
+                  <TriangleAlertIcon size={16} className="text-marketing-feedback-warning" />
                 </div>
               </div>
               <div className="flex items-baseline">
-                <span className="text-xl font-bold text-primary">12</span>
-                <span className="ml-1 text-[#B0B7C3] text-sm">problems</span>
+                <span className="text-xl font-bold text-foreground">12</span>
+                <span className="ml-1 text-muted-foreground text-sm">problems</span>
               </div>
             </div>
           </div>
 
           {/* Due Problems Chart */}
-          <div className="bg-[#343B4A] rounded-xl border border-[#3A4253] shadow-lg overflow-hidden">
-            <div className="p-4 border-b border-[#3A4253]">
+          <div className="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
+            <div className="p-4 border-b border-border">
               <div className="flex justify-between items-center">
-                <h2 className="text-sm font-semibold text-primary">Due Problems</h2>
+                <h2 className="text-sm font-semibold text-foreground">Due Problems</h2>
               </div>
             </div>
             <div className="p-4">
@@ -56,7 +56,7 @@ const StudyDashboardPreview = () => {
                 {/* Y-axis grid lines */}
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
                   {[0, 1, 2, 3, 4].map((_, i) => (
-                    <div key={i} className="border-t border-[#3A4253] w-full h-0"></div>
+                    <div key={i} className="border-t border-border w-full h-0"></div>
                   ))}
                 </div>
                 
@@ -65,13 +65,13 @@ const StudyDashboardPreview = () => {
                   {barData.map((value, index) => (
                     <div key={index} className="flex flex-col items-center w-8">
                       <div 
-                        className="w-6 rounded-t-sm bg-gradient-to-t from-[#0891b2] to-[#38bdf8]"
+                        className="w-6 rounded-t-sm bg-gradient-to-t from-marketing-chart-start to-marketing-chart-end"
                         style={{ 
                           height: `${(value / maxValue) * 100}px`,
                           transition: 'height 0.5s ease-in-out'
                         }}
                       ></div>
-                      <div className="text-[#B0B7C3] text-xs mt-2">{days[index]}</div>
+                      <div className="text-muted-foreground text-xs mt-2">{days[index]}</div>
                     </div>
                   ))}
                 </div>
@@ -82,17 +82,17 @@ const StudyDashboardPreview = () => {
 
         {/* Right Column - Study Now Button and Problem List */}
         <div className="md:w-1/2">
-          <div className="bg-[#343B4A] rounded-xl border border-[#3A4253] shadow-lg overflow-hidden h-full">
-            <div className="p-4 border-b border-[#3A4253]">
+          <div className="bg-surface rounded-xl border border-border shadow-lg overflow-hidden h-full">
+            <div className="p-4 border-b border-border">
               <div className="flex justify-between items-center">
-                <h2 className="text-sm font-semibold text-primary">Due Today</h2>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#2A303C] text-[#B0B7C3]">
+                <h2 className="text-sm font-semibold text-foreground">Due Today</h2>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-background text-muted-foreground">
                   12 problems
                 </span>
               </div>
             </div>
             <div className="p-3">
-              <button className="w-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0891b2] hover:to-[#2563eb] text-primary py-2 px-4 rounded-lg font-medium flex items-center justify-center mb-4 transition-all duration-200">
+              <button className="w-full bg-gradient-to-r from-marketing-action-start to-marketing-action-end hover:from-marketing-action-hover-start hover:to-marketing-action-hover-end text-marketing-action-foreground py-2 px-4 rounded-lg font-medium flex items-center justify-center mb-4 transition-all duration-200">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4 mr-2"
@@ -116,15 +116,15 @@ const StudyDashboardPreview = () => {
                   { name: "Maximum Subarray", difficulty: "Medium", type: "Review" },
                   { name: "LRU Cache", difficulty: "Medium", type: "Learning" },
                 ].map((problem, index) => (
-                  <div key={index} className="bg-[#2A303C] rounded-lg p-3 border border-[#3A4253]">
-                    <h3 className="font-medium text-primary mb-1 truncate" title={problem.name}>
+                  <div key={index} className="bg-background rounded-lg p-3 border border-border">
+                    <h3 className="font-medium text-foreground mb-1 truncate" title={problem.name}>
                       {problem.name}
                     </h3>
                     <div className="flex items-center gap-2 mb-1">
                       <Badge type="difficulty" value={problem.difficulty} />
                       <Badge type="problemType" value={problem.type} />
                     </div>
-                    <div className="text-xs text-[#B0B7C3] flex items-center">
+                    <div className="text-xs text-muted-foreground flex items-center">
                       <ClockIcon size={10} className="mr-1" />
                       Due: Today @ 11:45pm
                     </div>

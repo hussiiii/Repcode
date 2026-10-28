@@ -30,7 +30,7 @@ const CodeEditorPreview = () => {
       // Comments (both single-line and JSDoc)
       if (line.trim().startsWith('//') || line.trim().startsWith('*') || line.trim().startsWith('/**')) {
         return (
-          <div key={index} className="text-[#6A9955]">
+          <div key={index} className="text-code-comment">
             {line}
           </div>
         )
@@ -56,13 +56,13 @@ const CodeEditorPreview = () => {
     
     // Define patterns with their corresponding classes
     const patterns = [
-      { regex: /\b(function|return|const|let|var|if|else|for|while|do|switch|case|break|continue)\b/g, className: 'text-[#569CD6]' },
-      { regex: /(@\w+)/g, className: 'text-[#569CD6]' },
-      { regex: /(\{[^}]+\})/g, className: 'text-[#4EC9B0]' },
-      { regex: /(\w+)(\s*\()/g, className: 'text-[#DCDCAA]', matchIndex: 1 },
-      { regex: /(["'])(.*?)\1/g, className: 'text-[#CE9178]' },
-      { regex: /\b\d+\b/g, className: 'text-[#B5CEA8]' },
-      { regex: /([{}()\[\]])/g, className: 'text-[#D4D4D4]' },
+      { regex: /\b(function|return|const|let|var|if|else|for|while|do|switch|case|break|continue)\b/g, className: 'text-code-keyword' },
+      { regex: /(@\w+)/g, className: 'text-code-keyword' },
+      { regex: /(\{[^}]+\})/g, className: 'text-code-type' },
+      { regex: /(\w+)(\s*\()/g, className: 'text-code-function', matchIndex: 1 },
+      { regex: /(["'])(.*?)\1/g, className: 'text-code-string' },
+      { regex: /\b\d+\b/g, className: 'text-code-number' },
+      { regex: /([{}()\[\]])/g, className: 'text-code-foreground' },
     ]
     
     // Find all matches
@@ -92,7 +92,7 @@ const CodeEditorPreview = () => {
       if (pos < match.start) {
         tokens.push({
           text: line.substring(pos, match.start),
-          className: 'text-[#D4D4D4]'
+          className: 'text-code-foreground'
         })
       }
       
@@ -110,11 +110,11 @@ const CodeEditorPreview = () => {
     if (pos < line.length) {
       tokens.push({
         text: line.substring(pos),
-        className: 'text-[#D4D4D4]'
+        className: 'text-code-foreground'
       })
     }
     
-    return tokens.length > 0 ? tokens : [{text: line, className: 'text-[#D4D4D4]'}]
+    return tokens.length > 0 ? tokens : [{text: line, className: 'text-code-foreground'}]
   }
 
   // Sample problem data
@@ -179,7 +179,7 @@ function twoSum(nums, target) {
       className={`
         px-3 py-1.5 text-xs font-medium rounded-lg flex items-center
         transition-all duration-200
-        ${active ? "bg-[#2A303C] text-primary shadow-sm" : "text-[#B0B7C3] hover:text-primary hover:bg-[#2A303C]/50"}
+        ${active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-background/50"}
       `}
     >
       {icon}
@@ -189,34 +189,34 @@ function twoSum(nums, target) {
 
   const renderTabContent = () => {
     if (activeTab === "notes") {
-      return <p className="text-primary mt-4 whitespace-pre-wrap text-sm">{problem.notes}</p>
+      return <p className="text-foreground mt-4 whitespace-pre-wrap text-sm">{problem.notes}</p>
     } else if (activeTab === "question") {
       return (
         <div
-          className="text-primary mt-4 problem-content prose prose-invert max-w-none text-sm"
+          className="text-foreground mt-4 problem-content prose prose-invert max-w-none text-sm"
           dangerouslySetInnerHTML={{ __html: problem.description }}
         />
       )
     } else {
       return (
-        <pre className="text-sm mt-4 bg-[#282c34] p-4 rounded-lg overflow-auto">
-          <code className="text-primary font-mono">{problem.solution}</code>
+        <pre className="text-sm mt-4 bg-code-background p-4 rounded-lg overflow-auto">
+          <code className="text-foreground font-mono">{problem.solution}</code>
         </pre>
       )
     }
   }
 
   return (
-    <div className="h-[500px] md:h-[500px] bg-[#2A303C] flex flex-col rounded-xl overflow-hidden border border-[#3A4253] shadow-xl">
+    <div className="h-[500px] md:h-[500px] bg-background flex flex-col rounded-xl overflow-hidden border border-border shadow-xl">
       {/* Top Navigation */}
-      <div className="flex items-center justify-between px-4 h-12 border-b border-[#3A4253] bg-[#343B4A]">
+      <div className="flex items-center justify-between px-4 h-12 border-b border-border bg-surface">
         <div className="flex items-center min-w-0 flex-1">
-          <button className="flex items-center text-[#B0B7C3] hover:text-primary transition-colors mr-3 group flex-shrink-0">
-            <div className="p-1 rounded-lg group-hover:bg-[#2A303C] transition-colors">
+          <button className="flex items-center text-muted-foreground hover:text-foreground transition-colors mr-3 group flex-shrink-0">
+            <div className="p-1 rounded-lg group-hover:bg-background transition-colors">
               <ArrowLeftIcon className="w-4 h-4" />
             </div>
           </button>
-          <h1 className="text-sm font-semibold text-primary mr-3 truncate">{problem.name}</h1>
+          <h1 className="text-sm font-semibold text-foreground mr-3 truncate">{problem.name}</h1>
           <div className="flex gap-2 flex-shrink-0">
             <Badge type="difficulty" value={problem.difficulty} />
             <Badge type="problemType" value={problem.type} />
@@ -224,13 +224,13 @@ function twoSum(nums, target) {
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          <button className="p-1 rounded-lg text-[#B0B7C3] hover:text-primary hover:bg-[#2A303C] transition-colors">
+          <button className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background transition-colors">
             <EditIcon className="w-3.5 h-3.5" />
           </button>
-          <button className="p-1 rounded-lg text-[#B0B7C3] hover:text-primary hover:bg-[#2A303C] transition-colors">
+          <button className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background transition-colors">
             <BarChart2Icon className="w-3.5 h-3.5" />
           </button>
-          <button className="p-1 rounded-lg text-[#B0B7C3] hover:text-primary hover:bg-[#2A303C] transition-colors">
+          <button className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background transition-colors">
             <ExternalLinkIcon className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -239,9 +239,9 @@ function twoSum(nums, target) {
       {/* Main Content with Panels */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Panel */}
-        <div className="h-1/2 md:h-full bg-[#343B4A] w-full md:w-1/2 flex flex-col">
-          <div className="h-full border-b md:border-b-0 md:border-r border-[#3A4253] flex flex-col">
-            <div className="p-2 border-b border-[#3A4253] flex-shrink-0">
+        <div className="h-1/2 md:h-full bg-surface w-full md:w-1/2 flex flex-col">
+          <div className="h-full border-b md:border-b-0 md:border-r border-border flex flex-col">
+            <div className="p-2 border-b border-border flex-shrink-0">
               <div className="flex gap-1 overflow-x-auto">
                 <TabButton
                   active={activeTab === "question"}
@@ -269,11 +269,11 @@ function twoSum(nums, target) {
         </div>
 
         {/* Resize Handle - hidden on mobile */}
-        <div className="hidden md:block w-1 bg-[#3A4253] cursor-col-resize relative"></div>
+        <div className="hidden md:block w-1 bg-border cursor-col-resize relative"></div>
 
         {/* Right Panel - Code Editor */}
-        <div className="h-1/2 md:h-full bg-[#282c34] w-full md:w-1/2 flex flex-col">
-          <div className="flex-1 p-2 md:p-4 font-mono text-sm text-primary overflow-y-auto">
+        <div className="h-1/2 md:h-full bg-code-background w-full md:w-1/2 flex flex-col">
+          <div className="flex-1 p-2 md:p-4 font-mono text-sm text-foreground overflow-y-auto">
             <div className="whitespace-pre-wrap text-xs md:text-sm leading-relaxed">
               {highlightCode(problem.functionSignature)}
             </div>
@@ -282,7 +282,7 @@ function twoSum(nums, target) {
       </div>
 
       {/* Floating AI Help button */}
-      <button className="absolute bottom-2 right-2 md:bottom-4 md:right-4 flex items-center px-2 py-1.5 md:px-3 md:py-2 bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0891b2] hover:to-[#2563eb] text-primary rounded-full text-xs font-medium shadow-lg shadow-[0_4px_14px_0_rgba(59,130,246,0.2)] z-10">
+      <button className="absolute bottom-2 right-2 md:bottom-4 md:right-4 flex items-center px-2 py-1.5 md:px-3 md:py-2 bg-gradient-to-r from-marketing-action-start to-marketing-action-end hover:from-marketing-action-hover-start hover:to-marketing-action-hover-end text-marketing-action-foreground rounded-full text-xs font-medium shadow-lg z-10">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-1.5"

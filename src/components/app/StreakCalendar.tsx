@@ -1,3 +1,4 @@
+import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext, useMemo } from 'react';
 import { useQuery } from 'react-query';
@@ -62,7 +63,7 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-secondary text-sm">Loading calendar...</div>
+        <div className="text-muted-foreground text-sm">Loading calendar...</div>
       </div>
     );
   }
@@ -73,16 +74,16 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={prevMonth}
-          className="p-1.5 rounded-md hover:bg-[#3A4150] text-secondary hover:text-primary transition-colors"
+          className="p-1.5 rounded-md hover:bg-calendar-inactive text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronLeft size={18} />
         </button>
-        <h2 className="text-base font-semibold text-primary">
+        <h2 className="text-base font-semibold text-foreground">
           {format(currentMonth, 'MMMM yyyy')}
         </h2>
         <button
           onClick={nextMonth}
-          className="p-1.5 rounded-md hover:bg-[#3A4150] text-secondary hover:text-primary transition-colors"
+          className="p-1.5 rounded-md hover:bg-calendar-inactive text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronRight size={18} />
         </button>
@@ -91,7 +92,7 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
       {/* Day of Week Headers */}
       <div className="grid grid-cols-7 gap-2 mb-2">
         {dayNames.map((day, i) => (
-          <div key={i} className="text-center text-secondary text-sm font-medium py-1">
+          <div key={i} className="text-center text-muted-foreground text-sm font-medium py-1">
             {day}
           </div>
         ))}
@@ -117,10 +118,10 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
                   w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
                   transition-all duration-150 cursor-default
                   ${!isCurrentMonth ? 'opacity-30' : ''}
-                  ${isTodayDate ? 'ring-2 ring-[#3b82f6] ring-offset-2 ring-offset-[#24272A]' : ''}
+                  ${isTodayDate ? 'ring-2 ring-app-action-end ring-offset-2 ring-offset-calendar-offset' : ''}
                   ${isActive 
-                    ? 'bg-[#22c55e] text-white' 
-                    : 'bg-[#3A4150] text-secondary hover:bg-[#4A5160]'
+                    ? 'bg-calendar-active text-foreground'
+                    : 'bg-calendar-inactive text-muted-foreground hover:bg-calendar-hover'
                   }
                 `}
               >
@@ -136,20 +137,20 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-between mt-5 pt-4 border-t border-divide">
+      <div className="flex items-center justify-between mt-5 pt-4 border-t border-border">
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-3.5 h-3.5 rounded-full bg-[#3A4150]"></div>
-            <span className="text-secondary text-sm">No activity</span>
+            <div className="w-3.5 h-3.5 rounded-full bg-calendar-inactive"></div>
+            <span className="text-muted-foreground text-sm">No activity</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3.5 h-3.5 rounded-full bg-[#22c55e] flex items-center justify-center">
-              <Check size={9} strokeWidth={3} className="text-white" />
+            <div className="w-3.5 h-3.5 rounded-full bg-calendar-active flex items-center justify-center">
+              <Check size={9} strokeWidth={3} className="text-foreground" />
             </div>
-            <span className="text-secondary text-sm">Activity</span>
+            <span className="text-muted-foreground text-sm">Activity</span>
           </div>
         </div>
-        <div className="text-secondary text-sm">
+        <div className="text-muted-foreground text-sm">
           {activityData?.totalActiveDays || 0} days
         </div>
       </div>
@@ -157,7 +158,7 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
       <ReactTooltip
         id="streak-calendar-tooltip"
         place="top"
-        style={{ backgroundColor: "#111111", fontSize: "12px", borderRadius: "6px" }}
+        style={{ backgroundColor: cssColor('tooltip-background'), fontSize: "12px", borderRadius: "6px" }}
       />
     </div>
   );

@@ -10,13 +10,13 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, videoId }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-base_100 bg-opacity-75 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-background bg-opacity-75 flex items-center justify-center z-50">
       {/* Modal Container */}
-      <div className="relative bg-[#111111] rounded-lg shadow-xl w-[90%] max-w-4xl p-8">
+      <div className="relative bg-surface-video rounded-lg shadow-xl w-[90%] max-w-4xl p-8">
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-primary hover:text-secondary transition-colors duration-200"
+          className="absolute top-4 right-4 text-foreground hover:text-muted-foreground transition-colors duration-200"
         >
           <span className="material-icons text-3xl">close</span>
         </button>

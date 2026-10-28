@@ -1,3 +1,4 @@
+import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { auth } from '../../firebaseConfig';
@@ -79,7 +80,7 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
         
         showToast(
           <>
-            <span className="inline-block mr-2 bg-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
+            <span className="inline-block mr-2 bg-status-success rounded-full" style={{ width: '10px', height: '10px' }}></span>
             {isEditMode ? 'Collection updated successfully' : 'Collection created successfully'}
           </>
         );
@@ -125,24 +126,24 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
       <>
         {/* Modal Backdrop */}
         <div
-          className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          className={`fixed inset-0 bg-overlay/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           onClick={onClose}
         />
         
         {/* Modal */}
         <div
-          className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full max-w-md rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-500 bg-gradient-to-b from-[#2A303C] to-[#252B38] border border-[#3A4150]/50 text-primary overflow-hidden ${isOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}`}
+          className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full max-w-md rounded-xl shadow-[0_10px_40px_rgb(var(--overlay)/0.3)] transition-all duration-500 bg-gradient-to-b from-background to-surface-dialog-end border border-border-subtle/50 text-foreground overflow-hidden ${isOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}`}
         >
           {/* Decorative accent line */}
-          <div className="h-1 w-full bg-gradient-to-r from-[#ef4444] to-[#f87171]"></div>
+          <div className="h-1 w-full bg-gradient-to-r from-status-danger to-status-danger-soft"></div>
           
           <div className="p-6">
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold tracking-tight text-primary">Free Tier limit reached!</h2>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">Free Tier limit reached!</h2>
               <button
                 onClick={onClose}
-                className="h-8 w-8 rounded-full hover:bg-[#3A4150]/70 transition-colors duration-200 flex items-center justify-center"
+                className="h-8 w-8 rounded-full hover:bg-border-subtle/70 transition-colors duration-200 flex items-center justify-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -151,16 +152,16 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
             </div>
             
             <div className="space-y-5">
-              <p className="text-gray-300 text-sm">You may only create up to 3 collections on the free tier. To create more, please upgrade your membership.</p>
+              <p className="text-foreground-soft text-sm">You may only create up to 3 collections on the free tier. To create more, please upgrade your membership.</p>
               
               {/* Modal Footer */}
               <div className="flex justify-end pt-4">
                 <button 
                   onClick={onClose}
-                  className="relative overflow-hidden bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0ea5c4] hover:to-[#2d74e7] text-primary shadow-md transition-all duration-200 py-2 px-6 rounded-md"
+                  className="relative overflow-hidden bg-gradient-to-r from-app-action-start to-app-action-end hover:from-app-action-dialog-hover-start hover:to-app-action-dialog-hover-end text-foreground shadow-md transition-all duration-200 py-2 px-6 rounded-md"
                 >
                   Close
-                  <span className="absolute inset-0 w-full h-full bg-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
+                  <span className="absolute inset-0 w-full h-full bg-foreground/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
                 </button>
               </div>
             </div>
@@ -174,16 +175,16 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
     <>
       {/* Modal Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 bg-overlay/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={onClose}
       />
       
       {/* Modal */}
       <div
-        className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full max-w-md rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-500 bg-gradient-to-b from-[#2A303C] to-[#252B38] border border-[#3A4150]/50 text-primary overflow-hidden ${isOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}`}
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full max-w-md rounded-xl shadow-[0_10px_40px_rgb(var(--overlay)/0.3)] transition-all duration-500 bg-gradient-to-b from-background to-surface-dialog-end border border-border-subtle/50 text-foreground overflow-hidden ${isOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}`}
       >
         {/* Decorative accent line at top */}
-        <div className="h-1 w-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6]"></div>
+        <div className="h-1 w-full bg-gradient-to-r from-app-action-start to-app-action-end"></div>
         
         <div className="p-6 relative">
           {/* Decorative curved gradient line at bottom - positioned behind content */}
@@ -199,8 +200,8 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
               <path d="M0 10C80 20 180 0 400 10" stroke="url(#blueGradient)" strokeWidth="1.5" strokeLinecap="round" />
               <defs>
                 <linearGradient id="blueGradient" x1="0" y1="10" x2="400" y2="10" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#06b6d4" />
-                  <stop offset="1" stopColor="#3b82f6" />
+                  <stop stopColor={cssColor('app-action-start')} />
+                  <stop offset="1" stopColor={cssColor('app-action-end')} />
                 </linearGradient>
               </defs>
             </svg>
@@ -208,10 +209,10 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
           
           {/* Modal Header */}
           <div className="flex items-center justify-between mb-6 relative z-10">
-            <h2 className="text-xl font-semibold tracking-tight text-primary">{isEditMode ? 'Edit Collection' : 'Create New Collection'}</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">{isEditMode ? 'Edit Collection' : 'Create New Collection'}</h2>
             <button
               onClick={onClose}
-              className="h-8 w-8 rounded-full hover:bg-[#3A4150]/70 transition-colors duration-200 flex items-center justify-center"
+              className="h-8 w-8 rounded-full hover:bg-border-subtle/70 transition-colors duration-200 flex items-center justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -221,9 +222,9 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
           
           <div className="space-y-5 relative z-10">
             <div className="space-y-2.5">
-              <label htmlFor="collectionName" className="text-sm font-medium text-gray-300 flex items-center">
+              <label htmlFor="collectionName" className="text-sm font-medium text-foreground-soft flex items-center">
                 Name
-                <span className="ml-1 text-xs text-hard">*</span>
+                <span className="ml-1 text-xs text-difficulty-hard">*</span>
               </label>
               <div className="relative group">
                 <input 
@@ -233,11 +234,11 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
                   name="collectionName" 
                   value={collectionName} 
                   onChange={(e) => setCollectionName(e.target.value)} 
-                  className="w-full px-3 py-2 bg-[#1E232C] border border-[#3A4150]/70 rounded-md shadow-sm outline-none focus:outline-none focus:border-[#06b6d4]/70 focus:ring-1 focus:ring-[#3b82f6]/50 transition-all duration-200 text-primary h-11" 
+                  className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70 rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70 focus:ring-1 focus:ring-app-action-end/50 transition-all duration-200 text-foreground h-11"
                   placeholder="Enter collection name..."
                   style={{ outline: 'none' }}
                 />
-                <div className="absolute inset-0 rounded-md border border-[#3b82f6]/0 group-focus-within:border-[#3b82f6]/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgba(59,130,246,0)] group-focus-within:shadow-[0_0_10px_1px_rgba(59,130,246,0.2)]"></div>
+                <div className="absolute inset-0 rounded-md border border-app-action-end/0 group-focus-within:border-app-action-end/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)] group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"></div>
               </div>
             </div>
             
@@ -246,12 +247,12 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
               <button 
                 onClick={handleSubmit}
                 disabled={!collectionName.trim() || isSubmitting}
-                className={`relative overflow-hidden bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0ea5c4] hover:to-[#2d74e7] text-primary shadow-md transition-all duration-200 py-2 px-6 rounded-md ${(!collectionName.trim() || isSubmitting) ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`relative overflow-hidden bg-gradient-to-r from-app-action-start to-app-action-end hover:from-app-action-dialog-hover-start hover:to-app-action-dialog-hover-end text-foreground shadow-md transition-all duration-200 py-2 px-6 rounded-md ${(!collectionName.trim() || isSubmitting) ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {isSubmitting ? (
                   <>
                     <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary inline-block"
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-foreground inline-block"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -275,7 +276,7 @@ const CollectionModal = ({ isOpen, onClose, isEditMode = false, collectionToEdit
                 ) : (
                   isEditMode ? 'Update' : 'Create'
                 )}
-                <span className="absolute inset-0 w-full h-full bg-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
+                <span className="absolute inset-0 w-full h-full bg-foreground/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
               </button>
             </div>
           </div>

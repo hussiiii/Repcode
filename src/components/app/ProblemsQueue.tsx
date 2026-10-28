@@ -1,3 +1,4 @@
+import { cssColor, hexColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext, useRef } from 'react';
@@ -39,51 +40,51 @@ const sanitizeCodeBlocks = (html: string) => {
       const textNode = document.createTextNode(code.textContent || '');
       code.parentNode?.replaceChild(textNode, code);
     }
-    pre.style.color = '#FFFFFF'; // Force white text for pre blocks
+    pre.style.color = cssColor('foreground'); // Force white text for pre blocks
   }
 
-  return div.innerHTML.replace(/color:\s*[^;]+;/gi, 'color: #FFFFFF;');
+  return div.innerHTML.replace(/color:\s*[^;]+;/gi, 'color: rgb(var(--foreground)/1);');
 };
 
 // Update the CSS block with styling for <code> elements
 const preBlockStyles = `
   .problem-content pre {
-    background-color: #343B4A !important;
-    border: 1px solid #3A4253 !important;
+    background-color: rgb(var(--surface)/1) !important;
+    border: 1px solid rgb(var(--border)/1) !important;
     border-radius: 6px !important;
     padding: 12px !important;
     margin: 12px 0 !important;
     overflow-x: auto !important;
-    color: #E2E8F0 !important;
+    color: rgb(var(--foreground-code-body)/1) !important;
   }
 
   .problem-content pre code {
-    color: #E2E8F0 !important;
+    color: rgb(var(--foreground-code-body)/1) !important;
     font-family: monospace !important;
   }
 
   /* Style for inline code elements (not inside pre) */
   .problem-content code:not(pre code) {
-    background-color: #3A4253 !important;
-    color: #FFFFFF !important;
+    background-color: rgb(var(--border)/1) !important;
+    color: rgb(var(--foreground)/1) !important;
     padding: 2px 5px !important;
     border-radius: 4px !important;
     font-family: monospace !important;
     font-size: 0.9em !important;
-    border: 1px solid #4A5267 !important;
+    border: 1px solid rgb(var(--border-strong)/1) !important;
   }
   .prose-invert {
-    color: #FFFFFF !important; /* Force white text for prose content */
+    color: rgb(var(--foreground)/1) !important; /* Force white text for prose content */
   }
   .prose-invert a {
-    color: #4CAF50 !important; /* Ensure links are green, not black */
+    color: rgb(var(--editor-link)/1) !important; /* Ensure links are green, not black */
   }
   /* Ensure AceEditor text is white */
   .ace_editor {
-    color: #FFFFFF !important;
+    color: rgb(var(--foreground)/1) !important;
   }
   .ace_cursor {
-    color: #FFFFFF !important;
+    color: rgb(var(--foreground)/1) !important;
   }
 
 `;
@@ -152,19 +153,19 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             <p className="mb-3 text-base">When you&apos;re finished solving the problem, click here to give feedback:</p>
             <div className="space-y-2 text-sm">
               <div className="flex items-start">
-                <span className="font-semibold mr-2" style={{ color: '#ff6b6b' }}>Again:</span>
+                <span className="font-semibold mr-2" style={{ color: cssColor('status-error') }}>Again:</span>
                 <span>You had no clue how to solve it</span>
               </div>
               <div className="flex items-start">
-                <span className="font-semibold mr-2" style={{ color: '#F6903C' }}>Hard:</span>
+                <span className="font-semibold mr-2" style={{ color: cssColor('feedback-hard-label') }}>Hard:</span>
                 <span>You found a partial solution that passed some tests, OR you found the optimal solution but it took you a long time</span>
               </div>
               <div className="flex items-start">
-                <span className="font-semibold mr-2" style={{ color: '#34BF8F' }}>Good:</span>
+                <span className="font-semibold mr-2" style={{ color: cssColor('feedback-good-label') }}>Good:</span>
                 <span>You could come up with and thoroughly explain the optimal approach</span>
               </div>
               <div className="flex items-start">
-                <span className="font-semibold mr-2" style={{ color: '#2563EB' }}>Easy:</span>
+                <span className="font-semibold mr-2" style={{ color: cssColor('feedback-easy-label') }}>Easy:</span>
                 <span>You could optimally solve the problem very quickly</span>
               </div>
             </div>
@@ -519,15 +520,15 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
       switch (label) {
         case 'Again':
         case 'Lapse':
-          return 'text-error rounded-md hover:bg-hover2'; 
+          return 'text-status-error rounded-md hover:bg-surface-hover-alt';
         case 'Hard':
-          return 'text-medium rounded-md hover:bg-hover2'; 
+          return 'text-difficulty-medium rounded-md hover:bg-surface-hover-alt';
         case 'Good':
-          return 'text-easy rounded-md hover:bg-hover2'; 
+          return 'text-difficulty-easy rounded-md hover:bg-surface-hover-alt';
         case 'Easy':
-          return 'text-blue rounded-md hover:bg-hover2'; 
+          return 'text-action rounded-md hover:bg-surface-hover-alt';
         default:
-          return 'text-neutral dark:text-secondary rounded-md hover:bg-hover2'; 
+          return 'text-inverse dark:text-muted-foreground rounded-md hover:bg-surface-hover-alt';
       }
     };
 
@@ -890,27 +891,27 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         <div className="flex justify-center items-center h-[80vh]">
           <div className="relative flex flex-col items-center">
             {/* Outer glow effect */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] blur-xl opacity-20 animate-pulse"></div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start to-app-action-end blur-xl opacity-20 animate-pulse"></div>
             
             {/* Spinner container */}
             <div className="relative">
               {/* Gradient ring */}
               <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                              bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] opacity-20"></div>
+                              bg-gradient-to-r from-app-action-start to-app-action-end opacity-20"></div>
               
               {/* Spinning gradient arc */}
               <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
                               rounded-full animate-spin duration-1000" 
                     style={{
-                      borderTopColor: '#06b6d4',
-                      borderRightColor: '#3b82f6',
+                      borderTopColor: cssColor('app-action-start'),
+                      borderRightColor: cssColor('app-action-end'),
                       animationDuration: '1s'
                     }}>
               </div>
             </div>
             
             {/* Loading text with shimmer effect */}
-            <div className="mt-4 text-sm font-medium text-[#B0B7C3] relative overflow-hidden">
+            <div className="mt-4 text-sm font-medium text-muted-foreground relative overflow-hidden">
               <span>Loading</span>
               <span className="inline-flex overflow-hidden ml-1">
                 <span className="animate-ellipsis">.</span>
@@ -926,7 +927,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
   if (!isLoading && dueProblems.length === 0) {
     return (
       <div className="flex justify-center items-center h-full">
-        <p className="text-xl text-center text-secondary">
+        <p className="text-xl text-center text-muted-foreground">
         🎉Congratulations!🎉 You have finished all the problems due for today.
         </p>
       </div>
@@ -942,15 +943,15 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
   // Function to determine icon color based on label
   const getIconColor = (label: string): string => {
     switch (label.toLowerCase()) {
-      case 'description': return 'text-[#FF5252]'; // Red
-      case 'notes': return 'text-[#FF9800]'; // Orange
-      case 'whiteboard': return 'text-[#2196F3]'; // Blue
-      case 'solution': return 'text-[#FFCA28]'; // Yellow
-      case 'repcode ai': return 'text-[#FF5722]'; // Deep Orange
-      case 'edit': return 'text-[#FF9800]'; // Orange
-      case 'stats': return 'text-[#2196F3]'; // Blue
-      case 'run on leetcode': return 'text-[#4CAF50]'; // Green
-      default: return 'text-white'; // Default white
+      case 'description': return 'text-editor-icon-description'; // Red
+      case 'notes': return 'text-editor-icon-notes'; // Orange
+      case 'whiteboard': return 'text-editor-icon-tools'; // Blue
+      case 'solution': return 'text-editor-icon-solution'; // Yellow
+      case 'repcode ai': return 'text-editor-icon-ai'; // Deep Orange
+      case 'edit': return 'text-editor-icon-notes'; // Orange
+      case 'stats': return 'text-editor-icon-tools'; // Blue
+      case 'run on leetcode': return 'text-editor-icon-run'; // Green
+      default: return 'text-foreground'; // Default white
     }
   };
 
@@ -968,16 +969,16 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         px-4 py-2 text-sm font-medium rounded-full flex items-center space-x-2
         transition-all duration-200
         ${active 
-          ? 'bg-[#3b82f6]/15 text-white' 
-          : 'text-white hover:text-white hover:bg-[#2A303C]/50'}
+          ? 'bg-app-action-end/15 text-foreground'
+          : 'text-foreground hover:text-foreground hover:bg-background/50'}
       `}
-      style={{ color: '#FFFFFF' }} // Explicitly enforce white text
+      style={{ color: cssColor('foreground') }} // Explicitly enforce white text
     >
       {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
-        className: `w-5 h-5 ${active ? 'text-white' : getIconColor(label)}`,
+        className: `w-5 h-5 ${active ? 'text-foreground' : getIconColor(label)}`,
         style: { transition: 'color 0.2s' }
       })}
-      <span className={`text-white ${active ? 'font-semibold' : ''}`} style={{ color: '#FFFFFF' }}>{label}</span>
+      <span className={`text-foreground ${active ? 'font-semibold' : ''}`} style={{ color: cssColor('foreground') }}>{label}</span>
     </button>
   );
 
@@ -990,27 +991,27 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
   const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => (
     <button
       onClick={onClick}
-      className="px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-2 text-white hover:text-white hover:bg-[#2A303C]/50 transition-all duration-200"
-      style={{ color: '#FFFFFF' }} // Explicitly enforce white text
+      className="px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-2 text-foreground hover:text-foreground hover:bg-background/50 transition-all duration-200"
+      style={{ color: cssColor('foreground') }} // Explicitly enforce white text
     >
       {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
         className: `w-5 h-5 ${getIconColor(label)}`,
         style: { transition: 'color 0.2s' }
       })}
-      <span className="text-white" style={{ color: '#FFFFFF' }}>{label}</span>
+      <span className="text-foreground" style={{ color: cssColor('foreground') }}>{label}</span>
     </button>
   );
 
     return (
-      <div className="h-screen bg-[#2A303C] flex flex-col">
+      <div className="h-screen bg-background flex flex-col">
         {/* Add the style tag to the component */}
         <style>{preBlockStyles}</style>
         
         {/* Top Navigation */}
-        <div className="flex items-center justify-between px-6 h-16 border-b border-[#3A4253] bg-[#343B4A]">
+        <div className="flex items-center justify-between px-6 h-16 border-b border-border bg-surface">
           <div className="flex items-center">
             {/* Title showing the current problem name */}
-            <h1 className="text-2xl font-semibold text-primary mr-4">
+            <h1 className="text-2xl font-semibold text-foreground mr-4">
               {dueProblems.length > 0 ? dueProblems[0].name : "Problem Queue"}
             </h1>
             
@@ -1020,12 +1021,12 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 <Badge 
                   type="difficulty" 
                   value={dueProblems[0].difficulty} 
-                  className="text-sm py-1.5 px-4" 
+                  className="py-1.5 px-4"
                 />
                 <Badge 
                   type="problemType" 
                   value={dueProblems[0].type} 
-                  className="text-sm py-1.5 px-4"
+                  className="py-1.5 px-4"
                 />
               </div>
             )}
@@ -1033,12 +1034,12 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           </div>
           
           {/* Status indicator stays on the right */}
-          <div className="flex items-center text-xs text-[#B0B7C3]">
+          <div className="flex items-center text-xs text-muted-foreground">
             <Stopwatch resetKey={dueProblems[0]?.id ?? 'empty'} />
             <div className="relative mr-2">
-              <div className="w-2.5 h-2.5 bg-review rounded-full"></div>
+              <div className="w-2.5 h-2.5 bg-study-review rounded-full"></div>
               <div
-                className="absolute inset-0 w-2.5 h-2.5 bg-[#00FF00] rounded-full opacity-70"
+                className="absolute inset-0 w-2.5 h-2.5 bg-presence-online rounded-full opacity-70"
                 style={{
                   animation: "breathe 3s ease-in-out infinite",
                   filter: "blur(1px)"
@@ -1077,11 +1078,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         >
           {/* Left Panel */}
           <div 
-            className="h-full flex flex-col bg-base_100"
+            className="h-full flex flex-col bg-background"
             style={{ width: `${panelWidth}%` }}
           >
-            <div className="h-full border-r border-[#3A4253] bg-base_100 flex flex-col">
-              <div className="border-b border-[#3A4253] bg-base_100 sticky top-0 z-10 p-2" style={{ color: '#FFFFFF' }}>
+            <div className="h-full border-r border-border bg-background flex flex-col">
+              <div className="border-b border-border bg-background sticky top-0 z-10 p-2" style={{ color: cssColor('foreground') }}>
                 <div className="flex items-center gap-1 px-2">
                   <TabButton 
                     active={content === 'question'} 
@@ -1118,8 +1119,8 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                         px-3 py-2 text-sm font-medium rounded-full flex items-center gap-1.5
                         transition-all duration-200
                         ${isMoreMenuOpen || content === 'ai-assistant'
-                          ? 'bg-[#3b82f6]/15 text-white' 
-                          : 'text-[#B0B7C3] hover:text-[#FFFFFF] hover:bg-[#2A303C]/50'}
+                          ? 'bg-app-action-end/15 text-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}
                       `}
                     >
                       <span>More</span>
@@ -1128,7 +1129,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                     
                     {/* Dropdown Menu */}
                     {isMoreMenuOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-52 bg-[#2A303C] border border-[#3A4253] rounded-xl shadow-2xl overflow-hidden z-50">
+                      <div className="absolute right-0 top-full mt-2 w-52 bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-50">
                         <div className="p-1.5">
                           {/* Repcode AI */}
                           <button
@@ -1138,11 +1139,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                             }}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
                               content === 'ai-assistant' 
-                                ? 'bg-[#3b82f6]/15 text-white' 
-                                : 'text-[#B0B7C3] hover:text-white hover:bg-[#343B4A]'
+                                ? 'bg-app-action-end/15 text-foreground'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-surface'
                             }`}
                           >
-                            <BotMessageSquare className="w-4 h-4 text-[#FF5722]" />
+                            <BotMessageSquare className="w-4 h-4 text-editor-icon-ai" />
                             <span className="text-sm font-medium">Repcode AI</span>
                           </button>
                           
@@ -1152,9 +1153,9 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                               setIsEditModalOpen(true);
                               setIsMoreMenuOpen(false);
                             }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
                           >
-                            <Edit3 className="w-4 h-4 text-[#FF9800]" />
+                            <Edit3 className="w-4 h-4 text-editor-icon-notes" />
                             <span className="text-sm font-medium">Edit</span>
                           </button>
                           
@@ -1164,9 +1165,9 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                               setIsStatsModalOpen(true);
                               setIsMoreMenuOpen(false);
                             }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
                           >
-                            <BarChart2 className="w-4 h-4 text-[#2196F3]" />
+                            <BarChart2 className="w-4 h-4 text-editor-icon-tools" />
                             <span className="text-sm font-medium">Stats</span>
                           </button>
                           
@@ -1178,9 +1179,9 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                                   window.open(dueProblems[0].link, '_blank');
                                   setIsMoreMenuOpen(false);
                                 }}
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#B0B7C3] hover:text-white hover:bg-[#343B4A] transition-all duration-150"
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
                               >
-                                <ExternalLink className="w-4 h-4 text-[#4CAF50]" />
+                                <ExternalLink className="w-4 h-4 text-editor-icon-run" />
                                 <span className="text-sm font-medium">Run on Leetcode</span>
                               </button>
                             </div>
@@ -1192,7 +1193,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 </div>
               </div>
               {/* Content Area */}
-              <div className="flex-1 overflow-y-auto p-4 bg-base_100" style={{ color: '#FFFFFF' }}>
+              <div className="flex-1 overflow-y-auto p-4 bg-background" style={{ color: cssColor('foreground') }}>
                 {content === 'solution' && buttons?.length > 0 && (
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-2">
@@ -1202,19 +1203,19 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                         switch (button.label) {
                           case 'Again':
                           case 'Lapse':
-                            buttonStyle = 'border-[#8B3A3A] text-[#FF6B6B] hover:bg-[#3A2A2A]';
+                            buttonStyle = 'border-status-error-border text-status-error hover:bg-status-error-background';
                             break;
                           case 'Hard':
-                            buttonStyle = 'border-[#8C5E2A] text-[#FFA94D] hover:bg-[#3A332A]';
+                            buttonStyle = 'border-feedback-hard-border text-feedback-hard hover:bg-feedback-hard-background';
                             break;
                           case 'Good':
-                            buttonStyle = 'border-[#2D6A39] text-[#69DB7C] hover:bg-[#2A3A2E]';
+                            buttonStyle = 'border-feedback-good-border text-feedback-good hover:bg-feedback-good-background';
                             break;
                           case 'Easy':
-                            buttonStyle = 'border-[#2A5A8C] text-[#74C0FC] hover:bg-[#202C3A]';
+                            buttonStyle = 'border-feedback-easy-border text-feedback-easy hover:bg-feedback-easy-background';
                             break;
                           default:
-                            buttonStyle = 'border-[#3A4253] text-primary';
+                            buttonStyle = 'border-border text-foreground';
                         }
                         
                         return (
@@ -1248,10 +1249,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                     </div>
                     {/* Warning for severely overdue problems */}
                     {isSeverelyOverdue && (
-                      <div className="mt-3 p-3 bg-[#3A2A2A] border border-[#8B3A3A] rounded-md">
-                        <p className="text-sm text-[#FF9999]">
+                      <div className="mt-3 p-3 bg-status-error-background border border-status-error-border rounded-md">
+                        <p className="text-sm text-status-reminder">
                           ⚠️ This problem is over {userSettings?.overdueWarningThreshold} months overdue ({monthsOverdue} months). 
-                          If you no longer remember it well, you should <span className="font-semibold text-[#FF6B6B]">Lapse</span> it to trigger the relearning process
+                          If you no longer remember it well, you should <span className="font-semibold text-status-error">Lapse</span> it to trigger the relearning process
                         </p>
                       </div>
                     )}
@@ -1260,10 +1261,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 {dueProblems.length > 0 && (
                   <div key={content} className="min-h-0">
                     {content === 'notes' ? (
-                      <p className="text-primary mt-4 whitespace-pre-wrap text-lg wrap-text">{dueProblems[0].notes}</p>
+                      <p className="text-foreground mt-4 whitespace-pre-wrap text-lg wrap-text">{dueProblems[0].notes}</p>
                     ) : content === 'question' ? (
                       <div 
-                        className="text-primary mt-4 problem-content prose prose-invert max-w-none overflow-auto"
+                        className="text-foreground mt-4 problem-content prose prose-invert max-w-none overflow-auto"
                         dangerouslySetInnerHTML={{ 
                           __html: sanitizeCodeBlocks(dueProblems[0].question)
                         }}
@@ -1308,7 +1309,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           {/* Resize Handle */}
           <div
             className={`
-              w-1 hover:w-2 bg-[#3A4253] cursor-col-resize relative group
+              w-1 hover:w-2 bg-border cursor-col-resize relative group
               transition-all duration-200
               ${isDragging ? 'w-2' : ''}
             `}
@@ -1321,11 +1322,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 ${isDragging || 'group-hover:opacity-100'}
               `}
             >
-              <div className="bg-[#4A5267] rounded-md p-1 -ml-3">
-                <span className="material-icons text-[#B0B7C3]" style={{ fontSize: '16px' }}>chevron_left</span>
+              <div className="bg-border-strong rounded-md p-1 -ml-3">
+                <span className="material-icons text-muted-foreground" style={{ fontSize: '16px' }}>chevron_left</span>
               </div>
-              <div className="bg-[#4A5267] rounded-md p-1 -ml-3 mt-1">
-                <span className="material-icons text-[#B0B7C3]" style={{ fontSize: '16px' }}>chevron_right</span>
+              <div className="bg-border-strong rounded-md p-1 -ml-3 mt-1">
+                <span className="material-icons text-muted-foreground" style={{ fontSize: '16px' }}>chevron_right</span>
               </div>
             </div>
           </div>
@@ -1368,7 +1369,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         <ReactTooltip
           id="my-tooltip-1"
           place="bottom"
-          style={{ backgroundColor: "#111111" }}
+          style={{ backgroundColor: cssColor('tooltip-background') }}
         />
         
         {/* Modals and Toast */}
@@ -1410,11 +1411,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           }}
           styles={{
             options: {
-              primaryColor: '#3b82f6',
-              backgroundColor: '#343B4A',
-              textColor: '#E2E8F0',
-              arrowColor: '#343B4A',
-              overlayColor: 'rgba(0, 0, 0, 0.4)',
+              primaryColor: hexColor('app-action-end'),
+              backgroundColor: cssColor('surface'),
+              textColor: cssColor('foreground-code-body'),
+              arrowColor: cssColor('surface'),
+              overlayColor: cssColor('overlay', 0.4),
             },
             tooltip: {
               borderRadius: 8,
@@ -1425,7 +1426,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               padding: '16px 20px',
             },
             buttonNext: {
-              backgroundColor: '#3b82f6',
+              backgroundColor: cssColor('app-action-end'),
               fontSize: 14,
               fontWeight: 500,
               padding: '8px 16px',
@@ -1433,7 +1434,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             },
             buttonBack: {
               marginRight: 10,
-              color: '#B0B7C3',
+              color: cssColor('muted-foreground'),
               fontSize: 14,
             },
           }}
@@ -1444,25 +1445,25 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           <div className="fixed bottom-6 right-[1rem] z-10" id="skip-button">
             <button 
               onClick={skipProblem}
-              className="flex items-center px-4 py-3 bg-gradient-to-r from-[#f59e0b] to-[#f97316] hover:from-[#d97706] hover:to-[#ea580c] text-white rounded-full transition-all duration-200"
+              className="flex items-center px-4 py-3 bg-gradient-to-r from-reminder-start to-reminder-end hover:from-reminder-hover-start hover:to-reminder-hover-end text-foreground rounded-full transition-all duration-200"
               style={{ 
-                boxShadow: '0 10px 15px -3px rgba(249, 115, 22, 0.2), 0 4px 6px -4px rgba(249, 115, 22, 0.2)'
+                boxShadow: '0 10px 15px -3px rgb(var(--reminder-end)/0.2), 0 4px 6px -4px rgb(var(--reminder-end)/0.2)'
               }}
-              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(249, 115, 22, 0.3), 0 4px 6px -4px rgba(249, 115, 22, 0.3)'}
-              onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(249, 115, 22, 0.2), 0 4px 6px -4px rgba(249, 115, 22, 0.2)'}
+              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(var(--reminder-end)/0.3), 0 4px 6px -4px rgb(var(--reminder-end)/0.3)'}
+              onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(var(--reminder-end)/0.2), 0 4px 6px -4px rgb(var(--reminder-end)/0.2)'}
             >
               <span className="material-icons mr-2" style={{ fontSize: '20px' }}>skip_next</span>
               <span className="font-medium">Skip</span>
-              <div className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              <div className="absolute inset-0 rounded-full bg-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
             </button>
             
             {/* Tooltip */}
             <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-              <div className="px-3 py-2 bg-[#2A303C] border border-[#3A4150] rounded-lg shadow-xl w-56">
-                <div className="text-xs text-[#B0B7C3] leading-relaxed">
+              <div className="px-3 py-2 bg-background border border-border-subtle rounded-lg shadow-xl w-56">
+                <div className="text-xs text-muted-foreground leading-relaxed">
                   Skip this problem for now, it will reappear later
                 </div>
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-[#3A4150]"></div>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-border-subtle"></div>
               </div>
             </div>
           </div>

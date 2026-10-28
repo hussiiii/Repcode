@@ -27,7 +27,7 @@ const BackgroundDots: React.FC<BackgroundDotsProps> = ({ size, spacing, opacity 
       >
         {sizeArr.map((_, x) => (
           sizeArr.map((_, y) => (
-            <circle key={`${x}-${y}`} cx={9 + (spacing * x)} cy={9 + (spacing * y)} r="1" fill="#fff" fillOpacity={calculateOpacity(x, y)} />
+            <circle key={`${x}-${y}`} cx={9 + (spacing * x)} cy={9 + (spacing * y)} r="1" className="fill-foreground" fillOpacity={calculateOpacity(x, y)} />
           ))
         ))}
       </svg>

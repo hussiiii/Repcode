@@ -46,6 +46,67 @@ This project is an open-source platform designed to streamline your Leetcode pra
 * **Backend**: Prisma, MySQL (production), SQLite (development), Firebase (for auth)
 * **Hosting**: Vercel
 
+## Styling
+
+The fixed current palette lives in `:root` in `src/app/globals.css`, loaded by
+`src/pages/_app.tsx`. Color variables store space-separated RGB channels so
+Tailwind opacity modifiers work, for example `bg-action/20`.
+
+Tailwind's default colors and numbered shades remain available. Prefer role
+utilities such as `bg-background text-foreground`,
+`bg-surface text-muted-foreground border-border`, and
+`bg-action text-action-foreground`. Difficulty, study state, and status colors
+have separate `difficulty-*`, `study-*`, and `status-*` names.
+
+Existing names remain compatibility aliases: `primary` is still white,
+`secondary` is still muted text, and bare `blue`/`neutral` retain their original
+values alongside numbered shades. Migrate hardcoded colors by their role rather
+than changing those aliases globally. `bg-grey` consistently means the palette's
+gray; the dark whiteboard color-picker surface uses `bg-surface-inset`.
+Unspecified borders retain `currentColor` during migration; use `border-border`
+when a component needs the shared border color.
+
+The homepage and `src/components/home` use shared role tokens throughout,
+including hover/focus states, gradients, shadows, SVG fills, and the logo fade.
+Use `marketing-action-*` for CTA gradient stops, `marketing-highlight-*` and
+`marketing-glow-*` for decoration, and the separate marketing feedback,
+navigation, rating, and chart roles for those elements. Named
+`shadow-marketing-*` utilities keep glow geometry consistent. Marketing colors
+are separate from application actions and domain statuses even when their
+current RGB values match.
+
+Code previews use `code-*` tokens; shared problem-description formatting uses
+`code-inline-*` and `code-border`. Badges use `difficulty-*` and `study-*` tokens
+for text, backgrounds, borders, and CSS hover states. Review badges retain their
+existing softer palette independently of the legacy `review` color.
+Define new color values in the central palette rather than adding literal
+colors to homepage components. `tests/home-palette.test.js` checks the migrated
+palette, generated utilities, interactive states, and this boundary.
+
+The remaining application routes and components also use shared tokens. General
+surfaces/text/borders reuse the core roles; `app-action-*`, `feedback-*`,
+`editor-icon-*`, `chart-*`, `calendar-*`, and `drawing-*` preserve their distinct
+current palettes. Legacy names stay available for compatibility. There is no
+theme toggle.
+
+Use `cssColor(token, opacity?)` from `src/lib/colors.ts` for inline DOM/SVG styles.
+Canvas and Chart.js require `canvasColor(token, opacity?)`, which reads the CSS
+channels and returns a resolved color. Use `hexColor(token)` for libraries that
+parse hex explicitly, such as Joyride's primary color. Canvas values are resolved
+on the client; server rendering has safe placeholders. Charts resolve colors
+when their data/options are built. Whiteboard tool colors use named ink tokens,
+while saved paths keep their resolved hex colors so palette edits cannot change an
+existing drawing.
+
+`src/styles/vendor-colors.css` preserves the installed Ace One Dark,
+highlight.js Atom One Dark Reasonable, NProgress, and React Tooltip colors with
+token-based overrides. Third-party layout/behavior and static logo/image artwork
+remain with their original packages/assets. The app-wide palette tests check
+source boundaries, variable references, generated utilities, and those library
+color overrides; runtime helper and whiteboard tests cover the non-CSS consumers.
+Tailwind's default shadows, placeholder shade, and ring colors also reference
+shared variables while retaining their original values and geometry.
+
 ## Authentication and regression checks
 
 Private API routes require a Firebase ID token in the `Authorization: Bearer ...`

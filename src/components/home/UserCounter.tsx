@@ -61,12 +61,12 @@ const UserCounter: React.FC<UserCounterProps> = ({ targetCount, duration = 4000 
   return (
     <div
       id="user-counter"
-      className="inline-flex items-center px-5 py-3 bg-[#343B4A]/80 backdrop-blur-sm rounded-full border border-[#3A4253]"
+      className="inline-flex items-center px-5 py-3 bg-surface/80 backdrop-blur-sm rounded-full border border-border"
     >
-      <UsersIcon className="w-5 h-5 text-[#22d3ee] mr-3" />
-      <span className="text-primary">
+      <UsersIcon className="w-5 h-5 text-marketing-highlight mr-3" />
+      <span className="text-foreground">
         Join our{" "}
-        <span className="text-[#60a5fa]">
+        <span className="text-marketing-highlight-secondary">
           {count.toLocaleString()}+
         </span>{" "}
         users

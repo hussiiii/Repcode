@@ -1,3 +1,4 @@
+import { canvasColor } from '@/lib/colors';
 import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -20,7 +21,7 @@ const centerTextPlugin = {
         // Set font styles for the text
         ctx.save();
         ctx.font = 'bold 46px Arial';
-        ctx.fillStyle = '#FFFFFF'; // Text color
+        ctx.fillStyle = canvasColor('foreground'); // Text color
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
   
@@ -67,7 +68,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ labels, data, backgroundColors 
       legend: {
         position: 'bottom' as const,
         labels: {
-          color: '#BDBDBD',
+          color: canvasColor('chart-legend'),
           padding: 20,
           boxWidth: 10,
           usePointStyle: true,

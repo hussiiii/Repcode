@@ -70,20 +70,20 @@ const Main = () => {
         isOpen={isRandomProblemModalOpen} 
         onClose={() => setIsRandomProblemModalOpen(false)} 
       />
-      <div className="flex min-h-screen bg-[#2A303C] transition-width duration-300"> 
+      <div className="flex min-h-screen bg-background transition-width duration-300">
         <SideBar /> 
         <div className="flex-1 transition-all duration-300">
           <div className="p-6 md:p-8 lg:p-10">
             <div className="max-w-6xl mx-auto">
               <header className="mb-8">
                 <div className="flex justify-between items-center">
-                  <h1 className="text-3xl md:text-4xl font-bold text-primary tracking-tight">
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                     Your Collections
                   </h1>
                   <div className="flex gap-3">
                     <button 
                       onClick={() => setIsRandomProblemModalOpen(true)}
-                      className="flex items-center px-4 py-2 bg-[#343B4A] hover:bg-[#3F475A] border border-[#3A4253] hover:border-[#4A5267] text-primary rounded-lg transition-all duration-200"
+                      className="flex items-center px-4 py-2 bg-surface hover:bg-surface-emphasis border border-border hover:border-border-strong text-foreground rounded-lg transition-all duration-200"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
@@ -93,12 +93,12 @@ const Main = () => {
                     </button>
                     <button 
                       onClick={handleNewCollection}
-                      className="flex items-center px-4 py-2 bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] hover:from-[#0891b2] hover:to-[#2563eb] text-primary rounded-lg transition-all duration-200"
+                      className="flex items-center px-4 py-2 bg-gradient-to-r from-app-action-start to-app-action-end hover:from-app-action-hover-start hover:to-app-action-hover-end text-foreground rounded-lg transition-all duration-200"
                       style={{ 
-                        boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.2), 0 4px 6px -4px rgba(59, 130, 246, 0.2)'
+                        boxShadow: '0 10px 15px -3px rgb(var(--app-action-end)/0.2), 0 4px 6px -4px rgb(var(--app-action-end)/0.2)'
                       }}
-                      onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -4px rgba(59, 130, 246, 0.3)'}
-                      onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(59, 130, 246, 0.2), 0 4px 6px -4px rgba(59, 130, 246, 0.2)'}
+                      onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(var(--app-action-end)/0.3), 0 4px 6px -4px rgb(var(--app-action-end)/0.3)'}
+                      onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(var(--app-action-end)/0.2), 0 4px 6px -4px rgb(var(--app-action-end)/0.2)'}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
@@ -109,7 +109,7 @@ const Main = () => {
                     </button>
                   </div>
                 </div>
-                <p className="text-[#B0B7C3] mt-2 text-lg">
+                <p className="text-muted-foreground mt-2 text-lg">
                   Organize and manage your problem sets
                 </p>
               </header>

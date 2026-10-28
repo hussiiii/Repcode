@@ -1,3 +1,4 @@
+import { cssColor } from '@/lib/colors';
 import { completeSignIn } from '@/auth/completeSignIn';
 import { clearSessionCookie } from '@/auth/sessionCookie';
 import React, { useState, useContext, useEffect } from 'react';
@@ -87,10 +88,10 @@ const Login = () => {
 
   if (isMobile) {
     return (
-      <div className="bg-base_100 min-h-screen flex h-full items-center justify-center py-16">
-        <div className="bg-cards p-6 rounded-lg shadow-lg text-center">
-          <h1 className="text-2xl font-bold text-secondary mb-4">Hello there!</h1>
-          <p className="text-primary">
+      <div className="bg-background min-h-screen flex h-full items-center justify-center py-16">
+        <div className="bg-surface-raised p-6 rounded-lg shadow-lg text-center">
+          <h1 className="text-2xl font-bold text-muted-foreground mb-4">Hello there!</h1>
+          <p className="text-foreground">
             It looks like you are on mobile. As of right now, Repcode.io is meant to be a desktop experience. In the future, we may add mobile compatibility (most likely in the form of an app), but as for right now the application is viewable on desktop only.
           </p>
         </div>
@@ -99,19 +100,19 @@ const Login = () => {
   }
 
   return (
-    <div className="bg-base_100 min-h-screen flex h-full items-center justify-center py-16">
+    <div className="bg-background min-h-screen flex h-full items-center justify-center py-16">
       <main className="w-full max-w-md mx-auto p-6">
-        <div className="mt-7 bg-base_100">
+        <div className="mt-7 bg-background">
           <div className="p-4 sm:p-7">
             <div className="text-center">
               <img src="/repcode.png" alt="Logo" className="mx-auto w-24 h-auto mb-4" />
-              <h1 className="block text-3xl font-bold text-secondary">
+              <h1 className="block text-3xl font-bold text-muted-foreground">
                 Welcome back
               </h1>
-              {/* <p className="mt-2 text-sm text-primary">
+              {/* <p className="mt-2 text-sm text-foreground">
                 {showSignUp ? "Already have an account? " : "Don't have an account yet? "}
                 <span 
-                  className="text-primary decoration-2 hover:underline font-medium cursor-pointer"
+                  className="text-foreground decoration-2 hover:underline font-medium cursor-pointer"
                   onClick={() => setShowSignUp(!showSignUp)}
                 >
                   {showSignUp ? "Sign in here" : "Sign up here"}
@@ -123,10 +124,10 @@ const Login = () => {
                 onClick={googleSignIn} 
                 type="button" 
                 disabled={googleSignInLoading}
-                className={`py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-[#3A4253] bg-[#343B4A] text-[#B0B7C3] shadow-sm transition-all duration-200 ${
+                className={`py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-border bg-surface text-muted-foreground shadow-sm transition-all duration-200 ${
                   googleSignInLoading 
                     ? 'opacity-50 cursor-not-allowed' 
-                    : 'hover:text-[#60a5fa] hover:border-[#60a5fa]'
+                    : 'hover:text-app-highlight hover:border-app-highlight'
                 }`}
               >
                 {googleSignInLoading ? (
@@ -140,41 +141,41 @@ const Login = () => {
                 ) : (
                   <>
                     <svg className="w-4 h-auto" width="46" height="47" viewBox="0 0 46 47" fill="none">
-                      <path d="M46 24.0287C46 22.09 45.8533 20.68 45.5013 19.2112H23.4694V27.9356H36.4069C36.1429 30.1094 34.7347 33.37 31.5957 35.5731L31.5663 35.8669L38.5191 41.2719L38.9885 41.3306C43.4477 37.2181 46 31.1669 46 24.0287Z" fill="#4285F4"/>
-                      <path d="M23.4694 47C29.8061 47 35.1161 44.9144 39.0179 41.3012L31.625 35.5437C29.6301 36.9244 26.9898 37.8937 23.4987 37.8937C17.2793 37.8937 12.0281 33.7812 10.1505 28.1412L9.88649 28.1706L2.61097 33.7812L2.52296 34.0456C6.36608 41.7125 14.287 47 23.4694 47Z" fill="#34A853"/>
-                      <path d="M10.1212 28.1413C9.62245 26.6725 9.32908 25.1156 9.32908 23.5C9.32908 21.8844 9.62245 20.3275 10.0918 18.8588V18.5356L2.75765 12.8369L2.52296 12.9544C0.909439 16.1269 0 19.7106 0 23.5C0 27.2894 0.909439 30.8731 2.49362 34.0456L10.1212 28.1413Z" fill="#FBBC05"/>
-                      <path d="M23.4694 9.07688C27.8699 9.07688 30.8622 10.9863 32.5344 12.5725L39.1645 6.11C35.0867 2.32063 29.8061 0 23.4694 0C14.287 0 6.36607 5.2875 2.49362 12.9544L10.0918 18.8588C11.9987 13.1894 17.25 9.07688 23.4694 9.07688Z" fill="#EB4335"/>
+                      <path d="M46 24.0287C46 22.09 45.8533 20.68 45.5013 19.2112H23.4694V27.9356H36.4069C36.1429 30.1094 34.7347 33.37 31.5957 35.5731L31.5663 35.8669L38.5191 41.2719L38.9885 41.3306C43.4477 37.2181 46 31.1669 46 24.0287Z" fill={cssColor('provider-google-blue')}/>
+                      <path d="M23.4694 47C29.8061 47 35.1161 44.9144 39.0179 41.3012L31.625 35.5437C29.6301 36.9244 26.9898 37.8937 23.4987 37.8937C17.2793 37.8937 12.0281 33.7812 10.1505 28.1412L9.88649 28.1706L2.61097 33.7812L2.52296 34.0456C6.36608 41.7125 14.287 47 23.4694 47Z" fill={cssColor('provider-google-green')}/>
+                      <path d="M10.1212 28.1413C9.62245 26.6725 9.32908 25.1156 9.32908 23.5C9.32908 21.8844 9.62245 20.3275 10.0918 18.8588V18.5356L2.75765 12.8369L2.52296 12.9544C0.909439 16.1269 0 19.7106 0 23.5C0 27.2894 0.909439 30.8731 2.49362 34.0456L10.1212 28.1413Z" fill={cssColor('provider-google-yellow')}/>
+                      <path d="M23.4694 9.07688C27.8699 9.07688 30.8622 10.9863 32.5344 12.5725L39.1645 6.11C35.0867 2.32063 29.8061 0 23.4694 0C14.287 0 6.36607 5.2875 2.49362 12.9544L10.0918 18.8588C11.9987 13.1894 17.25 9.07688 23.4694 9.07688Z" fill={cssColor('provider-google-red')}/>
                     </svg>
                     Continue with Google
                   </>
                 )}
               </button>
-              {/* <div className="py-6 flex items-center text-sm text-secondary uppercase before:flex-[1_1_0%] before:border-t before:me-6 after:flex-[1_1_0%] after:border-t after:ms-6">Or</div> */}
+              {/* <div className="py-6 flex items-center text-sm text-muted-foreground uppercase before:flex-[1_1_0%] before:border-t before:me-6 after:flex-[1_1_0%] after:border-t after:ms-6">Or</div> */}
             </div>
             <div className="mt-5">
-              {error && <div className="text-error">{error}</div>}
+              {error && <div className="text-status-error">{error}</div>}
               {/* <form onSubmit={(e) => {
                 e.preventDefault();
                 showSignUp ? signUp() : signIn();
               }}>
                 <div className="grid gap-y-4">
                   <div>
-                    <label htmlFor="email" className="block text-sm mb-2 text-secondary">Email address</label>
+                    <label htmlFor="email" className="block text-sm mb-2 text-muted-foreground">Email address</label>
                     <input 
                       type="email" 
                       id="email" 
-                      className="py-3 px-4 block w-full border bg-base_100 border-divide text-primary rounded-lg text-sm focus:border-blue focus:outline-none transition-colors duration-300 block w-full" 
+                      className="py-3 px-4 block w-full border bg-background border-border text-foreground rounded-lg text-sm focus:border-action focus:outline-none transition-colors duration-300 block w-full"
                       value={email} 
                       onChange={(e) => setEmail(e.target.value)} 
                       required 
                     />
                   </div>
                   <div>
-                    <label htmlFor="password" className="block text-sm mb-2 text-secondary">Password</label>
+                    <label htmlFor="password" className="block text-sm mb-2 text-muted-foreground">Password</label>
                     <input 
                       type="password" 
                       id="password" 
-                      className="py-3 px-4 block w-full border bg-base_100 border-divide text-primary rounded-lg text-sm focus:border-blue focus:outline-none transition-colors duration-300 block w-full" 
+                      className="py-3 px-4 block w-full border bg-background border-border text-foreground rounded-lg text-sm focus:border-action focus:outline-none transition-colors duration-300 block w-full"
                       value={password} 
                       onChange={(e) => setPassword(e.target.value)} 
                       required 
@@ -182,19 +183,19 @@ const Login = () => {
                   </div>
                   <button 
                     type="submit" 
-                    className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg bg-pop text-neutral transition-transform duration-200 hover:scale-95"
+                    className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg bg-brand text-inverse transition-transform duration-200 hover:scale-95"
                   >
                     {showSignUp ? "Sign Up" : "Sign In"}
                   </button>
                 </div>
               </form> */}
-              <p className="mt-4 text-xs text-center text-secondary">
+              <p className="mt-4 text-xs text-center text-muted-foreground">
                 By continuing, you agree to our&nbsp;
-                <Link href="/privacy" className="underline text-primary">
+                <Link href="/privacy" className="underline text-foreground">
                   privacy policy
                 </Link> 
                 &nbsp;and&nbsp; 
-                <Link href="/terms" className="underline text-primary">
+                <Link href="/terms" className="underline text-foreground">
                  terms of service
                 </Link>.
               </p>

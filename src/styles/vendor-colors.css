@@ -1,0 +1,225 @@
+/* Color overrides for the installed Ace One Dark (BSD), highlight.js theme (BSD),
+ * and NProgress (MIT). Original theme authors and layout rules remain in those packages.
+ * Extra selector specificity keeps these tokens effective when editors inject CSS later. */
+
+/* Ace One Dark */
+.ace-one-dark.ace-one-dark .ace_gutter {
+  background: rgb(var(--syntax-background));
+  color: rgb(var(--syntax-gutter));
+}
+.ace-one-dark.ace-one-dark .ace_print-margin {
+  background: rgb(var(--syntax-print-margin));
+}
+.ace-one-dark.ace-one-dark {
+  background-color: rgb(var(--syntax-background));
+  color: rgb(var(--syntax-foreground));
+}
+.ace-one-dark.ace-one-dark .ace_cursor {
+  color: rgb(var(--syntax-cursor));
+}
+.ace-one-dark.ace-one-dark .ace_marker-layer .ace_selection {
+  background: rgb(var(--syntax-selection));
+}
+.ace-one-dark.ace-one-dark.ace_multiselect .ace_selection.ace_start {
+  box-shadow: 0 0 3px 0 rgb(var(--syntax-background));
+}
+.ace-one-dark.ace-one-dark .ace_marker-layer .ace_step {
+  background: rgb(var(--syntax-step));
+}
+.ace-one-dark.ace-one-dark .ace_marker-layer .ace_bracket {
+  border: 1px solid rgb(var(--syntax-bracket));
+}
+.ace-one-dark.ace-one-dark .ace_marker-layer .ace_active-line {
+  background: rgb(var(--syntax-active-line) / .19);
+}
+.ace-one-dark.ace-one-dark .ace_gutter-active-line {
+  background-color: rgb(var(--syntax-active-line) / .19);
+}
+.ace-one-dark.ace-one-dark .ace_marker-layer .ace_selected-word {
+  border: 1px solid rgb(var(--syntax-selection));
+}
+.ace-one-dark.ace-one-dark .ace_fold {
+  background-color: rgb(var(--syntax-function));
+  border-color: rgb(var(--syntax-foreground));
+}
+.ace-one-dark.ace-one-dark .ace_keyword {
+  color: rgb(var(--syntax-keyword));
+}
+.ace-one-dark.ace-one-dark .ace_keyword.ace_operator {
+  color: rgb(var(--syntax-keyword));
+}
+.ace-one-dark.ace-one-dark .ace_keyword.ace_other.ace_unit {
+  color: rgb(var(--syntax-number));
+}
+.ace-one-dark.ace-one-dark .ace_constant.ace_language {
+  color: rgb(var(--syntax-number));
+}
+.ace-one-dark.ace-one-dark .ace_constant.ace_numeric {
+  color: rgb(var(--syntax-number));
+}
+.ace-one-dark.ace-one-dark .ace_constant.ace_character {
+  color: rgb(var(--syntax-literal));
+}
+.ace-one-dark.ace-one-dark .ace_constant.ace_other {
+  color: rgb(var(--syntax-literal));
+}
+.ace-one-dark.ace-one-dark .ace_support.ace_function {
+  color: rgb(var(--syntax-function));
+}
+.ace-one-dark.ace-one-dark .ace_support.ace_constant {
+  color: rgb(var(--syntax-number));
+}
+.ace-one-dark.ace-one-dark .ace_support.ace_class {
+  color: rgb(var(--syntax-class));
+}
+.ace-one-dark.ace-one-dark .ace_support.ace_type {
+  color: rgb(var(--syntax-class));
+}
+.ace-one-dark.ace-one-dark .ace_storage {
+  color: rgb(var(--syntax-keyword));
+}
+.ace-one-dark.ace-one-dark .ace_storage.ace_type {
+  color: rgb(var(--syntax-keyword));
+}
+.ace-one-dark.ace-one-dark .ace_invalid {
+  color: rgb(var(--syntax-invalid-foreground));
+  background-color: rgb(var(--syntax-invalid-background));
+}
+.ace-one-dark.ace-one-dark .ace_invalid.ace_deprecated {
+  color: rgb(var(--syntax-deprecated-foreground));
+  background-color: rgb(var(--syntax-deprecated-background));
+}
+.ace-one-dark.ace-one-dark .ace_string {
+  color: rgb(var(--syntax-string));
+}
+.ace-one-dark.ace-one-dark .ace_string.ace_regexp {
+  color: rgb(var(--syntax-variable));
+}
+.ace-one-dark.ace-one-dark .ace_comment {
+  color: rgb(var(--syntax-comment));
+}
+.ace-one-dark.ace-one-dark .ace_variable {
+  color: rgb(var(--syntax-variable));
+}
+.ace-one-dark.ace-one-dark .ace_variable.ace_parameter {
+  color: rgb(var(--syntax-number));
+}
+.ace-one-dark.ace-one-dark .ace_meta.ace_tag {
+  color: rgb(var(--syntax-variable));
+}
+.ace-one-dark.ace-one-dark .ace_entity.ace_other.ace_attribute-name {
+  color: rgb(var(--syntax-variable));
+}
+.ace-one-dark.ace-one-dark .ace_entity.ace_name.ace_function {
+  color: rgb(var(--syntax-function));
+}
+.ace-one-dark.ace-one-dark .ace_entity.ace_name.ace_tag {
+  color: rgb(var(--syntax-variable));
+}
+.ace-one-dark.ace-one-dark .ace_markup.ace_heading {
+  color: rgb(var(--syntax-string));
+}
+
+/* highlight.js Atom One Dark Reasonable */
+.hljs.hljs {
+  color: rgb(var(--syntax-foreground));
+  background: rgb(var(--syntax-background));
+}
+.hljs-keyword.hljs-keyword,
+.hljs-operator.hljs-operator {
+  color: rgb(var(--highlight-keyword));
+}
+.hljs-pattern-match.hljs-pattern-match {
+  color: rgb(var(--highlight-keyword));
+}
+.hljs-pattern-match.hljs-pattern-match .hljs-constructor {
+  color: rgb(var(--highlight-function));
+}
+.hljs-function.hljs-function {
+  color: rgb(var(--highlight-function));
+}
+.hljs-function.hljs-function .hljs-params {
+  color: rgb(var(--highlight-parameter));
+}
+.hljs-function.hljs-function .hljs-params .hljs-typing {
+  color: rgb(var(--highlight-typing));
+}
+.hljs-module-access.hljs-module-access .hljs-module {
+  color: rgb(var(--highlight-module));
+}
+.hljs-constructor.hljs-constructor {
+  color: rgb(var(--highlight-constructor));
+}
+.hljs-constructor.hljs-constructor .hljs-string {
+  color: rgb(var(--highlight-constructor-string));
+}
+.hljs-comment.hljs-comment,
+.hljs-quote.hljs-quote {
+  color: rgb(var(--highlight-comment));
+}
+.hljs-doctag.hljs-doctag,
+.hljs-formula.hljs-formula {
+  color: rgb(var(--syntax-keyword));
+}
+.hljs-section.hljs-section,
+.hljs-name.hljs-name,
+.hljs-selector-tag.hljs-selector-tag,
+.hljs-deletion.hljs-deletion,
+.hljs-subst.hljs-subst {
+  color: rgb(var(--syntax-variable));
+}
+.hljs-literal.hljs-literal {
+  color: rgb(var(--syntax-literal));
+}
+.hljs-string.hljs-string,
+.hljs-regexp.hljs-regexp,
+.hljs-addition.hljs-addition,
+.hljs-attribute.hljs-attribute,
+.hljs-meta.hljs-meta .hljs-string {
+  color: rgb(var(--syntax-string));
+}
+.hljs-built_in.hljs-built_in,
+.hljs-title.hljs-title.class_,
+.hljs-class.hljs-class .hljs-title {
+  color: rgb(var(--highlight-class));
+}
+.hljs-attr.hljs-attr,
+.hljs-variable.hljs-variable,
+.hljs-template-variable.hljs-template-variable,
+.hljs-type.hljs-type,
+.hljs-selector-class.hljs-selector-class,
+.hljs-selector-attr.hljs-selector-attr,
+.hljs-selector-pseudo.hljs-selector-pseudo,
+.hljs-number.hljs-number {
+  color: rgb(var(--syntax-number));
+}
+.hljs-symbol.hljs-symbol,
+.hljs-bullet.hljs-bullet,
+.hljs-link.hljs-link,
+.hljs-meta.hljs-meta,
+.hljs-selector-id.hljs-selector-id,
+.hljs-title.hljs-title {
+  color: rgb(var(--highlight-function));
+}
+
+/* NProgress */
+#nprogress#nprogress .bar {
+  background: rgb(var(--progress));
+}
+#nprogress#nprogress .peg {
+  box-shadow: 0 0 10px rgb(var(--progress)), 0 0 5px rgb(var(--progress));
+}
+#nprogress#nprogress .spinner-icon {
+  border-top-color: rgb(var(--progress));
+  border-left-color: rgb(var(--progress));
+}
+
+/* React Tooltip inserts its defaults at runtime. Keep the original values tokenized. */
+html:root {
+  --rt-color-white: rgb(var(--tooltip-foreground));
+  --rt-color-dark: rgb(var(--tooltip-default-background));
+  --rt-color-success: rgb(var(--tooltip-success));
+  --rt-color-error: rgb(var(--tooltip-error));
+  --rt-color-warning: rgb(var(--tooltip-warning));
+  --rt-color-info: rgb(var(--tooltip-info));
+}

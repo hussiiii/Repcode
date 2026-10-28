@@ -10,12 +10,12 @@ const UserProfilePage = () => {
   const router = useRouter(); 
 
   return ( 
-    <div className="flex min-h-screen bg-base_100">
+    <div className="flex min-h-screen bg-background">
       <SideBar />
       <div className="flex-1 overflow-x-hidden">
       <div className="flex-grow p-8">
-        <div className="text-primary text-4xl font-bold mb-4 flex justify-center">Profile and Billing</div>
-        <hr className="border-divide mb-8 transition-width duration-300"/>
+        <div className="text-foreground text-4xl font-bold mb-4 flex justify-center">Profile and Billing</div>
+        <hr className="border-border mb-8 transition-width duration-300"/>
         <Profile />
 
       </div>

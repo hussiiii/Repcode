@@ -65,17 +65,17 @@ export default function Stopwatch({ resetKey }: StopwatchProps) {
   };
 
   return (
-    <div className="flex items-center gap-1.5 mr-3 px-3 py-1 rounded-md border bg-[#3A4253] border-[#3A4253]">
-      <Timer size={14} className="text-[#B0B7C3]" />
+    <div className="flex items-center gap-1.5 mr-3 px-3 py-1 rounded-md border bg-border border-border">
+      <Timer size={14} className="text-muted-foreground" />
       <span
-        className="text-white text-xs font-mono"
+        className="text-foreground text-xs font-mono"
         style={{ fontVariantNumeric: 'tabular-nums', minWidth: '3.2em' }}
       >
         {formatTime(elapsedSeconds)}
       </span>
       <button
         onClick={() => setIsRunning((r) => !r)}
-        className="p-1 rounded hover:bg-[#2A303C]/50 transition-colors text-[#B0B7C3]"
+        className="p-1 rounded hover:bg-background/50 transition-colors text-muted-foreground"
         title={isRunning ? 'Pause' : 'Resume'}
       >
         {isRunning ? <Pause size={12} /> : <Play size={12} />}
@@ -85,7 +85,7 @@ export default function Stopwatch({ resetKey }: StopwatchProps) {
           setElapsedSeconds(0);
           setIsRunning(true);
         }}
-        className="p-1 rounded hover:bg-[#2A303C]/50 transition-colors text-[#B0B7C3]"
+        className="p-1 rounded hover:bg-background/50 transition-colors text-muted-foreground"
         title="Reset"
       >
         <RotateCcw size={12} />
