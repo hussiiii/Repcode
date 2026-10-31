@@ -1,7 +1,12 @@
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Heading } from '@/components/ui/typography';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { InputGroup } from '@/components/ui/input-group';
+import { Button } from '@/components/ui/button';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useRef } from 'react';
 import hljs from 'highlight.js';
-import 'highlight.js/styles/atom-one-dark-reasonable.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -10,6 +15,7 @@ const ChatWindow = ({
   editorContent, 
   hasApiKey,
   isTab = false,
+  active = true,
   externalMessages,
   setExternalMessages,
   externalInput,
@@ -25,6 +31,7 @@ const ChatWindow = ({
   editorContent: string, 
   hasApiKey?: boolean,
   isTab?: boolean,
+  active?: boolean,
   externalMessages?: Array<{ text: string, sender: string }>,
   setExternalMessages?: React.Dispatch<React.SetStateAction<Array<{ text: string, sender: string }>>>,
   externalInput?: string,
@@ -62,9 +69,17 @@ const ChatWindow = ({
 
   // Reference to track if we're already analyzing to prevent duplicate calls
   const analysisInProgress = useRef(false);
+  const activeProblemId = useRef(problem.id);
+  useEffect(() => {
+    activeProblemId.current = problem.id;
+    analysisInProgress.current = false;
+    return () => { activeProblemId.current = null; };
+  }, [problem.id]);
   
   // Initial analysis when component mounts
   useEffect(() => {
+
+    if (!active) return;
 
     // Only run analysis if:
     // 1. We're using local state (no external state provided) AND local messages are empty
@@ -77,6 +92,8 @@ const ChatWindow = ({
     
     if (shouldAnalyze) {
       analysisInProgress.current = true;
+      const requestProblemId = problem.id;
+      const stillCurrent = () => activeProblemId.current === requestProblemId;
       
       const analyzeCode = async () => {
         try {
@@ -93,6 +110,7 @@ const ChatWindow = ({
               mode: "analyze" // Tell the API we're just loading context
             }),
           });
+          if (!stillCurrent()) return;
           
           setIsAnalyzing(false);
           
@@ -107,6 +125,7 @@ const ChatWindow = ({
             setShowQuickQuestions(false);
           }
         } catch (error) {
+          if (!stillCurrent()) return;
           setIsAnalyzing(false);
           setMessages([{ 
             text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
@@ -114,7 +133,7 @@ const ChatWindow = ({
           }]);
           setShowQuickQuestions(false);
         } finally {
-          analysisInProgress.current = false;
+          if (stillCurrent()) analysisInProgress.current = false;
         }
       };
       
@@ -123,21 +142,24 @@ const ChatWindow = ({
       // If we have external messages but external analyzing is still true, set it to false
       setIsAnalyzing(false);
     }
-  }, [problem, editorContent, hasApiKey, externalMessages, externalIsAnalyzing, localMessages.length, setIsAnalyzing, setMessages, setShowQuickQuestions]);
+  }, [active, problem, editorContent, hasApiKey, externalMessages, externalIsAnalyzing, localMessages.length, setIsAnalyzing, setMessages, setShowQuickQuestions]);
 
   useEffect(() => {
+    if (!active) return;
     hljs.highlightAll();
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [active, messages]);
 
   // Hide quick questions after first user message
   useEffect(() => {
     if (messages.length > 1 && showQuickQuestions) {
       setShowQuickQuestions(false);
     }
-  }, [messages.length, showQuickQuestions]);
+  }, [messages.length, showQuickQuestions, setShowQuickQuestions]);
 
   const sendMessage = async (initialMessage = "") => {
+    const requestProblemId = problem.id;
+    const stillCurrent = () => activeProblemId.current === requestProblemId;
     const userMessage = { text: initialMessage || input, sender: "user" };
     if (initialMessage === "") setMessages(prev => [...prev, userMessage]);
     setInput("");
@@ -158,11 +180,13 @@ const ChatWindow = ({
           mode: "chat" // Specify we're in chat mode now
         }),
       });
+      if (!stillCurrent()) return;
 
       setIsTyping(false);
       
       if (response.ok) {
         const data = await response.json();
+        if (!stillCurrent()) return;
         const aiMessage = { text: data.message, sender: "ai" };
         setMessages(prevMessages => initialMessage ? [...prevMessages, userMessage, aiMessage] : [...prevMessages, aiMessage]);
       } else {
@@ -170,6 +194,7 @@ const ChatWindow = ({
         setMessages(prevMessages => initialMessage ? [...prevMessages, userMessage, errorMessage] : [...prevMessages, errorMessage]);
       }
     } catch (error) {
+      if (!stillCurrent()) return;
       setIsTyping(false);
       const errorMessage = { text: "Failed to get response from AI. Please make sure you have entered a valid API Key in the Settings page, and that you have credits in your OpenAI account.", sender: "ai" };
       setMessages(prevMessages => initialMessage ? [...prevMessages, userMessage, errorMessage] : [...prevMessages, errorMessage]);
@@ -209,13 +234,13 @@ const ChatWindow = ({
                 <p className="mb-2 break-words">{children}</p>
               ),
               h1: ({ children }) => (
-                <h1 className="text-2xl font-bold mb-3 mt-4">{children}</h1>
+                <Heading as="h1" size="2xl" weight="bold" className="mb-3 mt-4">{children}</Heading>
               ),
               h2: ({ children }) => (
-                <h2 className="text-xl font-bold mb-2 mt-3">{children}</h2>
+                <Heading as="h2" size="xl" weight="bold" className="mb-2 mt-3">{children}</Heading>
               ),
               h3: ({ children }) => (
-                <h3 className="text-lg font-bold mb-2 mt-2">{children}</h3>
+                <Heading as="h3" size="lg" weight="bold" className="mb-2 mt-2">{children}</Heading>
               ),
               ul: ({ children }) => (
                 <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>
@@ -271,12 +296,12 @@ const ChatWindow = ({
       <div className="flex items-center justify-between px-4 py-3 bg-border text-foreground">
         <div className="flex items-center">
           <span className="material-icons mr-2" style={{ fontSize: '20px' }}>auto_awesome</span>
-          <h3 className="font-medium">AI Assistant</h3>
+          <Heading as="h3" weight="medium">AI Assistant</Heading>
         </div>
       </div>
 
       {/* Chat messages */}
-      <div className={`flex-1 overflow-y-auto p-4 bg-background/60 ${isTab ? 'mt-4' : ''} scrollbar-thin scrollbar-thumb-[rgb(var(--border-strong)/1)] scrollbar-track-transparent`}>
+      <ScrollArea className={`flex-1 p-4 bg-background/60 ${isTab ? 'mt-4' : ''} scrollbar-thin scrollbar-thumb-[rgb(var(--border-strong)/1)] scrollbar-track-transparent`}>
         {isAnalyzing ? (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="analysis-animation mb-4">
@@ -304,22 +329,21 @@ const ChatWindow = ({
             {showQuickQuestions && messages.length === 1 && messages[0].sender === 'ai' && (
               <div className="quick-questions-container mt-4 space-y-2 animate-fade-in">
                 {quickQuestions.map((question, idx) => (
-                  <button
+                  <Button variant="suggestion" size="suggestion" className="w-full"
                     key={idx}
                     onClick={() => sendMessage(question)}
-                    className="w-full text-left p-2.5 rounded-md bg-border hover:bg-border-strong text-foreground text-sm font-medium transition-colors flex items-center"
                   >
                     <span className="material-icons mr-2 text-app-link-soft" style={{ fontSize: '18px' }}>
                       help_outline
                     </span>
                     {question}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
             
             {isTyping && (
-              <div className="my-2 p-3 rounded-lg bg-surface text-foreground border-l-2 border-app-highlight animate-pulse">
+              <Skeleton variant="thinking">
                 <div className="flex items-center">
                   <div className="typing-indicator">
                     <span></span>
@@ -328,36 +352,29 @@ const ChatWindow = ({
                   </div>
                   <span className="ml-2 text-sm opacity-80">AI is thinking...</span>
                 </div>
-              </div>
+              </Skeleton>
             )}
           </>
         )}
         <div ref={messagesEndRef} />
-      </div>
+      </ScrollArea>
 
       {/* Chat input */}
       <form onSubmit={handleSubmit} className="p-3 bg-surface border-t border-border-strong">
-        <div className="flex rounded-lg border border-border-strong bg-background overflow-hidden">
-          <input
+        <InputGroup variant="chat" >
+          <Input variant="chat" className="flex-1" controlSize="natural" aria-label="Ask about your code"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your code..."
-            className="flex-1 px-4 py-2 bg-transparent text-background outline-none placeholder:text-muted-foreground"
             disabled={isAnalyzing || isTyping}
           />
-          <button
+          <Button variant="send" size="send" loading={isAnalyzing || isTyping}
             type="submit"
-            disabled={!input.trim() || isAnalyzing || isTyping}
-            className={`px-4 flex items-center justify-center ${
-              input.trim() && !isTyping && !isAnalyzing
-                ? 'text-foreground hover:bg-border-strong'
-                : 'text-muted-foreground cursor-not-allowed'
-            } transition-colors`}
-          >
+            disabled={!input.trim() || isAnalyzing || isTyping}>
             <span className="material-icons transform">send</span>
-          </button>
-        </div>
+          </Button>
+        </InputGroup>
       </form>
 
       {/* CSS for typing indicator and animations */}

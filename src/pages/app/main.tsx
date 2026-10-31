@@ -1,3 +1,5 @@
+import { Heading } from '@/components/ui/typography';
+import { Button } from '@/components/ui/button';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 // Entry point for the actual app, once user successfully logs in 
 
@@ -5,8 +7,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { auth } from '../../firebaseConfig';
 import { AuthContext } from "@/auth/AuthContext"; 
 import CollectionCards from '../../components/app/CollectionCards';
-import SideBar from '../../components/app/SideBar'; 
-import '../../app/globals.css'; 
+import { AppShell } from '@/components/layout/app-shell';
 import firebaseAdmin from '../../../firebaseAdmin'; 
 import nookies from "nookies"; 
 import FirstTimeLogIn from '@/components/app/FirstTimeLogin';
@@ -58,10 +59,8 @@ const Main = () => {
     }
   };
 
-  const handleNewCollection = () => {
-    // This will trigger the CollectionCards component to open the modal
-    document.getElementById('add-collection-button')?.click();
-  };
+  const [createCollectionOpen, setCreateCollectionOpen] = useState(false);
+  const handleNewCollection = () => setCreateCollectionOpen(true);
 
   return (
     <>
@@ -70,43 +69,34 @@ const Main = () => {
         isOpen={isRandomProblemModalOpen} 
         onClose={() => setIsRandomProblemModalOpen(false)} 
       />
-      <div className="flex min-h-screen bg-background transition-width duration-300">
-        <SideBar /> 
+      <AppShell className="transition-width duration-300">
         <div className="flex-1 transition-all duration-300">
           <div className="p-6 md:p-8 lg:p-10">
             <div className="max-w-6xl mx-auto">
               <header className="mb-8">
                 <div className="flex justify-between items-center">
-                  <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+                  <Heading as="h1" size="page" weight="bold" tone="foreground" className="tracking-tight">
                     Your Collections
-                  </h1>
+                  </Heading>
                   <div className="flex gap-3">
-                    <button 
+                    <Button variant="quiet" size="action"
                       onClick={() => setIsRandomProblemModalOpen(true)}
-                      className="flex items-center px-4 py-2 bg-surface hover:bg-surface-emphasis border border-border hover:border-border-strong text-foreground rounded-lg transition-all duration-200"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
                         <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
                       </svg>
                       <span>Solve Random Problem</span>
-                    </button>
-                    <button 
-                      onClick={handleNewCollection}
-                      className="flex items-center px-4 py-2 bg-gradient-to-r from-app-action-start to-app-action-end hover:from-app-action-hover-start hover:to-app-action-hover-end text-foreground rounded-lg transition-all duration-200"
-                      style={{ 
-                        boxShadow: '0 10px 15px -3px rgb(var(--app-action-end)/0.2), 0 4px 6px -4px rgb(var(--app-action-end)/0.2)'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(var(--app-action-end)/0.3), 0 4px 6px -4px rgb(var(--app-action-end)/0.3)'}
-                      onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(var(--app-action-end)/0.2), 0 4px 6px -4px rgb(var(--app-action-end)/0.2)'}
-                    >
+                    </Button>
+                    <Button variant="action" size="action" emphasis="raised"
+                      onClick={handleNewCollection}>
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <path d="M12 8v8"></path>
                         <path d="M8 12h8"></path>
                       </svg>
                       <span>New Collection</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
                 <p className="text-muted-foreground mt-2 text-lg">
@@ -114,21 +104,14 @@ const Main = () => {
                 </p>
               </header>
               
-              <main>
+              <div>
                 {/* Collection Cards */}
-                <CollectionCards />
-                
-                {/* Hidden button for the CollectionCards component to reference */}
-                <button 
-                  id="add-collection-button" 
-                  className="hidden"
-                  aria-hidden="true"
-                />
-              </main>
+                <CollectionCards createOpen={createCollectionOpen} onCreateOpenChange={setCreateCollectionOpen} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </AppShell>
     </>
   );
 };

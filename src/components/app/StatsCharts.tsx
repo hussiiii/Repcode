@@ -1,6 +1,12 @@
+import { Heading } from '@/components/ui/typography';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Empty } from '@/components/ui/empty';
+import { Card, CardHeader } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectItemText, SelectItemLabel, SelectItemDescription, SelectSwatch } from '@/components/ui/select';
 import { cssColor, canvasColor, collectionChartColor, withColorOpacity } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
-import React, { useContext, useState, useMemo, useRef, useEffect } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { AuthContext } from '@/auth/AuthContext';
 import { useQuery } from 'react-query';
 import { Bar, Line, Doughnut, Scatter } from 'react-chartjs-2';
@@ -64,25 +70,11 @@ const chartConfigs: ChartConfig[] = [
 const StatsCharts = () => {
   const { user } = useContext(AuthContext);
   const [selectedChart, setSelectedChart] = useState<ChartType>('collection');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [intervalViewMode, setIntervalViewMode] = useState<'grouped' | 'individual'>('grouped');
   const [lapsesViewMode, setLapsesViewMode] = useState<'grouped' | 'individual'>('grouped');
   const [collectionViewMode, setCollectionViewMode] = useState<'grouped' | 'individual'>('grouped');
   const [totalReviewsViewMode, setTotalReviewsViewMode] = useState<'grouped' | 'individual'>('grouped');
   const [dueDateViewMode, setDueDateViewMode] = useState<'grouped' | 'individual'>('grouped');
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   // Fetch all problems
   const fetchAllProblems = async () => {
     if (!user) throw new Error("No user found");
@@ -1286,7 +1278,7 @@ const StatsCharts = () => {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 border-2 border-app-action-end border-t-transparent rounded-full animate-spin"></div>
+          <Spinner variant="stats" />
           <span className="text-muted-foreground">Loading stats...</span>
         </div>
       </div>
@@ -1295,18 +1287,18 @@ const StatsCharts = () => {
 
   if (!problems.length) {
     return (
-      <div className="bg-surface rounded-xl border border-border p-8 text-center">
+      <Empty variant="chart">
         <p className="text-muted-foreground">Add some problems to see your stats!</p>
-      </div>
+      </Empty>
     );
   }
 
   return (
     <div className="space-y-6">
       {/* Main Chart Container */}
-      <div className="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
+      <Card className="overflow-hidden">
         {/* Header with Dropdown */}
-        <div className="p-5 border-b border-border">
+        <CardHeader variant="dashboard">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <div 
@@ -1315,7 +1307,7 @@ const StatsCharts = () => {
               >
               </div>
               <div>
-                <h3 className="font-semibold text-foreground text-lg">{selectedConfig.label}</h3>
+                <Heading as="h3" size="lg" weight="semibold" tone="foreground">{selectedConfig.label}</Heading>
                 <p className="text-sm text-muted-foreground">
                   {selectedChart === 'interval' 
                     ? (intervalViewMode === 'grouped' ? 'Problems grouped by review interval' : 'Every problem with its exact interval')
@@ -1334,203 +1326,53 @@ const StatsCharts = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Sub-toggle for Interval chart */}
-              {selectedChart === 'interval' && (
-                <div className="flex bg-background rounded-lg p-1 border border-border">
-                  <button
-                    onClick={() => setIntervalViewMode('grouped')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      intervalViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Grouped
-                  </button>
-                  <button
-                    onClick={() => setIntervalViewMode('individual')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      intervalViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Individual
-                  </button>
-                </div>
-              )}
-
-              {/* Sub-toggle for Lapses chart */}
-              {selectedChart === 'lapses' && (
-                <div className="flex bg-background rounded-lg p-1 border border-border">
-                  <button
-                    onClick={() => setLapsesViewMode('grouped')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      lapsesViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Grouped
-                  </button>
-                  <button
-                    onClick={() => setLapsesViewMode('individual')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      lapsesViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Individual
-                  </button>
-                </div>
-              )}
-
-              {/* Sub-toggle for Collection chart */}
-              {selectedChart === 'collection' && (
-                <div className="flex bg-background rounded-lg p-1 border border-border">
-                  <button
-                    onClick={() => setCollectionViewMode('grouped')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      collectionViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Grouped
-                  </button>
-                  <button
-                    onClick={() => setCollectionViewMode('individual')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      collectionViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Individual
-                  </button>
-                </div>
-              )}
-
-              {/* Sub-toggle for Total Reviews chart */}
-              {selectedChart === 'totalFeedback' && (
-                <div className="flex bg-background rounded-lg p-1 border border-border">
-                  <button
-                    onClick={() => setTotalReviewsViewMode('grouped')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      totalReviewsViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Grouped
-                  </button>
-                  <button
-                    onClick={() => setTotalReviewsViewMode('individual')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      totalReviewsViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Individual
-                  </button>
-                </div>
-              )}
-
-              {/* Sub-toggle for Due Date chart */}
-              {selectedChart === 'dueDate' && (
-                <div className="flex bg-background rounded-lg p-1 border border-border">
-                  <button
-                    onClick={() => setDueDateViewMode('grouped')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      dueDateViewMode === 'grouped'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Grouped
-                  </button>
-                  <button
-                    onClick={() => setDueDateViewMode('individual')}
-                    className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${
-                      dueDateViewMode === 'individual'
-                        ? 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground font-medium shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Individual
-                  </button>
-                </div>
-              )}
-            
+              {selectedChart === 'interval' && <ToggleGroup type="single" aria-label="Chart grouping" value={intervalViewMode} onValueChange={value => { if (value) setIntervalViewMode(value as 'grouped' | 'individual'); }}>
+                <ToggleGroupItem value="grouped">Grouped</ToggleGroupItem>
+                <ToggleGroupItem value="individual">Individual</ToggleGroupItem>
+              </ToggleGroup>}
+              {selectedChart === 'lapses' && <ToggleGroup type="single" aria-label="Chart grouping" value={lapsesViewMode} onValueChange={value => { if (value) setLapsesViewMode(value as 'grouped' | 'individual'); }}>
+                <ToggleGroupItem value="grouped">Grouped</ToggleGroupItem>
+                <ToggleGroupItem value="individual">Individual</ToggleGroupItem>
+              </ToggleGroup>}
+              {selectedChart === 'collection' && <ToggleGroup type="single" aria-label="Chart grouping" value={collectionViewMode} onValueChange={value => { if (value) setCollectionViewMode(value as 'grouped' | 'individual'); }}>
+                <ToggleGroupItem value="grouped">Grouped</ToggleGroupItem>
+                <ToggleGroupItem value="individual">Individual</ToggleGroupItem>
+              </ToggleGroup>}
+              {selectedChart === 'totalFeedback' && <ToggleGroup type="single" aria-label="Chart grouping" value={totalReviewsViewMode} onValueChange={value => { if (value) setTotalReviewsViewMode(value as 'grouped' | 'individual'); }}>
+                <ToggleGroupItem value="grouped">Grouped</ToggleGroupItem>
+                <ToggleGroupItem value="individual">Individual</ToggleGroupItem>
+              </ToggleGroup>}
+              {selectedChart === 'dueDate' && <ToggleGroup type="single" aria-label="Chart grouping" value={dueDateViewMode} onValueChange={value => { if (value) setDueDateViewMode(value as 'grouped' | 'individual'); }}>
+                <ToggleGroupItem value="grouped">Grouped</ToggleGroupItem>
+                <ToggleGroupItem value="individual">Individual</ToggleGroupItem>
+              </ToggleGroup>}
               {/* Dropdown */}
-              <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-background border border-border rounded-lg
-                           hover:border-app-action-end/50 transition-colors duration-200 min-w-[200px]"
-              >
-                <div 
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: cssColor(selectedConfig.colorToken) }}
-                />
-                <span className="text-foreground flex-1 text-left">{selectedConfig.label}</span>
-                <svg 
-                  className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-surface border border-border rounded-lg shadow-xl z-50 overflow-hidden">
+              <Select value={selectedChart} onValueChange={value => setSelectedChart(value as ChartType)}>
+                <SelectTrigger aria-label="Chart type">
+                  <SelectSwatch colorToken={selectedConfig.colorToken} />
+                  <SelectValue>{selectedConfig.label}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
                   {chartConfigs.map(config => (
-                    <button
-                      key={config.id}
-                      onClick={() => {
-                        setSelectedChart(config.id);
-                        setIsDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150
-                        ${selectedChart === config.id 
-                          ? 'bg-gradient-to-r from-app-action-start/10 to-app-action-end/10 border-l-2 border-l-app-action-end'
-                          : 'hover:bg-background border-l-2 border-l-transparent'
-                        }
-                      `}
-                    >
-                      <div 
-                        className="w-4 h-4 rounded"
-                        style={{ backgroundColor: cssColor(config.colorToken) }}
-                      />
+                    <SelectItem key={config.id} value={config.id}>
+                      <SelectSwatch colorToken={config.colorToken} />
                       <div className="flex-1">
-                        <div className={`font-medium ${selectedChart === config.id ? 'text-foreground' : 'text-muted-foreground'}`}>
-                          {config.label}
-                        </div>
-                        <div className="text-xs text-muted-foreground/70">{config.description}</div>
+                        <SelectItemLabel><SelectItemText>{config.label}</SelectItemText></SelectItemLabel>
+                        <SelectItemDescription>{config.description}</SelectItemDescription>
                       </div>
-                      {selectedChart === config.id && (
-                        <svg className="w-4 h-4 text-app-action-end" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
+                    </SelectItem>
                   ))}
-                </div>
-              )}
-            </div>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </div>
+        </CardHeader>
 
         {/* Big Chart Area */}
         <div className="p-6 h-[450px]">
           {renderChart()}
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

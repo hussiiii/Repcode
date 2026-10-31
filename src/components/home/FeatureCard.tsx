@@ -1,3 +1,5 @@
+import { Heading } from '@/components/ui/typography';
+import { Card } from '@/components/ui/card';
 import type React from "react"
 
 interface FeatureCardProps {
@@ -8,11 +10,11 @@ interface FeatureCardProps {
 
 const FeatureCard = ({ icon, title, description }: FeatureCardProps) => {
   return (
-    <div className="bg-background rounded-xl p-6 border border-border shadow-lg transition-all duration-300 hover:shadow-marketing-card hover:-translate-y-1">
+    <Card surface="page" padding="xl" elevation="feature">
       <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold text-foreground mb-3">{title}</h3>
+      <Heading as="h3" size="xl" weight="semibold" tone="foreground" className="mb-3">{title}</Heading>
       <p className="text-muted-foreground">{description}</p>
-    </div>
+    </Card>
   )
 }
 

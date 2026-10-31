@@ -1,5 +1,8 @@
+import { Badge } from '@/components/ui/Badge';
+import { DifficultyBadge, StudyStateBadge } from '@/components/app/ProblemBadges';
+import { Heading } from '@/components/ui/typography';
+import { Table, TableContainer, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { CheckCircleIcon, SparklesIcon, BookOpenIcon } from "lucide-react"
-import Badge from "../ui/Badge"
 
 const ProblemListPreview = () => {
   // Sample data for the preview
@@ -15,39 +18,39 @@ const ProblemListPreview = () => {
   return (
     <div className="p-6 overflow-hidden">
       <div className="py-5 border-b border-border flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-foreground">Algorithm Problems</h2>
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-background text-muted-foreground">
+        <Heading as="h2" size="lg" weight="semibold" tone="foreground">Algorithm Problems</Heading>
+        <Badge variant="meta" size="default" >
           {problems.length} problems
-        </span>
+        </Badge>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-4 text-muted-foreground font-medium text-sm">Problem Name</th>
-              <th className="text-right py-4 text-muted-foreground font-medium text-sm">Difficulty</th>
-              <th className="text-right py-4 text-muted-foreground font-medium text-sm">Type</th>
-            </tr>
-          </thead>
-          <tbody>
+      <TableContainer>
+        <Table variant="preview">
+          <TableHeader>
+            <TableRow className="border-b border-border">
+              <TableHead>Problem Name</TableHead>
+              <TableHead align="right">Difficulty</TableHead>
+              <TableHead align="right">Type</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {problems.map((problem) => (
-              <tr key={problem.id} className="border-b border-border hover:bg-surface-preview-hover/50 transition-colors">
-                <td className="py-4">
+              <TableRow key={problem.id} className="border-b border-border hover:bg-surface-preview-hover/50 transition-colors">
+                <TableCell>
                   <span className="font-medium text-foreground hover:text-marketing-link transition-colors cursor-pointer">
                     {problem.name}
                   </span>
-                </td>
-                <td className="py-4 text-right">
-                  <Badge type="difficulty" value={problem.difficulty} />
-                </td>
-                <td className="py-4 text-right">
-                  <Badge type="problemType" value={problem.type} />
-                </td>
-              </tr>
+                </TableCell>
+                <TableCell align="right">
+                  <DifficultyBadge value={problem.difficulty} />
+                </TableCell>
+                <TableCell align="right">
+                  <StudyStateBadge value={problem.type} />
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   )
 }

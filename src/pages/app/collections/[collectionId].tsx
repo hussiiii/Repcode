@@ -1,8 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import ProblemsList from '../../../components/app/ProblemsList'; 
-import SideBar from '../../../components/app/SideBar'; 
-import '../../../app/globals.css'; 
+import { AppShell } from '@/components/layout/app-shell';
 import nookies from "nookies"; 
 import firebaseAdmin from "../../../../firebaseAdmin"; 
 
@@ -12,14 +11,13 @@ const CollectionPage = () => {
 
   return (
     <>
-      <div className="flex min-h-screen bg-background">
-        <SideBar /> 
+      <AppShell>
         <div className="flex-1 transition-all duration-300">
           <div className="p-6">
             <ProblemsList collectionId={collectionId} />
           </div>
         </div>
-      </div>
+      </AppShell>
     </>
   );
 };

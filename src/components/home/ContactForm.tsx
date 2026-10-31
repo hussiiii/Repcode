@@ -1,3 +1,11 @@
+import { Heading } from '@/components/ui/typography';
+import { Card } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
+import { Spinner } from '@/components/ui/spinner';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { FieldLabel, Field, FieldError } from '@/components/ui/field';
+import { Button } from '@/components/ui/button';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useForm } from '@formspree/react';
@@ -47,9 +55,9 @@ const ContactForm = () => {
     <div className="max-w-4xl mx-auto">
       <div className="max-w-xl mx-auto">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground sm:text-4xl mb-4">
+          <Heading as="h2" size="publicTitle" weight="bold" tone="foreground" className="mb-4">
             Contact us
-          </h1>
+          </Heading>
           <p className="text-muted-foreground mb-2">
             Questions? Bugs? Want to contribute? Let us know!
           </p>
@@ -60,9 +68,9 @@ const ContactForm = () => {
       </div>
 
       <div className="mt-12 max-w-lg mx-auto">
-        <div className="bg-background rounded-xl border border-border shadow-lg overflow-hidden p-6">
+        <Card surface="page" padding="xl" className="overflow-hidden">
           {state.succeeded ? (
-            <div className="bg-marketing-feedback-success/10 border border-marketing-feedback-success/30 rounded-lg p-4 mb-6">
+            <Alert variant="marketingSuccess" role="status" className="mb-6">
               <p className="text-marketing-feedback-success flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -79,10 +87,10 @@ const ContactForm = () => {
                 </svg>
                 Thanks! We&apos;ll get back to you soon!
               </p>
-            </div>
+            </Alert>
           ) : state.errors ? (
-            <div className="bg-marketing-feedback-error/10 border border-marketing-feedback-error/30 rounded-lg p-4 mb-6">
-              <p className="text-marketing-feedback-error flex items-center">
+            <Alert variant="marketingError" className="mb-6">
+              <FieldError variant="marketing" role="presentation">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
@@ -98,102 +106,80 @@ const ContactForm = () => {
                   <line x1="12" y1="16" x2="12.01" y2="16"></line>
                 </svg>
                 There was an error submitting the form. Please try again.
-              </p>
-            </div>
+              </FieldError>
+            </Alert>
           ) : null}
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label htmlFor="firstname" className="block text-muted-foreground text-sm font-medium mb-2">
+              <Field>
+                <FieldLabel variant="marketing" >
                   First Name
-                </label>
-                <input
+                </FieldLabel>
+                <Input variant="marketing" className="w-full" controlSize="natural"
                   type="text"
-                  id="firstname"
                   name="firstname"
                   value={formData.firstname}
                   onChange={handleChange}
                   required
-                  className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-placeholder focus:outline-none focus:border-marketing-focus transition-colors"
                   placeholder="First name"
                 />
-              </div>
-              <div>
-                <label htmlFor="lastname" className="block text-muted-foreground text-sm font-medium mb-2">
+              </Field>
+              <Field>
+                <FieldLabel variant="marketing" >
                   Last Name
-                </label>
-                <input
+                </FieldLabel>
+                <Input variant="marketing" className="w-full" controlSize="natural"
                   type="text"
-                  id="lastname"
                   name="lastname"
                   value={formData.lastname}
                   onChange={handleChange}
                   required
-                  className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-placeholder focus:outline-none focus:border-marketing-focus transition-colors"
                   placeholder="Last name"
                 />
-              </div>
+              </Field>
             </div>
 
-            <div className="mb-6">
-              <label htmlFor="email" className="block text-muted-foreground text-sm font-medium mb-2">
+            <Field className="mb-6">
+              <FieldLabel variant="marketing" >
                 Email
-              </label>
-              <input
+              </FieldLabel>
+              <Input variant="marketing" className="w-full" controlSize="natural"
                 type="email"
-                id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-placeholder focus:outline-none focus:border-marketing-focus transition-colors"
                 placeholder="your.email@example.com"
               />
-            </div>
+            </Field>
 
-            <div className="mb-6">
-              <label htmlFor="details" className="block text-muted-foreground text-sm font-medium mb-2">
+            <Field className="mb-6">
+              <FieldLabel variant="marketing" >
                 Details
-              </label>
-              <textarea
-                id="details"
+              </FieldLabel>
+              <Textarea variant="marketing" className="w-full"
                 name="details"
                 value={formData.details}
                 onChange={handleChange}
                 required
                 rows={5}
-                className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-placeholder focus:outline-none focus:border-marketing-focus transition-colors"
                 placeholder="Your message..."
-              ></textarea>
-            </div>
+              ></Textarea>
+            </Field>
 
-            <button
+            <Button variant="marketing" size="large" className="w-full" emphasis="marketingForm" loading={state.submitting}
               type="submit"
-              disabled={state.submitting}
-              className="w-full bg-gradient-to-r from-marketing-action-start to-marketing-action-end hover:from-marketing-action-hover-start hover:to-marketing-action-hover-end text-marketing-action-foreground py-3 px-4 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-marketing-action-hover disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
-            >
+              disabled={state.submitting}>
               {state.submitting ? (
                 <>
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-foreground"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+                  <Spinner variant="button" />
                   Sending...
                 </>
               ) : (
                 "Submit"
               )}
-            </button>
+            </Button>
             
             <div className="mt-3 text-center">
               <p className="text-sm text-muted-foreground">
@@ -201,7 +187,7 @@ const ContactForm = () => {
               </p>
             </div>
           </form>
-        </div>
+        </Card>
       </div>
 
       

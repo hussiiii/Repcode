@@ -1,0 +1,4 @@
+/* Account for the fixed public navbar when following content anchors. */
+.publicContent [id] {
+  scroll-margin-top: 113px;
+}

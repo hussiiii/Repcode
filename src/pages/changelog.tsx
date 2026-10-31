@@ -1,7 +1,9 @@
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Heading } from '@/components/ui/typography';
+import { Separator } from '@/components/ui/separator';
+import { Card } from '@/components/ui/card';
 import React from 'react';
-import NavBar from '@/components/home/NavBar';
-import Footer from '@/components/home/Footer';
-import "../app/globals.css";
+import { PublicShell } from '@/components/layout/public-shell';
 
 export default function Changelog() {
     const changelogData = [
@@ -9,11 +11,18 @@ export default function Changelog() {
         month: "October 2026",
         updates: [
           {
-            date: "V 2.26 - October 26th, 2026",
+            date: "V 2.27 - October 31st, 2026",
             changes: [
-              "🛠️Improved account privacy with consistent sign-in and ownership checks for collections, problems, settings, and study updates",
+              "🎃Happy Halloween!!", 
+              "⚙️Consolidated shared UI components around shadcn/ui and Radix and removed Preline",
+              "⚙️Restored Tailwind's default palette and centralized color tokens across public pages, app screens, interactive previews, editors, charts, and drawing tools",
+              "⚙️Standardized buttons, form controls, cards, badges, alerts, loading states, dialogs, menus, tooltips, tabs, and resizable panels",
+              "⚙️Added shared page shells, tables, media frames, typography, scrolling conventions, and problem-workspace structure",
+              "⚙️Scoped component styles and animations, retired obsolete CSS and color aliases, removed unused UI wrappers, and documented the shared design system",
+              "➕Expanded Jest coverage for UI interactions, workspace state, and styling conventions",
+              "➖Removed the unused pricing page",
+              "🛠️Improved account security with consistent sign-in and ownership checks for collections, problems, settings, and study updates",
               "🛠️Fixed returning Google sign-ins attempting duplicate account creation and improved sign-in failure handling",
-              "⚙️Saved OpenAI API keys now stay on the server, with separate options to replace or remove a saved key",
               "🛠️Improved session cleanup and cleared cached account data when signing out or switching accounts",
               "⚙️Added request validation and safer API error responses",
               "➕Added automated authentication and API regression tests using Jest with next/jest",
@@ -665,22 +674,22 @@ export default function Changelog() {
     ];
 
     return (
-      <div className="flex flex-col min-h-screen bg-background">
-          <NavBar />
+      <PublicShell>
+          <Heading as="h1" className="sr-only">Changelog</Heading>
           <div className="pt-40 sm:pt-24 flex-grow">
             {/* Top Banner Legend for md screens and smaller */}
             <div className="lg:hidden w-full max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-              <div className="w-full bg-background border border-border rounded-lg p-4 shadow-sm">
-                <h3 className="text-foreground font-medium mb-3 text-lg text-center">Legend</h3>
+              <Card surface="page" radius="lg" padding="md" elevation="sm" className="w-full">
+                <Heading as="h3" size="lg" weight="medium" tone="foreground" className="mb-3 text-center">Legend</Heading>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {legendItems.map((item) => (
-                        <div key={item.emoji} className="flex items-center bg-background rounded-md p-2 border border-border">
+                        <Card surface="page" radius="md" padding="xs" elevation="none" key={item.emoji} className="flex items-center">
                             <span className="text-xl mr-2">{item.emoji}</span>
                             <span className="text-muted-foreground text-sm">{item.description}</span>
-                        </div>
+                        </Card>
                     ))}
                 </div>
-              </div>
+              </Card>
             </div>
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
@@ -688,7 +697,7 @@ export default function Changelog() {
                 {/* Main content area with left sidebar */}
                 <div className="flex flex-1 relative">
                   {/* Left sidebar (month navigation) */}
-                  <div className="hidden md:block w-1/4 p-4 border-r border-border overflow-auto">
+                  <ScrollArea direction="both" className="hidden md:block w-1/4 p-4 border-r border-border">
                       {changelogData.map((log, index) => {
                           const currentYear = log.month.split(' ')[1];
                           const prevYear = index > 0 ? changelogData[index - 1].month.split(' ')[1] : null;
@@ -698,9 +707,9 @@ export default function Changelog() {
                               <div key={log.month}>
                                   {showYearDivider && (
                                       <div className="flex items-center justify-center mb-6 mt-2">
-                                          <div className="flex-grow border-t border-border"></div>
+                                          <Separator variant="rule" className="flex-grow" />
                                           <span className="px-3 text-foreground font-bold text-lg">{currentYear}</span>
-                                          <div className="flex-grow border-t border-border"></div>
+                                          <Separator variant="rule" className="flex-grow" />
                                       </div>
                                   )}
                                   <div className="mb-4">
@@ -716,16 +725,16 @@ export default function Changelog() {
                               </div>
                           );
                       })}
-                  </div>
+                  </ScrollArea>
                   
                   {/* Main changelog content */}
                   <div className="w-full md:w-3/4 p-4 lg:pr-72">
                       {changelogData.map((log) => (
                           <div key={log.month} className="mb-12">
-                              <h2 className="inline-block font-bold text-2xl text-foreground border-b-2 border-border mb-2">{log.month}</h2>
+                              <Heading as="h2" size="2xl" weight="bold" tone="foreground" className="inline-block border-b-2 border-border mb-2">{log.month}</Heading>
                               {log.updates.map((update) => (
                                   <div key={update.date} className="mb-4">
-                                      <h3 className="font-bold text-xl text-muted-foreground">{update.date}</h3>
+                                      <Heading as="h3" size="xl" weight="bold" tone="muted">{update.date}</Heading>
                                       <ul className="pl-5 text-muted-foreground list-none">
                                           {update.changes.map((change, index) => (
                                               <li key={index} className="mb-1">{change}</li>
@@ -739,13 +748,13 @@ export default function Changelog() {
                   
                   {/* Sticky Legend */}
                   <div className="hidden lg:block fixed top-32 right-8 w-72 p-4 bg-background border border-border rounded-lg shadow-sm">
-                    <h3 className="text-foreground font-medium mb-3 text-lg text-center">Legend</h3>
+                    <Heading as="h3" size="lg" weight="medium" tone="foreground" className="mb-3 text-center">Legend</Heading>
                     <div className="flex flex-col gap-3">
                         {legendItems.map((item) => (
-                            <div key={item.emoji} className="flex items-center bg-background rounded-md p-2 border border-border">
+                            <Card surface="page" radius="md" padding="xs" elevation="none" key={item.emoji} className="flex items-center">
                                 <span className="text-xl mr-2">{item.emoji}</span>
                                 <span className="text-muted-foreground text-sm">{item.description}</span>
-                            </div>
+                            </Card>
                         ))}
                     </div>
                   </div>
@@ -754,7 +763,6 @@ export default function Changelog() {
             </div>
           </div>
           
-          <Footer />
-      </div>
+      </PublicShell>
     );
 }

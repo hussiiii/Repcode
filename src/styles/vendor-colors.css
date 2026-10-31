@@ -214,12 +214,5 @@
   border-left-color: rgb(var(--progress));
 }
 
-/* React Tooltip inserts its defaults at runtime. Keep the original values tokenized. */
-html:root {
-  --rt-color-white: rgb(var(--tooltip-foreground));
-  --rt-color-dark: rgb(var(--tooltip-default-background));
-  --rt-color-success: rgb(var(--tooltip-success));
-  --rt-color-error: rgb(var(--tooltip-error));
-  --rt-color-warning: rgb(var(--tooltip-warning));
-  --rt-color-info: rgb(var(--tooltip-info));
-}
+/* Editor text and cursor match the application foreground. */
+.ace_editor, .ace_cursor { color: rgb(var(--foreground)/1) !important; }

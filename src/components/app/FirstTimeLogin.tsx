@@ -1,3 +1,9 @@
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Heading } from '@/components/ui/typography';
+import { MediaFrame } from '@/components/ui/media-frame';
+import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import React, { useState } from 'react';
 import Link from 'next/link';
 
@@ -46,32 +52,26 @@ const FirstTimeLogIn = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
   return (
     <>
       {/* Modal Backdrop */}
-      <div
-        className={`fixed inset-0 bg-overlay/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        onClick={onClose}
-      />
-      
+
+
       {/* Modal */}
-      <div
-        className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full ${selectedOption !== null ? 'max-w-6xl' : 'max-w-md'} max-h-[90vh] rounded-xl shadow-[0_10px_40px_rgb(var(--overlay)/0.3)] transition-all duration-500 bg-gradient-to-b from-background to-surface-dialog-end border border-border-subtle/50 text-foreground overflow-hidden ${isOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}`}
-      >
+      <Dialog open={isOpen} onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent size={selectedOption !== null ? "xl" : "sm"} scroll="frame">
         {/* Decorative accent line at top */}
         <div className="h-1 w-full bg-gradient-to-r from-app-action-start to-app-action-end"></div>
-        
-        <div className="p-6 relative max-h-[calc(90vh-2px)] overflow-y-auto">
-          
+
+        <ScrollArea direction="both" className="p-6 relative max-h-[calc(90vh-2px)]">
+
           <div className="text-left relative z-10">
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold tracking-tight text-foreground">Welcome to Repcode!</h3>
-              <button
-                onClick={onClose}
-                className="h-8 w-8 rounded-full hover:bg-border-subtle/70 transition-colors duration-200 flex items-center justify-center"
-              >
+              <DialogTitle>Welcome to Repcode!</DialogTitle>
+              <Button variant="close" aria-label="Close dialog"
+                onClick={onClose}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
+              </Button>
             </div>
 
             {selectedOption === null && (
@@ -81,13 +81,12 @@ const FirstTimeLogIn = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
             {selectedOption === null ? (
               <div className="space-y-3">
                 {["Um, Leetcode? What's that? 😶", "I've solved a few problems, but I'm nowhere near FAANG level 🥲", "I've solved hundreds of problems, and can solve most easy/mediums 😎", "I am an LLM that can solve any novel problem with 99% accuracy 🤖"].map((option, index) => (
-                  <button 
-                    key={index} 
-                    onClick={() => handleOptionSelect(index)} 
-                    className="block w-full text-left bg-surface-field hover:bg-border-subtle/70 text-foreground font-medium py-3 px-4 rounded-md transition-all duration-200 border border-border-subtle/50 hover:border-app-action-start/50"
+                  <Button variant="choice" size="choice" className="w-full"
+                    key={index}
+                    onClick={() => handleOptionSelect(index)}
                   >
                     {option}
-                  </button>
+                  </Button>
                 ))}
               </div>
             ) : (
@@ -98,12 +97,12 @@ const FirstTimeLogIn = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
                   <div className="flex-1">
                     {renderMessage()}
                   </div>
-                  
+
                   {/* Right Panel - YouTube Video */}
                   <div className="flex-1">
-                    <div className="bg-surface-field rounded-lg p-4 border border-border-subtle/50">
-                      <h4 className="text-lg font-semibold text-foreground mb-4">Quick Platform Overview</h4>
-                      <div className="relative w-full h-0 pb-[56.25%]"> {/* 16:9 aspect ratio */}
+                    <Card surface="field" radius="lg" border="subtle" padding="md" elevation="none">
+                      <Heading as="h4" size="lg" weight="semibold" tone="foreground" className="mb-4">Quick Platform Overview</Heading>
+                      <MediaFrame>
                         <iframe
                           className="absolute top-0 left-0 w-full h-full rounded-md"
                           src="https://www.youtube.com/embed/Hn4znv8I2a4"
@@ -112,25 +111,24 @@ const FirstTimeLogIn = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           allowFullScreen
                         />
-                      </div>
-                    </div>
+</MediaFrame>
+                    </Card>
                   </div>
                 </div>
-                
+
                 <div className="flex justify-center pt-4">
-                  <button 
-                    onClick={onClose} 
-                    className="relative overflow-hidden bg-gradient-to-r from-app-action-start to-app-action-end hover:from-app-action-dialog-hover-start hover:to-app-action-dialog-hover-end text-foreground font-medium py-2 px-6 rounded-md transition-all duration-200 shadow-md"
-                  >
+                  <Button variant="dialog" size="dialog" emphasis="dialog" weight="medium"
+                    onClick={onClose}>
                     Sounds good!
                     <span className="absolute inset-0 w-full h-full bg-foreground/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </ScrollArea>
+      </DialogContent>
+      </Dialog>
     </>
   );
 };

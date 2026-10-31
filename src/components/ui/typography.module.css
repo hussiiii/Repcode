@@ -1,0 +1,81 @@
+/* Existing imported problem markup; scoped to the shared Prose component. */
+
+  .description.description {
+    font-size: 16px;  /* Increased base font size */
+    line-height: 1.6;  /* Better readability */
+    max-width: 100%;  /* Prevent content from expanding container */
+    overflow-x: auto; /* Add horizontal scroll for very wide content */
+  }
+
+  .description p {
+    margin: 1em 0;
+    font-size: 16px;
+  }
+
+  .description code {
+    background-color: rgb(var(--code-inline-background));
+    color: rgb(var(--code-inline-foreground));
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-size: 0.95em;
+    border: 1px solid rgb(var(--code-border));
+  }
+  
+  .description pre code {
+    background-color: transparent;
+    padding: 0;
+    border: none;
+    display: block;
+  }
+  
+  .description pre {
+    background-color: rgb(var(--code-inline-background));
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;  /* Allow horizontal scroll for long code blocks */
+    border: 1px solid rgb(var(--code-border));
+    white-space: pre-wrap; /* Allow text wrapping in pre blocks */
+    word-break: break-word; /* Break long words if needed */
+    max-width: 100%;  /* Prevent pre blocks from expanding container */
+  }
+
+  .description img {
+    max-width: 100%;  /* Make images responsive */
+    height: auto;     /* Maintain aspect ratio */
+  }
+  
+
+
+
+  .problem pre {
+    background-color: rgb(var(--surface)/1) !important;
+    border: 1px solid rgb(var(--border)/1) !important;
+    border-radius: 6px !important;
+    padding: 12px !important;
+    margin: 12px 0 !important;
+    overflow-x: auto !important;
+    color: rgb(var(--foreground-code-body)/1) !important;
+  }
+
+  .problem pre code {
+    color: rgb(var(--foreground-code-body)/1) !important;
+    font-family: monospace !important;
+  }
+
+  /* Style for inline code elements (not inside pre) */
+  .problem code:not(pre code) {
+    background-color: rgb(var(--border)/1) !important;
+    color: rgb(var(--foreground)/1) !important;
+    padding: 2px 5px !important;
+    border-radius: 4px !important;
+    font-family: monospace !important;
+    font-size: 0.9em !important;
+    border: 1px solid rgb(var(--border-strong)/1) !important;
+  }
+  .inverted {
+    color: rgb(var(--foreground)/1) !important; /* Force white text for prose content */
+  }
+  .inverted a {
+    color: rgb(var(--editor-link)/1) !important; /* Ensure links are green, not black */
+  }

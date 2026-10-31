@@ -1,71 +1,28 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { CircleIcon, SparklesIcon, BookOpenIcon, CheckCircleIcon } from "lucide-react";
+import { Slot } from '@radix-ui/react-slot';
+import { cva, type VariantProps } from 'class-variance-authority';
 
-type BadgeProps = {
-  type: 'difficulty' | 'problemType';
-  value: string;
-  className?: string;
-};
+export const badgeVariants = cva('', { variants: {
+  variant: {
+    default: 'inline-flex items-center border text-xs font-medium rounded-md transition-all duration-400',
+    meta: 'inline-flex items-center rounded-full text-xs font-medium bg-background text-muted-foreground',
+    surface: 'inline-flex items-center rounded-full text-xs font-medium bg-surface text-muted-foreground',
+    count: 'bg-surface-count rounded-full text-sm text-foreground',
+    hero: 'inline-flex items-center bg-surface/80 backdrop-blur-sm rounded-full border border-border',
+    counter: 'inline-flex items-center bg-surface/80 backdrop-blur-sm rounded-full border border-border',
+    membership: 'text-[10px] font-medium rounded-sm text-foreground bg-gradient-to-r from-app-action-start to-app-action-end border border-app-action-end/20 hover:scale-110 transition-transform duration-200 cursor-default',
+    counterLabel: 'text-sm bg-foreground/10 rounded-lg',
+  },
+  size: { default: 'px-3 py-1', problem: 'py-1.5 px-4', compact: 'px-2.5 py-0.5', count: 'px-2 py-1', hero: 'px-4 py-2', counter: 'px-5 py-3', membership: 'px-1.5 py-0.5', counterLabel: 'px-2 py-0.5' },
+  foreground: { true: 'text-foreground' },
+}, defaultVariants: { variant: 'default', size: 'default' } });
+export type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & VariantProps<typeof badgeVariants> & { asChild?: boolean };
 
-export const Badge: React.FC<BadgeProps> = ({ type, value, className = '' }) => {
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty.toLowerCase()) {
-      case 'easy':
-        return 'text-difficulty-easy bg-difficulty-easy-background border-difficulty-easy-border hover:text-difficulty-easy-hover';
-      case 'medium':
-        return 'text-difficulty-medium bg-difficulty-medium-background border-difficulty-medium-border hover:text-difficulty-medium-hover';
-      case 'hard':
-        return 'text-difficulty-hard bg-difficulty-hard-background border-difficulty-hard-border hover:text-difficulty-hard-hover';
-      default:
-        return 'text-muted-foreground bg-badge-background border-border';
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'new':
-        return 'text-study-new bg-study-new-background border-study-new-border hover:text-study-new-hover';
-      case 'learning':
-        return 'text-study-learning bg-study-learning-background border-study-learning-border hover:text-study-learning-hover';
-      case 'relearning':
-        return 'text-study-learning bg-study-learning-background border-study-learning-border hover:text-study-learning-hover';
-      case 'review':
-        return 'text-study-review-foreground bg-study-review-background border-study-review-border hover:text-study-review-hover';
-      default:
-        return 'text-muted-foreground bg-badge-background border-border';
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'new':
-        return <SparklesIcon size={14} className="mr-1.5" />;
-      case 'learning':
-      case 'relearning':
-        return <BookOpenIcon size={14} className="mr-1.5" />;
-      case 'review':
-        return <CheckCircleIcon size={14} className="mr-1.5" />;
-      default:
-        return <CircleIcon size={14} className="mr-1.5" />;
-    }
-  };
-
-  const baseClasses = "inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border transition-all duration-400";
-  const colorClasses = type === 'difficulty' ? getDifficultyColor(value) : getTypeColor(value);
-  
-  return (
-    <span
-      className={cn(baseClasses, colorClasses, className)}
-    >
-      {type === 'difficulty' ? (
-        <span className="material-icons mr-1.5 fill-current" style={{ fontSize: '12px' }}>circle</span>
-      ) : (
-        getTypeIcon(value)
-      )}
-      {value}
-    </span>
-  );
-};
+export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({ variant, size, foreground, asChild, children, className, ...props }, ref) => {
+  const Component = asChild ? Slot : 'span';
+  return <Component ref={ref} {...props} className={cn(badgeVariants({ variant, size, foreground }), className)}>{children}</Component>;
+});
+Badge.displayName = 'Badge';
 
 export default Badge;

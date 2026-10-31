@@ -23,10 +23,10 @@ let classes;
 
 beforeAll(async () => {
   const probes = Object.keys(original.roles).map(name => `text-${name}`).join(' ');
-  const css = fs.readFileSync(path.join(root, 'src/app/globals.css'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'src/styles/globals.css'), 'utf8');
   const result = await postcss([tailwind({ ...config, content: [
     ...sources.map(raw => ({ raw, extension: 'tsx' })), { raw: probes, extension: 'html' },
-  ] })]).process(css, { from: path.join(root, 'src/app/globals.css') });
+  ] })]).process(css, { from: path.join(root, 'src/styles/globals.css') });
   stylesheet = result.root;
   variables = {};
   classes = new Map();
@@ -91,7 +91,7 @@ test('every color variable and literal helper argument used anywhere in the app 
   });
   sources.forEach(source => {
     for (const match of source.matchAll(/var\((--[\w-]+)/g)) {
-      if (!match[1].startsWith('--tw-')) expect(declared.has(match[1])).toBe(true);
+      if (!match[1].startsWith('--tw-') && !match[1].startsWith('--radix-')) expect(declared.has(match[1])).toBe(true);
     }
     for (const match of source.matchAll(/\b(?:cssColor|canvasColor|hexColor)\(['"]([\w-]+)['"]/g)) {
       expect(variables[`--${match[1]}`]).toBeDefined();
@@ -153,20 +153,6 @@ test('library color overrides exactly preserve installed editor, highlighting, a
     });
   });
   expect(checked).toBe(65);
-});
-
-test('React Tooltip default colors retain their installed values through shared variables', () => {
-  const defaults = postcss.parse(fs.readFileSync(path.join(root, 'node_modules/react-tooltip/dist/react-tooltip.css'), 'utf8'));
-  const overrides = postcss.parse(fs.readFileSync(path.join(root, 'src/styles/vendor-colors.css'), 'utf8'));
-  let checked = 0;
-  defaults.walkDecls(/^--rt-color-/, decl => {
-    let replacement;
-    overrides.walkRules('html:root', rule => rule.walkDecls(decl.prop, candidate => { replacement = candidate.value; }));
-    expect(replacement).toBeDefined();
-    expect(normalize(resolve(replacement))).toBe(normalize(decl.value));
-    checked++;
-  });
-  expect(checked).toBe(6);
 });
 
 test('Tailwind defaults for shadows, placeholders, and rings keep their old values through tokens', () => {

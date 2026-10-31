@@ -1,3 +1,9 @@
+import { AuthShell } from '@/components/layout/auth-shell';
+import { Heading } from '@/components/ui/typography';
+import { Card } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
+import { Spinner } from '@/components/ui/spinner';
+import { Button } from '@/components/ui/button';
 import { cssColor } from '@/lib/colors';
 import { completeSignIn } from '@/auth/completeSignIn';
 import { clearSessionCookie } from '@/auth/sessionCookie';
@@ -8,7 +14,6 @@ import { useRouter } from 'next/router';
 import nookies from "nookies"; 
 import firebaseAdmin from "../../firebaseAdmin";
 import Link from 'next/link';
-import '../app/globals.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -88,27 +93,26 @@ const Login = () => {
 
   if (isMobile) {
     return (
-      <div className="bg-background min-h-screen flex h-full items-center justify-center py-16">
-        <div className="bg-surface-raised p-6 rounded-lg shadow-lg text-center">
-          <h1 className="text-2xl font-bold text-muted-foreground mb-4">Hello there!</h1>
+      <AuthShell contained={false}>
+        <Card surface="raised" radius="lg" border="none" padding="xl" className="text-center">
+          <Heading as="h1" size="2xl" weight="bold" tone="muted" className="mb-4">Hello there!</Heading>
           <p className="text-foreground">
             It looks like you are on mobile. As of right now, Repcode.io is meant to be a desktop experience. In the future, we may add mobile compatibility (most likely in the form of an app), but as for right now the application is viewable on desktop only.
           </p>
-        </div>
-      </div>
+        </Card>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="bg-background min-h-screen flex h-full items-center justify-center py-16">
-      <main className="w-full max-w-md mx-auto p-6">
+    <AuthShell>
         <div className="mt-7 bg-background">
           <div className="p-4 sm:p-7">
             <div className="text-center">
               <img src="/repcode.png" alt="Logo" className="mx-auto w-24 h-auto mb-4" />
-              <h1 className="block text-3xl font-bold text-muted-foreground">
+              <Heading as="h1" size="3xl" weight="bold" tone="muted" className="block">
                 Welcome back
-              </h1>
+              </Heading>
               {/* <p className="mt-2 text-sm text-foreground">
                 {showSignUp ? "Already have an account? " : "Don't have an account yet? "}
                 <span 
@@ -120,22 +124,13 @@ const Login = () => {
               </p> */}
             </div>
             <div className="mt-8 grid">
-              <button 
-                onClick={googleSignIn} 
-                type="button" 
-                disabled={googleSignInLoading}
-                className={`py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-border bg-surface text-muted-foreground shadow-sm transition-all duration-200 ${
-                  googleSignInLoading 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : 'hover:text-app-highlight hover:border-app-highlight'
-                }`}
-              >
+              <Button variant="signIn" size="large" loading={googleSignInLoading}
+                onClick={googleSignIn}
+                type="button"
+                disabled={googleSignInLoading}>
                 {googleSignInLoading ? (
                   <>
-                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <Spinner variant="button" />
                     Signing in...
                   </>
                 ) : (
@@ -149,11 +144,11 @@ const Login = () => {
                     Continue with Google
                   </>
                 )}
-              </button>
+              </Button>
               {/* <div className="py-6 flex items-center text-sm text-muted-foreground uppercase before:flex-[1_1_0%] before:border-t before:me-6 after:flex-[1_1_0%] after:border-t after:ms-6">Or</div> */}
             </div>
             <div className="mt-5">
-              {error && <div className="text-status-error">{error}</div>}
+              {error && <Alert variant="loginError">{error}</Alert>}
               {/* <form onSubmit={(e) => {
                 e.preventDefault();
                 showSignUp ? signUp() : signIn();
@@ -202,8 +197,7 @@ const Login = () => {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </AuthShell>
   );
 };
 

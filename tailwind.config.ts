@@ -7,12 +7,13 @@ const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+      ],
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
+        'slider-track': color('slider-track'),
+        'slider-border': color('slider-border'),
         background: color('background'),
         foreground: color('foreground'),
         placeholder: color('foreground-placeholder'),
@@ -126,13 +127,11 @@ const config: Config = {
           border: color('code-border'),
         },
 
-        // Application roles; all channel values live in globals.css.
+        // Application roles; all channel values live in src/styles/globals.css.
         'inverse': color('foreground-inverse'),
-        'subtle': color('foreground-subtle'),
-        'faint': color('foreground-faint'),
-        'surface-navigation': color('surface-navigation'),
-        'surface-hover': color('surface-hover'),
-        'surface-hover-alt': color('surface-hover-alt'),
+
+        'surface-count': color('surface-count'),
+
         'control-disabled': color('disabled-background'),
         'control-disabled-foreground': color('disabled-foreground'),
         'border-subtle': color('border-subtle'),
@@ -209,9 +208,7 @@ const config: Config = {
         'calendar-inactive': color('calendar-inactive'),
         'calendar-hover': color('calendar-hover'),
         'calendar-offset': color('calendar-offset'),
-        'calendar-legacy-low': color('calendar-legacy-low'),
-        'calendar-legacy-medium': color('calendar-legacy-medium'),
-        'calendar-legacy-high': color('calendar-legacy-high'),
+
         'chart-tooltip': color('chart-tooltip'),
         'chart-legend': color('chart-legend'),
         'chart-grid': color('chart-grid'),
@@ -245,19 +242,13 @@ const config: Config = {
         'drawing-ink-purple': color('drawing-ink-purple'),
         'drawing-ink-green': color('drawing-ink-green'),
         'drawing-selection': color('drawing-selection'),
-        'drawing-legacy-selection': color('drawing-legacy-selection'),
+
         'drawing-tool-inactive': color('drawing-tool-inactive'),
         'provider-google-blue': color('provider-google-blue'),
         'provider-google-green': color('provider-google-green'),
         'provider-google-yellow': color('provider-google-yellow'),
         'provider-google-red': color('provider-google-red'),
-        'warning-banner': color('warning-banner'),
-        'media-shadow': color('media-shadow'),
-        'animated-surface-start': color('animated-surface-start'),
-        'animated-surface-top': color('animated-surface-top'),
-        'animated-surface-middle': color('animated-surface-middle'),
-        'animated-surface-end': color('animated-surface-end'),
-        'animated-border': color('animated-border'),
+        'status-overdue': color('status-overdue'),
 
         'status-import-error-background': color('status-import-error-background'),
         'feedback-hard-label': color('feedback-hard-label'),
@@ -268,51 +259,17 @@ const config: Config = {
         'button-secondary': color('button-secondary-background'),
         'button-secondary-foreground': color('button-secondary-foreground'),
 
-        // Compatibility aliases: retain their existing colors during migration.
-        // In particular, primary/secondary still mean legacy foreground colors.
-        base_100: color('background'),
-        nav: color('surface-navigation'),
-        hover: color('surface-hover'),
-        hover2: color('surface-hover-alt'),
-        neutral: { DEFAULT: color('foreground-inverse') },
-        primary: { DEFAULT: color('primary'), foreground: color('primary-foreground') },
-        secondary: { DEFAULT: color('secondary'), foreground: color('secondary-foreground') },
-        tertiary: color('surface'),
-        pop: color('brand-accent'),
-        pop2: color('brand-accent-alt'),
-        divide: color('border'),
-        feintwhite: color('foreground-faint'),
-        grey: color('foreground-subtle'),
-        success: color('status-success'),
-        error: color('status-error'),
-        errorBorder: color('status-error-border'),
-        errorBg: color('status-error-background'),
-        warning: color('status-warning'),
-        easy: color('difficulty-easy'),
-        medium: color('difficulty-medium'),
-        hard: color('difficulty-hard'),
         link: color('link'),
-        cards: color('surface-raised'),
-        load: color('action'),
-        // DEFAULT preserves bg-blue/text-neutral without replacing numbered shades.
-        blue: { DEFAULT: color('action') },
-        new: color('study-new'),
-        learning: color('study-learning'),
-        review: color('study-review'),
-        disabled: color('disabled-background'),
-        disabledText: color('disabled-foreground'),
-        mediumbg: color('difficulty-medium-background'),
-        easybg: color('difficulty-easy-background'),
-        hardbg: color('difficulty-hard-background'),
-        newbg: color('study-new-background'),
-        warningbg: color('status-warning-background'),
-        successbg: color('status-success-background'),
       },
-      // Restoring gray.200 must not change previously uncolored borders site-wide.
+      // Unspecified borders intentionally inherit currentColor; panels use border-border.
       borderColor: { DEFAULT: 'currentColor' },
       ringColor: { DEFAULT: 'rgb(var(--ring-default))' },
       ringOffsetColor: { DEFAULT: 'rgb(var(--ring-offset-default))' },
       boxShadow: {
+        'button-action': '0 10px 15px -3px rgb(var(--app-action-end) / 0.2), 0 4px 6px -4px rgb(var(--app-action-end) / 0.2)',
+        'button-action-hover': '0 10px 15px -3px rgb(var(--app-action-end) / 0.3), 0 4px 6px -4px rgb(var(--app-action-end) / 0.3)',
+        'button-reminder': '0 10px 15px -3px rgb(var(--reminder-end) / 0.2), 0 4px 6px -4px rgb(var(--reminder-end) / 0.2)',
+        'button-reminder-hover': '0 10px 15px -3px rgb(var(--reminder-end) / 0.3), 0 4px 6px -4px rgb(var(--reminder-end) / 0.3)',
         // Keep Tailwind's existing geometry/opacities, with a shared shadow color.
         sm: '0 1px 2px 0 rgb(var(--shadow-color) / 0.05)',
         DEFAULT: '0 1px 3px 0 rgb(var(--shadow-color) / 0.1), 0 1px 2px -1px rgb(var(--shadow-color) / 0.1)',

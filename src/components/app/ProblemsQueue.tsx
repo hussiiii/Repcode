@@ -1,8 +1,16 @@
+import { DifficultyBadge, StudyStateBadge } from '@/components/app/ProblemBadges';
+import { Prose, Heading } from '@/components/ui/typography';
+import { formatProblemContent } from '@/lib/problem-content';
+import { HelpTooltip } from '@/components/ui/tooltip';
+import { ProblemWorkspace, type WorkspaceView } from './ProblemWorkspace';
+import { Alert } from '@/components/ui/alert';
+import { Empty } from '@/components/ui/empty';
+import { LoadingState } from '@/components/ui/loading-state';
+import { Button, type ButtonProps } from '@/components/ui/button';
 import { cssColor, hexColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext, useRef } from 'react';
-import '../../app/globals.css'; 
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-one_dark";
@@ -12,102 +20,38 @@ import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-c_cpp";
 import hljs from 'highlight.js';
-import 'highlight.js/styles/atom-one-dark-reasonable.css'; // or any other style of your choice
 import { AuthContext } from '@/auth/AuthContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import ChatWindow from './ChatWindow';
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import ProblemModal from './ProblemModal';
 import ProblemStatsModal from './ProblemStatsModal';
-import Toast from './Toast';
-import Badge from '@/components/ui/Badge';
+import { useToast } from '@/components/ui/use-toast';
 import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { Whiteboard, DrawingElement } from './WhiteBoard';
-import { ClipboardPen, NotepadText, Lightbulb, BotMessageSquare, PenSquare, Edit3, BarChart2, ExternalLink, MoreHorizontal } from "lucide-react";
 import Stopwatch from './Stopwatch';
 
-// If there's ever a <code> nested within a <pre>, it breaks everything, so we need to check for this and remove it 
-const sanitizeCodeBlocks = (html: string) => {
-  const div = document.createElement('div');
-  div.innerHTML = html;
 
-  const preTags = Array.from(div.getElementsByTagName('pre'));
 
-  for (const pre of preTags) {
-    const nestedCodeTags = Array.from(pre.getElementsByTagName('code'));
-
-    for (const code of nestedCodeTags) {
-      const textNode = document.createTextNode(code.textContent || '');
-      code.parentNode?.replaceChild(textNode, code);
-    }
-    pre.style.color = cssColor('foreground'); // Force white text for pre blocks
-  }
-
-  return div.innerHTML.replace(/color:\s*[^;]+;/gi, 'color: rgb(var(--foreground)/1);');
-};
-
-// Update the CSS block with styling for <code> elements
-const preBlockStyles = `
-  .problem-content pre {
-    background-color: rgb(var(--surface)/1) !important;
-    border: 1px solid rgb(var(--border)/1) !important;
-    border-radius: 6px !important;
-    padding: 12px !important;
-    margin: 12px 0 !important;
-    overflow-x: auto !important;
-    color: rgb(var(--foreground-code-body)/1) !important;
-  }
-
-  .problem-content pre code {
-    color: rgb(var(--foreground-code-body)/1) !important;
-    font-family: monospace !important;
-  }
-
-  /* Style for inline code elements (not inside pre) */
-  .problem-content code:not(pre code) {
-    background-color: rgb(var(--border)/1) !important;
-    color: rgb(var(--foreground)/1) !important;
-    padding: 2px 5px !important;
-    border-radius: 4px !important;
-    font-family: monospace !important;
-    font-size: 0.9em !important;
-    border: 1px solid rgb(var(--border-strong)/1) !important;
-  }
-  .prose-invert {
-    color: rgb(var(--foreground)/1) !important; /* Force white text for prose content */
-  }
-  .prose-invert a {
-    color: rgb(var(--editor-link)/1) !important; /* Ensure links are green, not black */
-  }
-  /* Ensure AceEditor text is white */
-  .ace_editor {
-    color: rgb(var(--foreground)/1) !important;
-  }
-  .ace_cursor {
-    color: rgb(var(--foreground)/1) !important;
-  }
-
-`;
+const feedbackTones: Record<string, ButtonProps['tone']> = { Again: 'again', Lapse: 'again', Hard: 'hard', Good: 'good', Easy: 'easy' };
 
 const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:any, userSettings:any, refetchProblems: any}) => {
+  const { toast: showToast } = useToast(3000);
     const [dueProblems, setDueProblems] = useState<any>([]);
     const [buttons, setButtons] = useState<any[]>([]);
     const [againText, setAgainText] = useState<any>();
-    const [hardText, setHardText] = useState<any>(); 
-    const [goodText, setGoodText] = useState<any>(); 
-    const [easyText, setEasyText] = useState<any>();  
+    const [hardText, setHardText] = useState<any>();
+    const [goodText, setGoodText] = useState<any>();
+    const [easyText, setEasyText] = useState<any>();
     const [content, setContent] = useState<any>('question');
-    const [isLoading, setIsLoading] = useState(false); // while we transition from current problem to next in queue   
-    const [editorContent, setEditorContent] = useState<any>('');  
+    const [isLoading, setIsLoading] = useState(false); // while we transition from current problem to next in queue
+    const [editorContent, setEditorContent] = useState<any>('');
     const queryClient = useQueryClient();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
-    const [toastMessage, setToastMessage] = useState('');
-    const [isToastVisible, setIsToastVisible] = useState(false);
     const [whiteboardElements, setWhiteboardElements] = useState<DrawingElement[]>([]);
     const [whiteboardHistory, setWhiteboardHistory] = useState<DrawingElement[][]>([]);
     const [whiteboardHistoryIndex, setWhiteboardHistoryIndex] = useState(-1);
-    
+
     // State for preserving ChatWindow content
     const [chatMessages, setChatMessages] = useState<Array<{ text: string, sender: string }>>([]);
     const [chatInput, setChatInput] = useState("");
@@ -120,8 +64,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const [monthsOverdue, setMonthsOverdue] = useState(0);
 
     // More menu state
-    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-    const moreMenuRef = useRef<HTMLDivElement>(null);
+    const editorRef = useRef<AceEditor | null>(null);
     const reviewFuzzRef = useRef<{ problemId: number | null; hard: number; good: number; easy: number }>({
       problemId: null,
       hard: 0,
@@ -147,7 +90,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const [runTour, setRunTour] = useState(false);
     const [tourSteps] = useState<Step[]>([
       {
-        target: '#solution-tab',
+        target: '[data-workspace-view="solution"]',
         content: (
           <div>
             <p className="mb-3 text-base">When you&apos;re finished solving the problem, click here to give feedback:</p>
@@ -190,10 +133,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
 
     const { user } = useContext(AuthContext);
 
-    // For resizable panels
-    const [panelWidth, setPanelWidth] = useState(50);
-    const [isDragging, setIsDragging] = useState(false);
-    
     // Effect to handle tab switching to AI assistant
     useEffect(() => {
       // When switching to AI assistant tab, make sure we're not stuck in analyzing state
@@ -210,29 +149,36 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
   };
 
     const { data } = useQuery(['userSettings', user?.email], fetchUserSettings, {
-    enabled: !!user, 
+    enabled: !!user,
     });
-    
+
     // Initialize chat only once per problem
     const currentProblemId = useRef<string | null>(null);
-    
+
     // Effect for resetting chat when the problem changes
     useEffect(() => {
       if (dueProblems.length > 0) {
         const newProblemId = dueProblems[0].id;
-        
-        // If this is a new problem, reset chat state
+
+        // A different problem must start with its own chat and sketch state.
         if (currentProblemId.current !== newProblemId) {
-          currentProblemId.current = newProblemId;
-          
-          // Only initialize if we need to (empty messages)
-          if (chatMessages.length === 0) {
-            setIsAnalyzing(true); // Set to analyzing state
+          if (currentProblemId.current !== null) {
+            setChatMessages([]);
+            setChatInput('');
+            setIsTyping(false);
+            setShowQuickQuestions(true);
+            setWhiteboardElements([]);
+            setWhiteboardHistory([[]]);
+            setWhiteboardHistoryIndex(0);
+            setEditorContent('');
+            setContent('question');
           }
+          currentProblemId.current = newProblemId;
+          setIsAnalyzing(true);
         }
       }
     }, [dueProblems]);
-    
+
     // Separate effect for actual API call, depending on analyzing state
     useEffect(() => {
       // Only proceed if we're in analyzing state and have a problem and API key
@@ -252,77 +198,39 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 mode: "analyze"
               }),
             });
-            
+
             setIsAnalyzing(false);
-            
+
             if (response.ok) {
               // After analysis is complete, show the greeting message
               setChatMessages([{ text: "How can I help you with this problem?", sender: "ai" }]);
             } else {
-              setChatMessages([{ 
-                text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
-                sender: "ai" 
+              setChatMessages([{
+                text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.",
+                sender: "ai"
               }]);
               setShowQuickQuestions(false);
             }
           } catch (error) {
             setIsAnalyzing(false);
-            setChatMessages([{ 
-              text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
-              sender: "ai" 
+            setChatMessages([{
+              text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.",
+              sender: "ai"
             }]);
             setShowQuickQuestions(false);
           }
         };
-        
+
         analyzeCode();
       }
     }, [isAnalyzing, dueProblems, data?.hasApiKey, editorContent]);
-
-    const handleMouseDown = () => {
-      setIsDragging(true);
-      document.body.style.userSelect = 'none';
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      document.body.style.userSelect = 'auto';
-    };
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-      if (!isDragging) return;
-      const container = e.currentTarget as HTMLElement;
-      const containerRect = container.getBoundingClientRect();
-      const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-      if (newWidth >= 30 && newWidth <= 70) {
-        setPanelWidth(newWidth);
-      }
-    };
-
-    useEffect(() => {
-      if (isDragging) {
-        window.addEventListener('mouseup', handleMouseUp);
-        return () => window.removeEventListener('mouseup', handleMouseUp);
-      }
-    }, [isDragging]);
-
-    // Close more menu when clicking outside
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-          setIsMoreMenuOpen(false);
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     // Check if user has seen the tour before and start it if they haven't
     useEffect(() => {
       if (user?.email && dueProblems.length > 0) {
         const tourKey = `problemsQueueTour_${user.email}`;
         const hasSeenTour = localStorage.getItem(tourKey);
-        
+
         if (!hasSeenTour) {
           // Small delay to ensure elements are rendered
           setTimeout(() => {
@@ -336,7 +244,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     const handleJoyrideCallback = (data: CallBackProps) => {
       const { status } = data;
       const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-      
+
       if (finishedStatuses.includes(status) && user?.email) {
         const tourKey = `problemsQueueTour_${user.email}`;
         localStorage.setItem(tourKey, 'true');
@@ -351,20 +259,20 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
 
     useEffect(() => {
       if(!userSettings){
-        return; 
+        return;
       }
       if (problems) {
         console.log(dueProblems)
         setDueProblems(problems);
       }
-      
+
       if (dueProblems.length > 0) {
         const firstProblemType = dueProblems[0].type;
-        
+
         // Calculate if problem is severely overdue (only for Review cards)
         let isSevereOverdue = false;
         let monthsOver = 0;
-        
+
         if (firstProblemType === 'Review') {
           const dueDate = new Date(dueProblems[0].dueDate);
           const now = new Date();
@@ -372,11 +280,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           monthsOver = msOverdue / (1000 * 60 * 60 * 24 * 30); // Approximate months
           isSevereOverdue = monthsOver >= userSettings?.overdueWarningThreshold;
         }
-        
+
         // Update state for UI warning display
         setIsSeverelyOverdue(isSevereOverdue);
         setMonthsOverdue(isSevereOverdue ? Math.floor(monthsOver) : 0);
-        
+
         // Set buttons based on problem type and overdue status
         let buttonsBasedOnType;
         if (isSevereOverdue) {
@@ -437,8 +345,8 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             break;
           }
           case 'Relearning': {
-            const relearnStepsArray = userSettings?.relearnSteps.split(' '); 
-            const firstStep = relearnStepsArray[0]; 
+            const relearnStepsArray = userSettings?.relearnSteps.split(' ');
+            const firstStep = relearnStepsArray[0];
             const currentStepIndex = dueProblems[0].stepIndex ?? 0;
             const nextStepIndex = currentStepIndex + 1;
             const maxInterval = userSettings?.maximumInterval || 180;
@@ -454,20 +362,20 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             } else {
               nextInterval = relearnStepsArray[nextStepIndex];
             }
-            
-            let easyInt = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval; 
+
+            let easyInt = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval;
             easyInt = Math.floor(easyInt / 1440); // Convert to days and round down
             easyInt = Math.min(easyInt, maxInterval); // Cap at maximumInterval
 
-            setAgainText(firstStep); 
-            setGoodText(nextInterval); 
-            setEasyText(easyInt + 'd'); 
+            setAgainText(firstStep);
+            setGoodText(nextInterval);
+            setEasyText(easyInt + 'd');
             break;
           }
           case 'Review': {
             // Again on Review goes to Relearning, so show first relearn step
-            const relearnStepsArray = userSettings?.relearnSteps.split(' '); 
-            const firstRelearnStep = relearnStepsArray[0]; 
+            const relearnStepsArray = userSettings?.relearnSteps.split(' ');
+            const firstRelearnStep = relearnStepsArray[0];
             const maxIntervalMinutes = (userSettings?.maximumInterval || 180) * 24 * 60;
             const fuzzFactors = getReviewFuzzFactors(dueProblems[0].id);
 
@@ -487,10 +395,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             const intervalGood = getPreviewDays(baseGoodMinutes, fuzzFactors.good);
             const intervalEasy = getPreviewDays(baseEasyMinutes, fuzzFactors.easy);
 
-            setAgainText(firstRelearnStep); 
-            setHardText(intervalHard + "d"); 
-            setGoodText(intervalGood + "d"); 
-            setEasyText(intervalEasy + "d"); 
+            setAgainText(firstRelearnStep);
+            setHardText(intervalHard + "d");
+            setGoodText(intervalGood + "d");
+            setEasyText(intervalEasy + "d");
             break;
           }
           default: {
@@ -502,7 +410,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     }, [problems, dueProblems, userSettings]);
 
 
-    // For heat map 
+    // For heat map
     const updateContribution = async (userEmail: string) => {
       const response = await authenticatedFetch('/api/updateContribution', {
         method: 'POST',
@@ -516,22 +424,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
       }
     };
 
-    const getButtonColor = (label: string) => {
-      switch (label) {
-        case 'Again':
-        case 'Lapse':
-          return 'text-status-error rounded-md hover:bg-surface-hover-alt';
-        case 'Hard':
-          return 'text-difficulty-medium rounded-md hover:bg-surface-hover-alt';
-        case 'Good':
-          return 'text-difficulty-easy rounded-md hover:bg-surface-hover-alt';
-        case 'Easy':
-          return 'text-action rounded-md hover:bg-surface-hover-alt';
-        default:
-          return 'text-inverse dark:text-muted-foreground rounded-md hover:bg-surface-hover-alt';
-      }
-    };
-
     const updateProblemMutation = useMutation(async ({ problemId, updates }: { problemId: any, updates: any }) => {
       const response = await authenticatedFetch('/api/updateProblemForAlgo', {
         method: 'POST',
@@ -540,11 +432,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         },
         body: JSON.stringify({ id: problemId, updates }),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to update problem');
       }
-  
+
       return response.json();
     });
 
@@ -563,22 +455,22 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
     // ============================================================================
     async function Helper(problem: any) {
       setIsLoading(true);
-      
+
       // Cap interval at maximumInterval (convert days to minutes)
       const maxIntervalMinutes = userSettings?.maximumInterval * 24 * 60;
       problem.interval = Math.min(problem.interval, maxIntervalMinutes);
-      
+
       // Calculate the new due date based on current time + interval
       const currentDate = new Date();
-      const additionalTime = problem.interval * 60 * 1000; // convert minutes to milliseconds 
+      const additionalTime = problem.interval * 60 * 1000; // convert minutes to milliseconds
       const newDueDate = new Date(currentDate.getTime() + additionalTime);
-      
+
       // Update BOTH due dates - this is a "real" feedback action, not a skip
       // dueDate: for queue ordering
       // originalDueDate: for overdue tracking and display
       problem.dueDate = newDueDate;
       problem.originalDueDate = newDueDate;
-    
+
       const updates = {
         type: problem.type,
         interval: problem.interval,
@@ -588,23 +480,23 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         dueDate: problem.dueDate,
         originalDueDate: problem.originalDueDate, // Also update the "true" due date
         againCount: problem.againCount,
-        hardCount: problem.hardCount,  
-        goodCount: problem.goodCount,   
+        hardCount: problem.hardCount,
+        goodCount: problem.goodCount,
         easyCount: problem.easyCount,
         lapses: problem.lapses
       };
       updateProblemMutation.mutate({ problemId: problem.id, updates }, {
         onSuccess: async (updatedProblem) => {
-          // Check if problem is still due today 
+          // Check if problem is still due today
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           const updatedDueDate = new Date(updatedProblem.dueDate);
           updatedDueDate.setHours(0, 0, 0, 0);
-    
+
           // Create a new array excluding the current problem to manipulate and update the state later
           let updatedProblems = dueProblems.filter((p: any) => p.id !== problem.id);
           console.log(updatedProblems)
-    
+
           if (updatedDueDate.getTime() === today.getTime()) {
             console.log("Still due")
             updatedProblems.push(updatedProblem);
@@ -612,7 +504,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           setDueProblems(updatedProblems);
           await refetchProblems();
           setIsLoading(false);
-    
+
           // Call updateCollectionCounts endpoint after problem type update
           try {
             const updateResponse = await authenticatedFetch('/api/updateCollectionCounts', {
@@ -626,14 +518,14 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
           } catch (error) {
             console.error('Failed to update collection counts:', error);
           }
-          
+
           // Update streak when giving feedback on a problem
           if (user?.email) {
             try {
               // Get local date in YYYY-MM-DD format (timezone-safe for streak tracking)
               const now = new Date();
               const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-              
+
               await authenticatedFetch('/api/updateStreak', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -643,11 +535,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               console.error('Failed to update streak:', error);
             }
           }
-          
-          queryClient.invalidateQueries(['collections', user?.email]); // for collection problem type counts  
+
+          queryClient.invalidateQueries(['collections', user?.email]); // for collection problem type counts
           queryClient.invalidateQueries(['userSettings', user?.email]); // for updating the heatmap + streak
           queryClient.invalidateQueries(['collectionDetails']); // for updating ProblemList
-          
+
         },
         onError: (error) => {
           // Handle any errors
@@ -701,10 +593,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             },
         });
     };
-    
-    // handles the logic of what happens to the problem depeneding on the feedback button pressed 
+
+    // handles the logic of what happens to the problem depeneding on the feedback button pressed
     const Algorithm = async(buttonValue:any) => {
-        console.log(`Button clicked: ${buttonValue}`); 
+        console.log(`Button clicked: ${buttonValue}`);
 
         if (buttonValue === "again") {
           dueProblems[0].againCount += 1;
@@ -721,37 +613,37 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             const stepsArray = userSettings?.learnSteps.split(' ').map((step:string) => {
               const value = parseInt(step.slice(0, -1));
               const unit = step.slice(-1);
-              return unit === 'm' ? value : value * 24 * 60; 
+              return unit === 'm' ? value : value * 24 * 60;
             });
 
             if(buttonValue === "again") { // update type to learning, set to first step
-                dueProblems[0].type = "Learning"; 
+                dueProblems[0].type = "Learning";
                 dueProblems[0].stepIndex = 0;
-                dueProblems[0].interval = stepsArray[0]; 
+                dueProblems[0].interval = stepsArray[0];
 
-                await Helper(dueProblems[0]); 
+                await Helper(dueProblems[0]);
             }
             else if(buttonValue === "good") { // update type to learning, advance to step 1 (skipping step 0)
               dueProblems[0].stepIndex = 1;
-              
+
               if (dueProblems[0].stepIndex >= stepsArray.length) {
                 // No second step, graduate directly to Review
-                dueProblems[0].type = "Review"; 
+                dueProblems[0].type = "Review";
                 dueProblems[0].stepIndex = 0;
                 dueProblems[0].interval = userSettings?.graduatingInterval * 24 * 60;
               } else { // advance to next step
-                dueProblems[0].type = "Learning"; 
+                dueProblems[0].type = "Learning";
                 dueProblems[0].interval = stepsArray[dueProblems[0].stepIndex];
               }
 
               await Helper(dueProblems[0]);
             }
             else if (buttonValue === "easy") { // update type to review, change interval to easyinterval
-              dueProblems[0].type = "Review"; 
+              dueProblems[0].type = "Review";
               dueProblems[0].stepIndex = 0;
-              dueProblems[0].interval = userSettings?.easyInterval * 24 * 60; 
-              
-              await Helper(dueProblems[0]); 
+              dueProblems[0].interval = userSettings?.easyInterval * 24 * 60;
+
+              await Helper(dueProblems[0]);
             }
         }
         else if(dueProblems[0].type === "Learning") {
@@ -759,18 +651,18 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             const stepsArray = userSettings?.learnSteps.split(' ').map((step:string) => {
                 const value = parseInt(step.slice(0, -1));
                 const unit = step.slice(-1);
-                return unit === 'm' ? value : value * 24 * 60; 
+                return unit === 'm' ? value : value * 24 * 60;
             });
 
             if(buttonValue === "again") { // reset to first learning step
               dueProblems[0].stepIndex = 0;
-              dueProblems[0].interval = stepsArray[0]; 
+              dueProblems[0].interval = stepsArray[0];
 
               await Helper(dueProblems[0]);
             }
             else if (buttonValue === "good") { // advance to next step or graduate
               dueProblems[0].stepIndex += 1;
-              
+
               if (dueProblems[0].stepIndex >= stepsArray.length) {
                 // Completed all steps, graduate to Review
                 dueProblems[0].type = "Review";
@@ -783,9 +675,9 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               await Helper(dueProblems[0]);
             }
             else if (buttonValue === "easy") { // skip remaining steps, graduate to Review
-              dueProblems[0].type = "Review"; 
+              dueProblems[0].type = "Review";
               dueProblems[0].stepIndex = 0;
-              dueProblems[0].interval = userSettings?.easyInterval * 24 * 60; 
+              dueProblems[0].interval = userSettings?.easyInterval * 24 * 60;
 
               await Helper(dueProblems[0]);
             }
@@ -795,24 +687,24 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             const relearnStepsArray = userSettings?.relearnSteps.split(' ').map((step:string) => {
                 const value = parseInt(step.slice(0, -1));
                 const unit = step.slice(-1);
-                return unit === 'm' ? value : value * 24 * 60; 
+                return unit === 'm' ? value : value * 24 * 60;
             });
 
             if(buttonValue === "again") { // reset to first relearning step
               dueProblems[0].stepIndex = 0;
-              dueProblems[0].interval = relearnStepsArray[0]; 
+              dueProblems[0].interval = relearnStepsArray[0];
 
               await Helper(dueProblems[0]);
             }
             else if(buttonValue === "good") { // advance to next step or graduate back to Review
               dueProblems[0].stepIndex += 1;
-              
+
               if (dueProblems[0].stepIndex >= relearnStepsArray.length) {
                 // Completed all relearn steps, graduate back to Review
                 dueProblems[0].type = "Review";
                 dueProblems[0].stepIndex = 0;
                 dueProblems[0].interval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval;
-                dueProblems[0].relearnInterval = 0; 
+                dueProblems[0].relearnInterval = 0;
               } else {
                 dueProblems[0].interval = relearnStepsArray[dueProblems[0].stepIndex];
               }
@@ -820,10 +712,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               await Helper(dueProblems[0]);
             }
             else if (buttonValue === "easy") { // skip all relearn steps, graduate immediately
-              dueProblems[0].type = "Review"; 
+              dueProblems[0].type = "Review";
               dueProblems[0].stepIndex = 0;
-              dueProblems[0].interval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval; 
-              dueProblems[0].relearnInterval = 0; 
+              dueProblems[0].interval = dueProblems[0].relearnInterval * userSettings?.relearnGraduatingInterval;
+              dueProblems[0].relearnInterval = 0;
 
               await Helper(dueProblems[0]);
             }
@@ -843,10 +735,10 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             const relearnStepsArray = userSettings?.relearnSteps.split(' ').map((step:string) => {
                 const value = parseInt(step.slice(0, -1));
                 const unit = step.slice(-1);
-                return unit === 'm' ? value : value * 24 * 60; 
+                return unit === 'm' ? value : value * 24 * 60;
             });
 
-            dueProblems[0].interval = relearnStepsArray[0]; 
+            dueProblems[0].interval = relearnStepsArray[0];
 
             await Helper(dueProblems[0]);
 
@@ -855,7 +747,7 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               dueProblems[0].ease = (dueProblems[0].ease - 0.15 >= userSettings?.minimumEase) ? dueProblems[0].ease - 0.15 : userSettings.minimumEase;
               const fuzzFactors = getReviewFuzzFactors(dueProblems[0].id);
 
-              // Calculate next interval via equation 
+              // Calculate next interval via equation
               dueProblems[0].interval = dueProblems[0].interval * 1.2 * userSettings?.intervalModifier;
               dueProblems[0].interval *= (1 + fuzzFactors.hard);
 
@@ -874,165 +766,67 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
               dueProblems[0].interval *= (1 + fuzzFactors.easy);
 
               // Increase ease by 15%, but ensure it's at least minimumEase (for legacy/edge cases)
-              dueProblems[0].ease = Math.max(dueProblems[0].ease + 0.15, userSettings?.minimumEase); 
+              dueProblems[0].ease = Math.max(dueProblems[0].ease + 0.15, userSettings?.minimumEase);
 
               await Helper(dueProblems[0]);
             }
         }
-        setContent('question'); 
-        setEditorContent(''); 
+        setContent('question');
+        setEditorContent('');
         queryClient.invalidateQueries(['allProblems', user?.email]);
         queryClient.invalidateQueries(['collectionProblems']);
     };
 
-  
+
     if (isLoading) {
       return (
         <div className="flex justify-center items-center h-[80vh]">
-          <div className="relative flex flex-col items-center">
-            {/* Outer glow effect */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start to-app-action-end blur-xl opacity-20 animate-pulse"></div>
-            
-            {/* Spinner container */}
-            <div className="relative">
-              {/* Gradient ring */}
-              <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                              bg-gradient-to-r from-app-action-start to-app-action-end opacity-20"></div>
-              
-              {/* Spinning gradient arc */}
-              <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
-                              rounded-full animate-spin duration-1000" 
-                    style={{
-                      borderTopColor: cssColor('app-action-start'),
-                      borderRightColor: cssColor('app-action-end'),
-                      animationDuration: '1s'
-                    }}>
-              </div>
-            </div>
-            
-            {/* Loading text with shimmer effect */}
-            <div className="mt-4 text-sm font-medium text-muted-foreground relative overflow-hidden">
-              <span>Loading</span>
-              <span className="inline-flex overflow-hidden ml-1">
-                <span className="animate-ellipsis">.</span>
-                <span className="animate-ellipsis animation-delay-300">.</span>
-                <span className="animate-ellipsis animation-delay-600">.</span>
-              </span>
-            </div>
-          </div>
+          <LoadingState />
         </div>
       );
   }
 
   if (!isLoading && dueProblems.length === 0) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <Empty variant="complete">
         <p className="text-xl text-center text-muted-foreground">
         🎉Congratulations!🎉 You have finished all the problems due for today.
         </p>
-      </div>
+      </Empty>
     );
   }
 
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setIsToastVisible(true);
-    setTimeout(() => setIsToastVisible(false), 3000);
-  };
 
-  // Function to determine icon color based on label
-  const getIconColor = (label: string): string => {
-    switch (label.toLowerCase()) {
-      case 'description': return 'text-editor-icon-description'; // Red
-      case 'notes': return 'text-editor-icon-notes'; // Orange
-      case 'whiteboard': return 'text-editor-icon-tools'; // Blue
-      case 'solution': return 'text-editor-icon-solution'; // Yellow
-      case 'repcode ai': return 'text-editor-icon-ai'; // Deep Orange
-      case 'edit': return 'text-editor-icon-notes'; // Orange
-      case 'stats': return 'text-editor-icon-tools'; // Blue
-      case 'run on leetcode': return 'text-editor-icon-run'; // Green
-      default: return 'text-foreground'; // Default white
-    }
-  };
-
-  type TabButtonProps = {
-    active: boolean;
-    label: string;
-    onClick: () => void;
-    icon?: React.ReactElement;
-  };
-
-  const TabButton: React.FC<TabButtonProps> = ({ active, label, onClick, icon }) => (
-    <button
-      onClick={onClick}
-      className={`
-        px-4 py-2 text-sm font-medium rounded-full flex items-center space-x-2
-        transition-all duration-200
-        ${active 
-          ? 'bg-app-action-end/15 text-foreground'
-          : 'text-foreground hover:text-foreground hover:bg-background/50'}
-      `}
-      style={{ color: cssColor('foreground') }} // Explicitly enforce white text
-    >
-      {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
-        className: `w-5 h-5 ${active ? 'text-foreground' : getIconColor(label)}`,
-        style: { transition: 'color 0.2s' }
-      })}
-      <span className={`text-foreground ${active ? 'font-semibold' : ''}`} style={{ color: cssColor('foreground') }}>{label}</span>
-    </button>
-  );
-
-  type ActionButtonProps = {
-    onClick: () => void;
-    icon?: React.ReactElement;
-    label: string;
-  };
-
-  const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => (
-    <button
-      onClick={onClick}
-      className="px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-2 text-foreground hover:text-foreground hover:bg-background/50 transition-all duration-200"
-      style={{ color: cssColor('foreground') }} // Explicitly enforce white text
-    >
-      {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
-        className: `w-5 h-5 ${getIconColor(label)}`,
-        style: { transition: 'color 0.2s' }
-      })}
-      <span className="text-foreground" style={{ color: cssColor('foreground') }}>{label}</span>
-    </button>
-  );
 
     return (
       <div className="h-screen bg-background flex flex-col">
         {/* Add the style tag to the component */}
-        <style>{preBlockStyles}</style>
-        
+
+
         {/* Top Navigation */}
         <div className="flex items-center justify-between px-6 h-16 border-b border-border bg-surface">
           <div className="flex items-center">
             {/* Title showing the current problem name */}
-            <h1 className="text-2xl font-semibold text-foreground mr-4">
+            <Heading as="h1" size="2xl" weight="semibold" tone="foreground" className="mr-4">
               {dueProblems.length > 0 ? dueProblems[0].name : "Problem Queue"}
-            </h1>
-            
+            </Heading>
+
             {/* Add badges next to title if there are due problems */}
             {dueProblems.length > 0 && (
               <div className="flex gap-2 mr-4">
-                <Badge 
-                  type="difficulty" 
-                  value={dueProblems[0].difficulty} 
-                  className="py-1.5 px-4"
+                <DifficultyBadge
+                  value={dueProblems[0].difficulty}
+                  size="problem"
                 />
-                <Badge 
-                  type="problemType" 
-                  value={dueProblems[0].type} 
-                  className="py-1.5 px-4"
+                <StudyStateBadge
+                  value={dueProblems[0].type}
+                  size="problem"
                 />
               </div>
             )}
 
           </div>
-          
+
           {/* Status indicator stays on the right */}
           <div className="flex items-center text-xs text-muted-foreground">
             <Stopwatch resetKey={dueProblems[0]?.id ?? 'empty'} />
@@ -1060,168 +854,30 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                 }
               `}</style>
             </div>
-            <a 
-              href="/changelog" 
-              target="_blank" 
+            <a
+              href="/changelog"
+              target="_blank"
               rel="noopener noreferrer"
               className="hover:text-link transition-colors duration-200 cursor-pointer"
             >
-              v2.26 - stable release
+              v2.27 - stable release
             </a>
           </div>
         </div>
 
-        {/* Main Content with Resizable Panels */}
-        <div 
-          className="flex-1 flex overflow-hidden"
-          onMouseMove={handleMouseMove}
-        >
-          {/* Left Panel */}
-          <div 
-            className="h-full flex flex-col bg-background"
-            style={{ width: `${panelWidth}%` }}
-          >
-            <div className="h-full border-r border-border bg-background flex flex-col">
-              <div className="border-b border-border bg-background sticky top-0 z-10 p-2" style={{ color: cssColor('foreground') }}>
-                <div className="flex items-center gap-1 px-2">
-                  <TabButton 
-                    active={content === 'question'} 
-                    label="Description" 
-                    onClick={() => setContent('question')}
-                    icon={<ClipboardPen />}
-                  />
-                  <TabButton 
-                    active={content === 'notes'} 
-                    label="Notes" 
-                    onClick={() => setContent('notes')}
-                    icon={<NotepadText />}
-                  />
-                  <TabButton
-                    active={content=== 'whiteboard'}
-                    label="Whiteboard"
-                    onClick={() => setContent('whiteboard')}
-                    icon={<PenSquare />}
-                  />
-                  <div id="solution-tab">
-                    <TabButton 
-                      active={content === 'solution'} 
-                      label="Solution" 
-                      onClick={() => setContent('solution')}
-                      icon={<Lightbulb />}
-                    />
-                  </div>
-                  
-                  {/* More Menu */}
-                  <div className="relative ml-auto" ref={moreMenuRef}>
-                    <button
-                      onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-                      className={`
-                        px-3 py-2 text-sm font-medium rounded-full flex items-center gap-1.5
-                        transition-all duration-200
-                        ${isMoreMenuOpen || content === 'ai-assistant'
-                          ? 'bg-app-action-end/15 text-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}
-                      `}
-                    >
-                      <span>More</span>
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                    
-                    {/* Dropdown Menu */}
-                    {isMoreMenuOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-52 bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-50">
-                        <div className="p-1.5">
-                          {/* Repcode AI */}
-                          <button
-                            onClick={() => {
-                              setContent('ai-assistant');
-                              setIsMoreMenuOpen(false);
-                            }}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
-                              content === 'ai-assistant' 
-                                ? 'bg-app-action-end/15 text-foreground'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-surface'
-                            }`}
-                          >
-                            <BotMessageSquare className="w-4 h-4 text-editor-icon-ai" />
-                            <span className="text-sm font-medium">Repcode AI</span>
-                          </button>
-                          
-                          {/* Edit */}
-                          <button
-                            onClick={() => {
-                              setIsEditModalOpen(true);
-                              setIsMoreMenuOpen(false);
-                            }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
-                          >
-                            <Edit3 className="w-4 h-4 text-editor-icon-notes" />
-                            <span className="text-sm font-medium">Edit</span>
-                          </button>
-                          
-                          {/* Stats */}
-                          <button
-                            onClick={() => {
-                              setIsStatsModalOpen(true);
-                              setIsMoreMenuOpen(false);
-                            }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
-                          >
-                            <BarChart2 className="w-4 h-4 text-editor-icon-tools" />
-                            <span className="text-sm font-medium">Stats</span>
-                          </button>
-                          
-                          {/* Run on Leetcode */}
-                          {dueProblems.length > 0 && dueProblems[0]?.link && (
-                            <div id="run-leetcode-button">
-                              <button
-                                onClick={() => {
-                                  window.open(dueProblems[0].link, '_blank');
-                                  setIsMoreMenuOpen(false);
-                                }}
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
-                              >
-                                <ExternalLink className="w-4 h-4 text-editor-icon-run" />
-                                <span className="text-sm font-medium">Run on Leetcode</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Content Area */}
-              <div className="flex-1 overflow-y-auto p-4 bg-background" style={{ color: cssColor('foreground') }}>
-                {content === 'solution' && buttons?.length > 0 && (
+        <ProblemWorkspace activeView={content} onViewChange={setContent} problemKey={dueProblems[0].id}
+          onEdit={() => setIsEditModalOpen(true)} onStats={() => setIsStatsModalOpen(true)} link={dueProblems[0].link}
+          onEditorResize={() => editorRef.current?.editor.resize()}
+          renderView={(view: WorkspaceView) => <>
+                {view === 'solution' && buttons?.length > 0 && (
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-2">
                       {buttons.map((button: any, index: any) => {
-                        // Determine button styling based on label
-                        let buttonStyle = '';
-                        switch (button.label) {
-                          case 'Again':
-                          case 'Lapse':
-                            buttonStyle = 'border-status-error-border text-status-error hover:bg-status-error-background';
-                            break;
-                          case 'Hard':
-                            buttonStyle = 'border-feedback-hard-border text-feedback-hard hover:bg-feedback-hard-background';
-                            break;
-                          case 'Good':
-                            buttonStyle = 'border-feedback-good-border text-feedback-good hover:bg-feedback-good-background';
-                            break;
-                          case 'Easy':
-                            buttonStyle = 'border-feedback-easy-border text-feedback-easy hover:bg-feedback-easy-background';
-                            break;
-                          default:
-                            buttonStyle = 'border-border text-foreground';
-                        }
-                        
+
+
                         return (
-                          <button
+                          <Button variant="feedback" size="feedback" className="mx-2" tone={feedbackTones[button.label] ?? "unrated"}
                             key={index}
-                            className={`mx-2 py-0.5 px-4 border rounded-md transition-all duration-300 ${buttonStyle}`}
                             onClick={() => Algorithm(button.value)}
                           >
                             <span className="text-lg">{button.label}</span>
@@ -1243,34 +899,34 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                                 }
                               })()})
                             </span>
-                          </button>
+                          </Button>
                         );
                       })}
                     </div>
                     {/* Warning for severely overdue problems */}
                     {isSeverelyOverdue && (
-                      <div className="mt-3 p-3 bg-status-error-background border border-status-error-border rounded-md">
+                      <Alert variant="feedbackError" className="mt-3">
                         <p className="text-sm text-status-reminder">
-                          ⚠️ This problem is over {userSettings?.overdueWarningThreshold} months overdue ({monthsOverdue} months). 
+                          ⚠️ This problem is over {userSettings?.overdueWarningThreshold} months overdue ({monthsOverdue} months).
                           If you no longer remember it well, you should <span className="font-semibold text-status-error">Lapse</span> it to trigger the relearning process
                         </p>
-                      </div>
+                      </Alert>
                     )}
                   </div>
                 )}
                 {dueProblems.length > 0 && (
-                  <div key={content} className="min-h-0">
-                    {content === 'notes' ? (
-                      <p className="text-foreground mt-4 whitespace-pre-wrap text-lg wrap-text">{dueProblems[0].notes}</p>
-                    ) : content === 'question' ? (
-                      <div 
-                        className="text-foreground mt-4 problem-content prose prose-invert max-w-none overflow-auto"
-                        dangerouslySetInnerHTML={{ 
-                          __html: sanitizeCodeBlocks(dueProblems[0].question)
+                  <div  className="min-h-0">
+                    {view === 'notes' ? (
+                      <p className="text-foreground mt-4 whitespace-pre-wrap text-lg break-words [word-break:break-word]">{dueProblems[0].notes}</p>
+                    ) : view === 'question' ? (
+                      <Prose className="overflow-auto"
+                        dangerouslySetInnerHTML={{
+                          __html: formatProblemContent(dueProblems[0].question)
                         }}
                       />
-                    ) : content === 'whiteboard' ? (
+                    ) : view === 'whiteboard' ? (
                       <Whiteboard
+                        active={content === 'whiteboard'}
                         className='mt-4 h-[800px]'
                         elements={whiteboardElements}
                         setElements={setWhiteboardElements}
@@ -1279,10 +935,11 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                         historyIndex={whiteboardHistoryIndex}
                         setHistoryIndex={setWhiteboardHistoryIndex}
                       />
-                    ) : content === 'ai-assistant' ? (
+                    ) : view === 'ai-assistant' ? (
                       <ChatWindow
-                          problem={dueProblems[0]} 
-                          editorContent={editorContent} 
+                          active={content === 'ai-assistant'}
+                          problem={dueProblems[0]}
+                          editorContent={editorContent}
                           hasApiKey={data?.hasApiKey}
                           isTab={true}
                           externalMessages={chatMessages}
@@ -1298,46 +955,13 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                       />
                     ) :
                     (
-                      <pre className="wrap-text overflow-auto"><code className={`language-${dueProblems[0].language} mr-5`}>{dueProblems[0].solution}</code></pre>
+                      <pre className="break-words [word-break:break-word] overflow-auto"><code className={`language-${dueProblems[0].language} mr-5`}>{dueProblems[0].solution}</code></pre>
                     )}
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Resize Handle */}
-          <div
-            className={`
-              w-1 hover:w-2 bg-border cursor-col-resize relative group
-              transition-all duration-200
-              ${isDragging ? 'w-2' : ''}
-            `}
-            onMouseDown={handleMouseDown}
-          >
-            <div
-              className={`
-                absolute top-1/2 -translate-y-1/2
-                transition-all duration-200 opacity-0
-                ${isDragging || 'group-hover:opacity-100'}
-              `}
-            >
-              <div className="bg-border-strong rounded-md p-1 -ml-3">
-                <span className="material-icons text-muted-foreground" style={{ fontSize: '16px' }}>chevron_left</span>
-              </div>
-              <div className="bg-border-strong rounded-md p-1 -ml-3 mt-1">
-                <span className="material-icons text-muted-foreground" style={{ fontSize: '16px' }}>chevron_right</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Panel */}
-          <div 
-            className="h-full overflow-hidden"
-            style={{ width: `${100 - panelWidth}%` }}
-          >
-            {dueProblems.length > 0 && (
-              <AceEditor
+</>}
+          editor={<AceEditor
+                ref={editorRef}
                 className="rounded"
                 mode={dueProblems[0].language}
                 theme="one_dark"
@@ -1360,18 +984,9 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
                   scrollPastEnd: false,
                   wrap: true,
                 }}
-                style={{ height: '100%', width: '100%' }}  
-              />
-            )}
-          </div>
-        </div>
-        
-        <ReactTooltip
-          id="my-tooltip-1"
-          place="bottom"
-          style={{ backgroundColor: cssColor('tooltip-background') }}
-        />
-        
+                style={{ height: '100%', width: '100%' }}
+              />} />
+
         {/* Modals and Toast */}
         {isEditModalOpen && dueProblems[0] && (
           <ProblemModal
@@ -1394,8 +1009,6 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
             problem={dueProblems[0]}
           />
         )}
-
-        <Toast message={toastMessage} isVisible={isToastVisible} />
 
         {/* Joyride Tour */}
         <Joyride
@@ -1443,29 +1056,14 @@ const ProblemsQueue = ({ problems, userSettings, refetchProblems }: {problems:an
         {/* Skip button */}
         {dueProblems.length > 0 && (
           <div className="fixed bottom-6 right-[1rem] z-10" id="skip-button">
-            <button 
-              onClick={skipProblem}
-              className="flex items-center px-4 py-3 bg-gradient-to-r from-reminder-start to-reminder-end hover:from-reminder-hover-start hover:to-reminder-hover-end text-foreground rounded-full transition-all duration-200"
-              style={{ 
-                boxShadow: '0 10px 15px -3px rgb(var(--reminder-end)/0.2), 0 4px 6px -4px rgb(var(--reminder-end)/0.2)'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(var(--reminder-end)/0.3), 0 4px 6px -4px rgb(var(--reminder-end)/0.3)'}
-              onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(var(--reminder-end)/0.2), 0 4px 6px -4px rgb(var(--reminder-end)/0.2)'}
-            >
+            <HelpTooltip content="Skip this problem for now, it will reappear later">
+            <Button variant="reminder" size="reminder" aria-label="Remind me later"
+              onClick={skipProblem}>
               <span className="material-icons mr-2" style={{ fontSize: '20px' }}>skip_next</span>
               <span className="font-medium">Skip</span>
               <div className="absolute inset-0 rounded-full bg-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-            </button>
-            
-            {/* Tooltip */}
-            <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-              <div className="px-3 py-2 bg-background border border-border-subtle rounded-lg shadow-xl w-56">
-                <div className="text-xs text-muted-foreground leading-relaxed">
-                  Skip this problem for now, it will reappear later
-                </div>
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-border-subtle"></div>
-              </div>
-            </div>
+            </Button>
+            </HelpTooltip>
           </div>
         )}
       </div>

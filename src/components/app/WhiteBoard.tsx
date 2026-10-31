@@ -1,5 +1,12 @@
 "use client";
 
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
+import { Field, FieldLabel } from "@/components/ui/field";
+
+import { Slider } from '@/components/ui/slider';
 import type React from "react";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +41,7 @@ export interface DrawingElement {
 }
 
 interface WhiteboardProps {
+  active?: boolean;
   className?: string;
   elements?: DrawingElement[];
   setElements?: React.Dispatch<React.SetStateAction<DrawingElement[]>>;
@@ -55,6 +63,7 @@ const resolvedInk = (ink: string) => ink.startsWith('drawing-ink-') ? hexColor(i
 const previewInk = (ink: string) => ink.startsWith('drawing-ink-') ? cssColor(ink) : ink;
 
 export function Whiteboard({ 
+  active = true,
   className,
   elements: propElements,
   setElements: propSetElements,
@@ -80,6 +89,12 @@ export function Whiteboard({
   const setHistory = propSetHistory || localSetHistory;
   const historyIndex = propHistoryIndex !== undefined ? propHistoryIndex : localHistoryIndex;
   const setHistoryIndex = propSetHistoryIndex || localSetHistoryIndex;
+  useEffect(() => {
+    if (history.length === 0 && historyIndex < 0) {
+      setHistory([elements.slice()]);
+      setHistoryIndex(0);
+    }
+  }, [elements, history.length, historyIndex, setHistory, setHistoryIndex]);
   const [selectedElements, setSelectedElements] = useState<Set<string>>(
     new Set()
   );
@@ -98,7 +113,7 @@ export function Whiteboard({
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
     },
-    [history, historyIndex]
+    [history, historyIndex, setHistory, setHistoryIndex]
   );
 
   const undo = useCallback(() => {
@@ -106,19 +121,19 @@ export function Whiteboard({
       setHistoryIndex(historyIndex - 1);
       setElements([...history[historyIndex - 1]]);
     }
-  }, [history, historyIndex]);
+  }, [history, historyIndex, setElements, setHistoryIndex]);
 
   const redo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
       setElements([...history[historyIndex + 1]]);
     }
-  }, [history, historyIndex]);
+  }, [history, historyIndex, setElements, setHistoryIndex]);
 
   const clearCanvas = useCallback(() => {
     setElements([]);
     saveToHistory([]);
-  }, [saveToHistory]);
+  }, [saveToHistory, setElements]);
 
   const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -223,8 +238,13 @@ export function Whiteboard({
     drawElements();
   }, [drawElements]);
 
+  useEffect(() => { if (!active) setShowColorPicker(false); }, [active]);
+
   useEffect(() => {
+    if (!active) return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target;
+      if (target instanceof HTMLElement && target.closest('input, textarea, select, [contenteditable="true"], .ace_editor, [role="dialog"], [role="alertdialog"]')) return;
       if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
@@ -239,7 +259,7 @@ export function Whiteboard({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo]);
+  }, [active, undo, redo]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const pos = getMousePos(e);
@@ -411,152 +431,81 @@ export function Whiteboard({
         selected: selectedElements.has(element.id),
       }))
     );
-  }, [selectedElements]);
+  }, [selectedElements, setElements]);
 
   return (
     <div className={cn("flex flex-col h-full border border-border rounded-lg overflow-hidden bg-drawing-surface", className)}>
       {/* Toolbar */}
-      {/* Keep toolbar buttons transparent as shared component tokens become available. */}
       <div className="flex flex-wrap items-center gap-2 p-4 border-b border-border bg-surface flex-shrink-0">
         {/* Row 1: Essential Tools */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Drawing Tools */}
-          <div className="flex items-center gap-1">
-            <Button
-              variant={tool === "draw" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTool("draw")}
-              className={tool === "draw" ? "bg-action hover:bg-action text-foreground" : "bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"}
-            >
-              <Pen className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={tool === "erase" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTool("erase")}
-              className={tool === "erase" ? "bg-action hover:bg-action text-foreground" : "bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"}
-            >
-              <Eraser className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={tool === "select" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTool("select")}
-              className={tool === "select" ? "bg-action hover:bg-action text-foreground" : "bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"}
-            >
-              <MousePointer className="w-4 h-4" />
-            </Button>
-          </div>
+          <ToggleGroup type="single" variant="tools" value={tool} onValueChange={value => { if (value) setTool(value as Tool); }} aria-label="Drawing tools">
+            <ToggleGroupItem value="draw" aria-label="Draw"><Pen className="w-4 h-4" /></ToggleGroupItem>
+            <ToggleGroupItem value="erase" aria-label="Erase"><Eraser className="w-4 h-4" /></ToggleGroupItem>
+            <ToggleGroupItem value="select" aria-label="Select"><MousePointer className="w-4 h-4" /></ToggleGroupItem>
+          </ToggleGroup>
 
-          <Separator orientation="vertical" className="h-6 bg-border opacity-70" />
+          <Separator orientation="vertical" variant="toolbar" className="h-6" />
 
           {/* History Controls */}
           <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
+            <Button variant="tool" size="sm" aria-label="Undo"
               onClick={undo}
-              disabled={historyIndex <= 0}
-              className="bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border disabled:text-control-disabled-foreground disabled:bg-control-disabled"
-            >
+              disabled={historyIndex <= 0}>
               <Undo2 className="w-4 h-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            <Button variant="tool" size="sm" aria-label="Redo"
               onClick={redo}
-              disabled={historyIndex >= history.length - 1}
-              className="bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border disabled:text-control-disabled-foreground disabled:bg-control-disabled"
+              disabled={historyIndex>= history.length - 1}
             >
               <Redo2 className="w-4 h-4" />
             </Button>
           </div>
 
-          <Separator orientation="vertical" className="h-6 bg-border opacity-70" />
+          <Separator orientation="vertical" variant="toolbar" className="h-6" />
 
           {/* Color Controls */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowColorPicker(!showColorPicker)}
-                className="gap-2 bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"
-              >
-                <Palette className="w-4 h-4" />
-                <div
-                  className="w-4 h-4 rounded border border-foreground"
-                  style={{ backgroundColor: previewInk(color) }}
-                />
-              </Button>
-              {showColorPicker && (
-                <div className="absolute top-full left-0 mt-1 py-2 px-1 w-32 bg-surface-inset border border-border rounded-lg shadow-lg z-10">
-                  <div className="grid grid-cols-5 gap-2">
-                    {colors.map((c) => (
-                      <button
-                        key={c}
-                        className={cn(
-                          "w-4 h-4 rounded border-1",
-                          color === c || (!color.startsWith('drawing-ink-') && resolvedInk(c).toUpperCase() === color.toUpperCase())
-                            ? "border-foreground"
-                            : "border-transparent"
-                        )}
-                        style={{ backgroundColor: cssColor(c) }}
-                        onClick={() => {
-                          setColor(c);
-                          setShowColorPicker(false);
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <Popover open={showColorPicker} onOpenChange={setShowColorPicker}>
+              <PopoverTrigger asChild>
+                <Button variant="tool" size="sm" aria-label="Choose ink color">
+                  <Palette className="w-4 h-4" />
+                  <div className="w-4 h-4 rounded border border-foreground" style={{ backgroundColor: previewInk(color) }} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent aria-label="Ink colors">
+                <RadioGroup aria-label="Ink color" variant="swatches" value={colors.find(c => resolvedInk(c).toUpperCase() === resolvedInk(color).toUpperCase()) ?? color} onValueChange={value => { setColor(value); setShowColorPicker(false); }}>
+                  {colors.map(c => <RadioGroupItem key={c} variant="swatch" value={c} aria-label={c.replace('drawing-ink-', '')} colorToken={c} />)}
+                </RadioGroup>
+              </PopoverContent>
+            </Popover>
 
-            <div className="flex items-center gap-1">
-              <span className="text-sm text-muted-foreground">Size:</span>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={strokeWidth}
-                onChange={(e) => setStrokeWidth(Number(e.target.value))}
-                className="w-16 accent-action"
-              />
+            <Field orientation="horizontal">
+              <FieldLabel variant="toolbar">Size:</FieldLabel>
+              <Slider min={1} max={10} step={1} value={[strokeWidth]} onValueChange={values => setStrokeWidth(values[0])} className="w-16" aria-label="Stroke width" />
               <span className="text-sm w-4 text-muted-foreground">{strokeWidth}</span>
-            </div>
+            </Field>
           </div>
         </div>
 
         {/* Row 2 (wraps on smaller screens): Action Buttons */}
         <div className="flex items-center gap-2 ml-auto sm:ml-0 mt-2 sm:mt-0">
-          <Separator orientation="vertical" className="h-6 bg-border opacity-70 hidden sm:block" />
+          <Separator orientation="vertical" variant="toolbar" className="h-6 hidden sm:block" />
 
           <div className="flex items-center gap-1">
             {selectedElements.size > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={deleteSelected}
-                className="bg-transparent text-status-error hover:text-status-error hover:bg-difficulty-hard-background border-border"
-              >
+              <Button variant="toolDanger" size="sm" aria-label="Delete selected strokes"
+                onClick={deleteSelected}>
                 <Trash2 className="w-4 h-4" />
               </Button>
             )}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={clearCanvas}
-              className="bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border whitespace-nowrap"
-            >
+            <Button variant="tool" size="sm"
+              onClick={clearCanvas}>
               Clear
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={downloadCanvas}
-              className="bg-transparent hover:bg-transparent text-muted-foreground hover:text-foreground border-border"
-            >
+            <Button variant="tool" size="sm" aria-label="Download sketch"
+              onClick={downloadCanvas}>
               <Download className="w-4 h-4" />
             </Button>
           </div>

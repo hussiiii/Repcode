@@ -1,4 +1,7 @@
-import { cssColor } from '@/lib/colors';
+import { Heading } from '@/components/ui/typography';
+import { HelpTooltip } from '@/components/ui/tooltip';
+import { LoadingState } from '@/components/ui/loading-state';
+import { Button } from '@/components/ui/button';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext, useMemo } from 'react';
 import { useQuery } from 'react-query';
@@ -15,7 +18,6 @@ import {
   subMonths,
   isToday
 } from 'date-fns';
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import { AuthContext } from '@/auth/AuthContext';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
@@ -63,7 +65,7 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-muted-foreground text-sm">Loading calendar...</div>
+        <LoadingState variant="calendar" />
       </div>
     );
   }
@@ -72,21 +74,17 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
     <div className="w-full">
       {/* Month Header with Navigation */}
       <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={prevMonth}
-          className="p-1.5 rounded-md hover:bg-calendar-inactive text-muted-foreground hover:text-foreground transition-colors"
-        >
+        <Button variant="icon" size="calendar" tone="calendar" aria-label="Previous month"
+          onClick={prevMonth}>
           <ChevronLeft size={18} />
-        </button>
-        <h2 className="text-base font-semibold text-foreground">
+        </Button>
+        <Heading as="h2" size="base" weight="semibold" tone="foreground">
           {format(currentMonth, 'MMMM yyyy')}
-        </h2>
-        <button
-          onClick={nextMonth}
-          className="p-1.5 rounded-md hover:bg-calendar-inactive text-muted-foreground hover:text-foreground transition-colors"
-        >
+        </Heading>
+        <Button variant="icon" size="calendar" tone="calendar" aria-label="Next month"
+          onClick={nextMonth}>
           <ChevronRight size={18} />
-        </button>
+        </Button>
       </div>
 
       {/* Day of Week Headers */}
@@ -107,12 +105,8 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
           const isTodayDate = isToday(day);
 
           return (
-            <div
-              key={index}
-              data-tooltip-id="streak-calendar-tooltip"
-              data-tooltip-content={`${format(day, 'MMM d, yyyy')}${isActive ? ' • Active' : ''}`}
-              className="flex items-center justify-center"
-            >
+            <HelpTooltip key={index} variant="calendar" content={`${format(day, 'MMM d, yyyy')}${isActive ? ' • Active' : ''}`}>
+            <div tabIndex={0} aria-label={`${format(day, 'MMM d, yyyy')}${isActive ? ' • Active' : ''}`} className="flex items-center justify-center">
               <div
                 className={`
                   w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
@@ -132,6 +126,7 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
                 )}
               </div>
             </div>
+            </HelpTooltip>
           );
         })}
       </div>
@@ -155,11 +150,7 @@ const StreakCalendar = ({ currentYear }: { currentYear: number }) => {
         </div>
       </div>
 
-      <ReactTooltip
-        id="streak-calendar-tooltip"
-        place="top"
-        style={{ backgroundColor: cssColor('tooltip-background'), fontSize: "12px", borderRadius: "6px" }}
-      />
+
     </div>
   );
 };

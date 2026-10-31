@@ -1,0 +1,8 @@
+.toastEnter { animation: toastEnter 0.5s ease-out forwards; }
+@keyframes toastEnter {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toastEnter { animation: none; }
+}

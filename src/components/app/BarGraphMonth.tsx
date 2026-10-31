@@ -1,3 +1,5 @@
+import { Alert } from '@/components/ui/alert';
+import { Spinner } from '@/components/ui/spinner';
 import { canvasColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useContext } from 'react';
@@ -124,7 +126,7 @@ const BarGraphMonth = () => {
     };
 
     if (error) {
-        return <div>Error: {(error as Error).message}</div>
+        return <Alert variant="plain">Error: {(error as Error).message}</Alert>
     } else {
         const dueCounts = processData(data); // Assuming `data` is the array of problems
         const chartData = {
@@ -147,7 +149,7 @@ const BarGraphMonth = () => {
                 <div style={{ height: '300px', width: '100%' }}>
                     {isLoading ? (
                         <div className="flex items-center justify-center h-full">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-app-action-end"></div>
+                            <Spinner variant="stats" />
                         </div>
                     ) : (
                         <Bar 

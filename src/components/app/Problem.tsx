@@ -1,10 +1,15 @@
+import { DifficultyBadge, StudyStateBadge } from '@/components/app/ProblemBadges';
+import { Prose, Heading } from '@/components/ui/typography';
+import { formatProblemContent } from '@/lib/problem-content';
+import { ProblemWorkspace, type WorkspaceView } from './ProblemWorkspace';
+import { LoadingState } from '@/components/ui/loading-state';
+import { Button } from '@/components/ui/button';
 import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { auth } from '../../firebaseConfig';
 import { useQuery, useQueryClient } from 'react-query';
-import '../../app/globals.css';
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/theme-one_dark";
 import "ace-builds/src-noconflict/mode-javascript";
@@ -12,150 +17,24 @@ import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-c_cpp";
 import hljs from 'highlight.js';
-import 'highlight.js/styles/atom-one-dark-reasonable.css'; // or any other style of your choice
 import { AuthContext } from '@/auth/AuthContext';
 import ChatWindow from './ChatWindow';
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import ProblemModal from './ProblemModal';
 import ProblemStatsModal from './ProblemStatsModal';
-import Toast from './Toast';
-import Badge from '@/components/ui/Badge';
+import { useToast } from '@/components/ui/use-toast';
 import { Whiteboard, DrawingElement } from './WhiteBoard';
-import { ArrowLeft, Edit3, BarChart2, ExternalLink, ClipboardPen, NotepadText, Lightbulb, BotMessageSquare, PenSquare, MoreHorizontal } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Stopwatch from './Stopwatch';
-const sanitizeCodeBlocks = (html: string) => {
-  const div = document.createElement('div');
-  div.innerHTML = html;
 
-  const preTags = Array.from(div.getElementsByTagName('pre'));
-
-  for (const pre of preTags) {
-    const nestedCodeTags = Array.from(pre.getElementsByTagName('code'));
-
-    for (const code of nestedCodeTags) {
-      const textNode = document.createTextNode(code.textContent || '');
-      code.parentNode?.replaceChild(textNode, code);
-    }
-    pre.style.color = cssColor('foreground'); // Force white text for pre blocks
-  }
-
-  return div.innerHTML.replace(/color:\s*[^;]+;/gi, 'color: rgb(var(--foreground)/1);');
-};
-
-type TabButtonProps = {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-  icon?: React.ReactElement;
-};
-
-const TabButton: React.FC<TabButtonProps> = ({ active, label, onClick, icon }) => (
-  <button
-    onClick={onClick}
-    className={`
-      px-4 py-2 text-sm font-medium rounded-full flex items-center space-x-2
-      transition-all duration-200
-      ${active 
-        ? 'bg-app-action-end/15 text-foreground'
-        : 'text-foreground hover:text-foreground hover:bg-background/50'}
-    `}
-    style={{ color: cssColor('foreground') }} // Explicitly enforce white text
-  >
-    {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
-      className: `w-5 h-5 ${active ? 'text-foreground' : getIconColor(label)}`,
-      style: { transition: 'color 0.2s' }
-    })}
-    <span className={`text-foreground ${active ? 'font-semibold' : ''}`} style={{ color: cssColor('foreground') }}>{label}</span>
-  </button>
-);
-
-type ActionButtonProps = {
-  onClick: () => void;
-  icon?: React.ReactElement;
-  label: string;
-};
-
-const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => (
-  <button
-    onClick={onClick}
-    className="px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-2 text-foreground hover:text-foreground hover:bg-background/50 transition-all duration-200"
-    style={{ color: cssColor('foreground') }} // Explicitly enforce white text
-  >
-    {icon && React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { 
-      className: `w-5 h-5 ${getIconColor(label)}`,
-      style: { transition: 'color 0.2s' }
-    })}
-    <span className="text-foreground" style={{ color: cssColor('foreground') }}>{label}</span>
-  </button>
-);
-
-// Function to determine icon color based on label
-const getIconColor = (label: string): string => {
-  switch (label.toLowerCase()) {
-    case 'description': return 'text-editor-icon-description'; // Red
-    case 'notes': return 'text-editor-icon-notes'; // Orange
-    case 'whiteboard': return 'text-editor-icon-tools'; // Blue
-    case 'solution': return 'text-editor-icon-solution'; // Yellow
-    case 'repcode ai': return 'text-editor-icon-ai'; // Deep Orange
-    case 'edit': return 'text-editor-icon-notes'; // Orange
-    case 'stats': return 'text-editor-icon-tools'; // Blue
-    case 'run on leetcode': return 'text-editor-icon-run'; // Green
-    default: return 'text-foreground'; // Default white
-  }
-};
-
-const preBlockStyles = `
-  .problem-content pre {
-    background-color: rgb(var(--surface)/1) !important;
-    border: 1px solid rgb(var(--border)/1) !important;
-    border-radius: 6px !important;
-    padding: 12px !important;
-    margin: 12px 0 !important;
-    overflow-x: auto !important;
-    color: rgb(var(--foreground-code-body)/1) !important;
-  }
-
-  .problem-content pre code {
-    color: rgb(var(--foreground-code-body)/1) !important;
-    font-family: monospace !important;
-  }
-
-  /* Style for inline code elements (not inside pre) */
-  .problem-content code:not(pre code) {
-    background-color: rgb(var(--border)/1) !important;
-    color: rgb(var(--foreground)/1) !important;
-    padding: 2px 5px !important;
-    border-radius: 4px !important;
-    font-family: monospace !important;
-    font-size: 0.9em !important;
-    border: 1px solid rgb(var(--border-strong)/1) !important;
-  }
-  .prose-invert {
-    color: rgb(var(--foreground)/1) !important; /* Force white text for prose content */
-  }
-  .prose-invert a {
-    color: rgb(var(--editor-link)/1) !important; /* Ensure links are green, not black */
-  }
-  /* Ensure AceEditor text is white */
-  .ace_editor {
-    color: rgb(var(--foreground)/1) !important;
-  }
-  .ace_cursor {
-    color: rgb(var(--foreground)/1) !important;
-  }
-
-`;
 
 const Problem = ({ problem, contentActive, setContentActive, editorContent, setEditorContent }: {problem:any, contentActive:any, setContentActive:any, editorContent:any, setEditorContent:any}) => {
+  const { toast: showToast } = useToast(3000);
   const router = useRouter();
   const { user } = useContext(AuthContext);
-  const { collectionId } = router.query // Assuming collectionId is part of the URL 
+  const { collectionId } = router.query // Assuming collectionId is part of the URL
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [isToastVisible, setIsToastVisible] = useState(false);
-  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<AceEditor | null>(null);
   const queryClient = useQueryClient();
 
   // Whiteboard state
@@ -171,48 +50,6 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const [localProblem, setLocalProblem] = useState(problem);
 
-  // For resizable panels
-  const [panelWidth, setPanelWidth] = useState(50);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleMouseDown = () => {
-    setIsDragging(true);
-    document.body.style.userSelect = 'none';
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    document.body.style.userSelect = 'auto';
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    const container = e.currentTarget as HTMLElement;
-    const containerRect = container.getBoundingClientRect();
-    const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-    if (newWidth >= 30 && newWidth <= 70) {
-      setPanelWidth(newWidth);
-    }
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => window.removeEventListener('mouseup', handleMouseUp);
-    }
-  }, [isDragging]);
-
-  // Close more menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setIsMoreMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const fetchUserSettings = async () => {
     if (!user) throw new Error("No user found");
     const response = await authenticatedFetch(`/api/getUserSettings`);
@@ -221,7 +58,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   };
 
   const { data } = useQuery(['userSettings', user?.email], fetchUserSettings, {
-    enabled: !!user, 
+    enabled: !!user,
   });
 
   const handleGoBack = () => {
@@ -232,7 +69,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   useEffect(() => {
     hljs.highlightAll();
   }, [contentActive, problem]);
-  
+
   // Initialize whiteboard history if it's empty when first accessing whiteboard
   useEffect(() => {
     if (contentActive === 'whiteboard' && whiteboardHistory.length === 0) {
@@ -243,16 +80,22 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
 
   // Initialize chat when problem or apiKey changes
   const currentProblemId = useRef<string | null>(null);
-    
+
   // Effect for resetting chat when the problem changes
   useEffect(() => {
     if (problem) {
       const newProblemId = problem.id;
-            
+
       // If this is a new problem, reset chat state
       if (currentProblemId.current !== newProblemId) {
+        if (currentProblemId.current !== null) {
+          setWhiteboardElements([]);
+          setWhiteboardHistory([[]]);
+          setWhiteboardHistoryIndex(0);
+          setChatInput('');
+        }
         currentProblemId.current = newProblemId;
-                
+
         // Reset chat state for the new problem
         setChatMessages([]);
         setIsAnalyzing(true);
@@ -274,6 +117,8 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   useEffect(() => {
     // Only proceed if we're in analyzing state and have a problem and API key
     if (isAnalyzing && problem && data?.hasApiKey && contentActive === 'ai-assistant') {
+      const requestProblemId = problem.id;
+      const stillCurrent = () => currentProblemId.current === requestProblemId;
       const analyzeCode = async () => {
         try {
           const response = await authenticatedFetch('/api/openai', {
@@ -289,6 +134,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               mode: "analyze"
             }),
           });
+          if (!stillCurrent()) return;
 
           setIsAnalyzing(false);
 
@@ -296,17 +142,18 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               // After analysis is complete, show the greeting message
             setChatMessages([{ text: "How can I help you with this problem?", sender: "ai" }]);
           } else {
-            setChatMessages([{ 
-              text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
-              sender: "ai" 
+            setChatMessages([{
+              text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.",
+              sender: "ai"
             }]);
             setShowQuickQuestions(false);
           }
         } catch (error) {
+          if (!stillCurrent()) return;
           setIsAnalyzing(false);
-          setChatMessages([{ 
-            text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.", 
-            sender: "ai" 
+          setChatMessages([{
+            text: "Failed to analyze your code. Please make sure you have entered a valid API Key in the Settings page.",
+            sender: "ai"
           }]);
           setShowQuickQuestions(false);
         }
@@ -316,11 +163,7 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
     }
   }, [isAnalyzing, problem, data?.hasApiKey, editorContent, contentActive]);
 
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setIsToastVisible(true);
-    setTimeout(() => setIsToastVisible(false), 3000);
-  };
+
 
   // Sync local problem state when prop changes
   useEffect(() => {
@@ -331,59 +174,26 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   if (!problem) {
     return (
       <div className="flex justify-center items-center h-[80vh]">
-        <div className="relative flex flex-col items-center">
-          {/* Outer glow effect */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start to-app-action-end blur-xl opacity-20 animate-pulse"></div>
-          
-          {/* Spinner container */}
-          <div className="relative">
-            {/* Gradient ring */}
-            <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                           bg-gradient-to-r from-app-action-start to-app-action-end opacity-20"></div>
-            
-            {/* Spinning gradient arc */}
-            <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
-                           rounded-full animate-spin duration-1000" 
-                 style={{
-                   borderTopColor: cssColor('app-action-start'),
-                   borderRightColor: cssColor('app-action-end'),
-                   animationDuration: '1s'
-                 }}>
-            </div>
-            
-            {/* Inner circle with logo or icon */}
-            
-          </div>
-          
-          {/* Loading text with shimmer effect */}
-          <div className="mt-4 text-sm font-medium text-muted-foreground relative overflow-hidden">
-            <span>Loading</span>
-            <span className="inline-flex overflow-hidden ml-1">
-              <span className="animate-ellipsis">.</span>
-              <span className="animate-ellipsis animation-delay-300">.</span>
-              <span className="animate-ellipsis animation-delay-600">.</span>
-            </span>
-          </div>
-        </div>
+        <LoadingState />
       </div>
     );
   }
 
-  const renderTabContent = () => {
-    if (contentActive === 'notes')
-      return <p className="text-foreground mt-4 whitespace-pre-wrap text-lg wrap-text bg-background">{localProblem.notes}</p>;
-    if (contentActive === 'question')
+  const renderTabContent = (view: WorkspaceView) => {
+    if (view === 'notes')
+      return <p className="text-foreground mt-4 whitespace-pre-wrap text-lg break-words [word-break:break-word] bg-background">{localProblem.notes}</p>;
+    if (view === 'question')
       return (
-        <div
-          className="text-foreground mt-4 problem-content prose prose-invert max-w-none bg-background"
+        <Prose
           dangerouslySetInnerHTML={{
-            __html: sanitizeCodeBlocks(localProblem.question)
+            __html: formatProblemContent(localProblem.question)
           }}
         />
       );
-    if (contentActive === 'whiteboard')
+    if (view === 'whiteboard')
       return (
         <Whiteboard
+          active={contentActive === 'whiteboard'}
           className="mt-4 h-[600px]"
           elements={whiteboardElements}
           setElements={setWhiteboardElements}
@@ -393,9 +203,10 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           setHistoryIndex={setWhiteboardHistoryIndex}
         />
       );
-    if (contentActive === 'ai-assistant')
+    if (view === 'ai-assistant')
       return (
         <ChatWindow
+          active={contentActive === 'ai-assistant'}
           problem={localProblem}
           editorContent={editorContent}
           hasApiKey={data?.hasApiKey}
@@ -412,9 +223,9 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
           setExternalShowQuickQuestions={setShowQuickQuestions}
         />
       );
-    if (contentActive === 'solution')
+    if (view === 'solution')
       return (
-        <pre className="wrap-text bg-background"><code className={`language-${localProblem.language} mr-5`}>{localProblem.solution}</code></pre>
+        <pre className="break-words [word-break:break-word] bg-background"><code className={`language-${localProblem.language} mr-5`}>{localProblem.solution}</code></pre>
       );
     return null;
   };
@@ -422,29 +233,27 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
   return (
     <div className="h-screen bg-background flex flex-col">
       {/* Add the style tag to include the CSS */}
-      <style>{preBlockStyles}</style>
+
 
       {/* Top Navigation */}
       <div className="flex items-center justify-between px-6 h-16 border-b border-border bg-surface" style={{ color: cssColor('foreground') }}>
         <div className="flex items-center">
-          <button 
-            onClick={handleGoBack} 
-            className="flex items-center text-foreground hover:text-editor-icon-tools transition-colors mr-4" style={{ color: cssColor('foreground') }}>
+          <Button variant="text" className="flex items-center mr-4" tone="editor" aria-label="Back to collection"
+            onClick={handleGoBack}
+          >
             <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-2xl font-semibold text-foreground mr-4" style={{ color: cssColor('foreground') }}>
+          </Button>
+          <Heading as="h1" size="2xl" weight="semibold" tone="foreground" className="mr-4" style={{ color: cssColor('foreground') }}>
             {localProblem.name}
-          </h1>
+          </Heading>
           <div className="flex gap-2">
-            <Badge
-              type="difficulty"
+            <DifficultyBadge
               value={localProblem.difficulty}
-              className="text-foreground py-1.5 px-4"
+              size="problem" foreground
             />
-            <Badge
-              type="problemType"
+            <StudyStateBadge
               value={localProblem.type}
-              className="text-foreground py-1.5 px-4"
+              size="problem" foreground
             />
           </div>
         </div>
@@ -460,160 +269,16 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
             rel="noopener noreferrer"
             className="hover:text-link transition-colors duration-200 cursor-pointer"
           >
-            v2.26 - stable release
+            v2.27 - stable release
           </a>
         </div>
       </div>
 
-      {/* Main Content with Resizable Panels */}
-      <div 
-        className="flex-1 flex overflow-hidden" 
-        onMouseMove={handleMouseMove} style={{ color: cssColor('foreground') }}
-      >
-        {/* Left Panel */}
-        <div 
-          className="h-full overflow-auto bg-background"
-          style={{ width: `${panelWidth}%`, color: cssColor('foreground') }}
-        >
-          <div className="h-full border-r border-border bg-background flex flex-col" style={{ color: cssColor('foreground') }}>
-            <div className="border-b border-border bg-background sticky top-0 z-10 p-2" style={{ color: cssColor('foreground') }}>
-              <div className="flex items-center gap-1 px-2">
-                <TabButton 
-                  active={contentActive === 'question'} 
-                  label="Description" 
-                  onClick={() => setContentActive('question')} 
-                  icon={<ClipboardPen />} 
-                />
-                <TabButton 
-                  active={contentActive === 'notes'} 
-                  label="Notes" 
-                  onClick={() => setContentActive('notes')} 
-                  icon={<NotepadText />} 
-                />
-                <TabButton 
-                  active={contentActive === 'whiteboard'} 
-                  label="Whiteboard" 
-                  onClick={() => setContentActive('whiteboard')} 
-                  icon={<PenSquare />} 
-                />
-                <TabButton 
-                  active={contentActive === 'solution'} 
-                  label="Solution" 
-                  onClick={() => setContentActive('solution')} 
-                  icon={<Lightbulb />} 
-                />
-                
-                {/* More Menu */}
-                <div className="relative ml-auto" ref={moreMenuRef}>
-                  <button
-                    onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-                    className={`
-                      px-3 py-2 text-sm font-medium rounded-full flex items-center gap-1.5
-                      transition-all duration-200
-                      ${isMoreMenuOpen || contentActive === 'ai-assistant'
-                        ? 'bg-app-action-end/15 text-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}
-                    `}
-                  >
-                    <span>More</span>
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
-                  
-                  {/* Dropdown Menu */}
-                  {isMoreMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-52 bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-50">
-                      <div className="p-1.5">
-                        {/* Repcode AI */}
-                        <button
-                          onClick={() => {
-                            setContentActive('ai-assistant');
-                            setIsMoreMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
-                            contentActive === 'ai-assistant' 
-                              ? 'bg-app-action-end/15 text-foreground'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-surface'
-                          }`}
-                        >
-                          <BotMessageSquare className="w-4 h-4 text-editor-icon-ai" />
-                          <span className="text-sm font-medium">Repcode AI</span>
-                        </button>
-                        
-                        {/* Edit */}
-                        <button
-                          onClick={() => {
-                            setIsEditModalOpen(true);
-                            setIsMoreMenuOpen(false);
-                          }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
-                        >
-                          <Edit3 className="w-4 h-4 text-editor-icon-notes" />
-                          <span className="text-sm font-medium">Edit</span>
-                        </button>
-                        
-                        {/* Stats */}
-                        <button
-                          onClick={() => {
-                            setIsStatsModalOpen(true);
-                            setIsMoreMenuOpen(false);
-                          }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
-                        >
-                          <BarChart2 className="w-4 h-4 text-editor-icon-tools" />
-                          <span className="text-sm font-medium">Stats</span>
-                        </button>
-                        
-                        {/* Run on Leetcode */}
-                        <button
-                          onClick={() => {
-                            window.open(localProblem.link, '_blank');
-                            setIsMoreMenuOpen(false);
-                          }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-150"
-                        >
-                          <ExternalLink className="w-4 h-4 text-editor-icon-run" />
-                          <span className="text-sm font-medium">Run on Leetcode</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-4 bg-background" style={{ color: cssColor('foreground') }}>{renderTabContent()}</div>
-          </div>
-        </div>
-
-        {/* Resize Handle */}
-        <div
-          className={`
-            w-1 hover:w-2 bg-border cursor-col-resize relative group
-            transition-all duration-200
-            ${isDragging ? 'w-2' : ''}
-          `}
-          onMouseDown={handleMouseDown}
-        >
-          <div 
-          className="
-            absolute top-1/2 -translate-y-1/2 
-            transition-all duration-200 opacity-0 
-            group-hover:opacity-100">
-            <div className="bg-border-strong rounded-md p-1 -ml-3">
-              <span className="material-icons text-muted-foreground" style={{ fontSize: '16px' }}>chevron_left</span>
-            </div>
-            <div className="bg-border-strong rounded-md p-1 -ml-3 mt-1">
-              <span className="material-icons text-muted-foreground" style={{ fontSize: '16px' }}>chevron_right</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Panel */}
-        <div 
-          className="h-full overflow-hidden"
-          style={{ width: `${100 - panelWidth}%` }}
-        >
-          <AceEditor
+      <ProblemWorkspace activeView={contentActive} onViewChange={setContentActive} problemKey={localProblem.id}
+        renderView={renderTabContent} onEdit={() => setIsEditModalOpen(true)} onStats={() => setIsStatsModalOpen(true)} link={localProblem.link}
+        onEditorResize={() => editorRef.current?.editor.resize()}
+        editor={<AceEditor
+            ref={editorRef}
             className="rounded"
             mode={localProblem.language}
             theme="one_dark"
@@ -637,16 +302,8 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
               wrap: true,
             }}
             style={{ height: '100%', width: '100%' }}
-          />
-        </div>
-      </div>
+          />} />
 
-      <ReactTooltip
-        id="my-tooltip-1"
-        place="bottom"
-        style={{ backgroundColor: cssColor('tooltip-background') }}
-      />
-      
       {/* Always render modals but control visibility with isOpen prop */}
       <ProblemModal
         isOpen={isEditModalOpen}
@@ -662,8 +319,6 @@ const Problem = ({ problem, contentActive, setContentActive, editorContent, setE
         onClose={() => setIsStatsModalOpen(false)}
         problem={localProblem}
       />
-
-      <Toast message={toastMessage} isVisible={isToastVisible} />
     </div>
   );
 };

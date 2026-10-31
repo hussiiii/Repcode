@@ -1,0 +1,16 @@
+.announcement {
+  animation: announcementEnter 0.5s ease-out;
+}
+.statusPulse {
+  animation: navigationPulse 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes announcementEnter {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes navigationPulse {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .announcement, .statusPulse { animation: none; }
+}

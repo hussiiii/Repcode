@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/Badge';
 import type React from "react"
 import { useState, useEffect } from "react"
 import { UsersIcon } from "lucide-react"
@@ -59,10 +60,8 @@ const UserCounter: React.FC<UserCounterProps> = ({ targetCount, duration = 4000 
   }, [isVisible, targetCount, duration])
 
   return (
-    <div
-      id="user-counter"
-      className="inline-flex items-center px-5 py-3 bg-surface/80 backdrop-blur-sm rounded-full border border-border"
-    >
+    <Badge variant="counter" size="counter" asChild><div id="user-counter"
+      >
       <UsersIcon className="w-5 h-5 text-marketing-highlight mr-3" />
       <span className="text-foreground">
         Join our{" "}
@@ -72,7 +71,7 @@ const UserCounter: React.FC<UserCounterProps> = ({ targetCount, duration = 4000 
         users
         <span className="hidden sm:inline"> mastering LeetCode today</span>
       </span>
-    </div>
+    </div></Badge>
   )
 }
 

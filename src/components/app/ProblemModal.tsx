@@ -1,8 +1,22 @@
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Heading } from '@/components/ui/typography';
+import { useToast } from '@/components/ui/use-toast';
+import { Card } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { NativeSelect } from '@/components/ui/native-select';
+import { FieldLabel, Field } from '@/components/ui/field';
+import { InputGroup } from '@/components/ui/input-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from '@/components/ui/button';
 import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useEffect, useContext } from 'react';
 import { auth } from '../../firebaseConfig';
-import { useQuery, useMutation, useQueryClient } from 'react-query'; 
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { AuthContext } from '@/auth/AuthContext';
 
 const MAX_PROBLEMS = 152;
@@ -22,8 +36,11 @@ const ProblemModal = ({
   collectionId,
   isEditMode = false,
   problemToEdit = null,
-  showToast
+  showToast: notify
 }: ProblemModalProps) => {
+  const { toast } = useToast();
+  const showToast = notify ?? toast;
+  const submittingRef = React.useRef(false);
   const [problemNumber, setProblemNumber] = useState('');
   const [name, setName] = useState(isEditMode && problemToEdit ? problemToEdit.name : '');
   const [question, setQuestion] = useState(isEditMode && problemToEdit ? problemToEdit.question : '');
@@ -177,7 +194,7 @@ const ProblemModal = ({
             // Get local date in YYYY-MM-DD format (timezone-safe for streak tracking)
             const now = new Date();
             const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            
+
             await authenticatedFetch('/api/updateStreak', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -216,6 +233,7 @@ const ProblemModal = ({
       },
       onSettled: () => {
         setIsSubmitting(false);
+        submittingRef.current = false;
       }
     }
   );
@@ -312,7 +330,7 @@ const ProblemModal = ({
           return true;
         }
 
-        // Keep lines that look like code 
+        // Keep lines that look like code
         const hasCodeSymbols = /[{}\[\]();=<>+\-*/%&|^]/.test(trimmed);
         const startsWithKeyword = /^(function|const|let|var|class|def|import|from|return|if|else|for|while|try|catch|async|await|public|private|protected|static)/i.test(trimmed);
 
@@ -343,66 +361,60 @@ const ProblemModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current || !name.trim() || !question.trim() || !solution.trim()) return;
+    submittingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        throw new Error('Authentication token is not available.');
+      }
 
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) {
-      console.error('Authentication token is not available.');
-      return;
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+
+      mutation.mutate({
+        name,
+        question,
+        solution,
+        difficulty,
+        collectionId,
+        functionSignature,
+        language,
+        link,
+        notes,
+        headers
+      });
+    } catch (error) {
+      console.error('Failed to submit form:', error);
+      showToast('Unable to submit. Please sign in again and retry.');
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
-
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    };
-
-    mutation.mutate({
-      name,
-      question,
-      solution,
-      difficulty,
-      collectionId,
-      functionSignature,
-      language,
-      link,
-      notes,
-      headers
-    });
   };
 
   // ======= Render =======
   return (
     <>
       {/* Backdrop */}
-      <div
-        className={`
-          fixed inset-0 bg-overlay/60 backdrop-blur-sm z-50 transition-all duration-300
-          ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
-        `}
-        onClick={onClose}
-      />
-      
+
+
       {/* Modal Container */}
-      <div
-        className={`
-          fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl rounded-xl 
-          shadow-[0_10px_40px_rgb(var(--overlay)/0.3)] transition-all duration-500
-          bg-gradient-to-b from-background to-surface-dialog-end border border-border-subtle/50
-          text-foreground overflow-hidden max-h-[90vh] flex flex-col
-          ${isOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}
-        `}
-        onClick={(e) => e.stopPropagation()} 
-      >
+      <Dialog open={isOpen} onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent size="lg" scroll="contained" dismissible={!isSubmitting}>
         {/* Top accent line */}
         <div className="h-1 w-full bg-gradient-to-r from-app-action-start to-app-action-end" />
 
-        <div className="p-6 relative overflow-y-auto">
+        <ScrollArea direction="both" className="p-6 relative">
           {/* Header with close button and curved gradient line */}
           <div className="flex items-center justify-between mb-6 relative z-10">
             <div className="flex items-center">
-              <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              <DialogTitle>
                 {isEditMode ? 'Edit Problem' : 'Add New Problem'}
-              </h2>
-              
+              </DialogTitle>
+
               {/* Curved gradient line - now positioned next to the header with increased width */}
               <div className="ml-4 w-[600px] h-6 overflow-hidden pointer-events-none">
                 <svg
@@ -423,85 +435,50 @@ const ProblemModal = ({
                 </svg>
               </div>
             </div>
-            
-            <button
-              onClick={onClose}
-              className="h-8 w-8 rounded-full hover:bg-border-subtle/70 transition-colors duration-200 flex items-center justify-center"
-            >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                strokeWidth="2" 
-                stroke="currentColor" 
+
+            <Button variant="close" aria-label="Close dialog" disabled={isSubmitting}
+              onClick={onClose}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
                 className="w-4 h-4"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </Button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
             {/* QUICK IMPORT SECTION */}
-            <div className="p-4 rounded-lg bg-surface/50">
-              <h3 className="text-lg font-semibold text-foreground mb-2 text-center">Quick Import</h3>
+            <Card surface="muted" radius="lg" border="none" padding="md" elevation="none">
+              <Heading as="h3" size="lg" weight="semibold" tone="foreground" className="mb-2 text-center">Quick Import</Heading>
               <p className="text-foreground-soft text-sm mb-4 text-center">
                 Enter a Leetcode problem number to automatically fill out the details
               </p>
 
               <div className="flex justify-center gap-6">
                 {/* Problem number input */}
-                <div className="relative group">
-                  <input
+                <InputGroup variant="glow" motion="fast" >
+                  <Input variant="problem" className="w-36" align="center" aria-label="LeetCode problem number"
                     type="text"
                     value={problemNumber}
                     onChange={(e) => setProblemNumber(e.target.value)}
-                    className="w-36 px-3 py-2 bg-surface-field border border-border-subtle/70 rounded-md shadow-sm
-                               outline-none focus:outline-none focus:border-app-action-start/70 focus:ring-1 focus:ring-app-action-end/50
-                               transition-colors duration-75 text-foreground h-11 text-center"
                     placeholder="e.g. 1337"
                   />
-                  <div className="absolute inset-0 rounded-md border border-app-action-end/0
-                                  group-focus-within:border-app-action-end/30 pointer-events-none
-                                  transition-all duration-75 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)]
-                                  group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"
-                  />
-                </div>
+
+                </InputGroup>
 
                 {/* Autofill button */}
-                <button
+                <Button variant="autofill" size="dialog" loading={isAutofilling}
                   type="button"
                   onClick={handleAutofill}
-                  disabled={isAutofilling}
-                  className={`
-                    relative overflow-hidden bg-foreground-nearwhite text-inverse px-6 py-2 rounded-md
-                    transition duration-200 border border-transparent
-                    hover:opacity-90
-                    ${isAutofilling ? 'opacity-50 cursor-not-allowed' : ''}
-                  `}
-                >
+                  disabled={isAutofilling}>
                   {isAutofilling ? (
                     <div className="flex items-center gap-2">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-inverse inline-block"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
+                      <Spinner variant="autofill" />
                       Autofilling...
                     </div>
                   ) : (
@@ -511,101 +488,73 @@ const ProblemModal = ({
                     </div>
                   )}
                   <span className="absolute inset-0 bg-overlay/10 opacity-0 hover:opacity-10 transition-opacity duration-300" />
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
 
             {/* MANUAL ENTRY SECTION */}
-            <div className="bg-surface/50 p-4 rounded-lg border border-border-subtle/30">
-              <div
-                onClick={() => setIsManualEntryOpen(!isManualEntryOpen)}
-                className="p-2 rounded-md hover:bg-border-subtle/50 cursor-pointer transition-colors duration-200 flex items-center justify-between"
-              >
-                <span className="text-lg font-semibold text-foreground">Manual Entry</span>
+            <Collapsible open={isManualEntryOpen} onOpenChange={setIsManualEntryOpen} asChild>
+            <Card surface="muted" radius="lg" border="soft" padding="md" elevation="none">
+              <CollapsibleTrigger asChild>
+              <Button variant="disclosure" size="natural" className="w-full">
+
+                <span>Manual Entry</span>
                 <span
-                  className={`material-icons transition-transform duration-300 text-muted-foreground ${
+                  aria-hidden="true" className={`material-icons transition-transform duration-300 text-muted-foreground ${
                     isManualEntryOpen ? 'rotate-180' : ''
                   }`}
                 >
                   expand_more
                 </span>
-              </div>
+              </Button>
+              </CollapsibleTrigger>
 
-              <div
-                className={`
-                  transition-all duration-300 ease-in-out overflow-hidden
-                  ${isManualEntryOpen ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}
-                `}
-              >
+              <CollapsibleContent className="mt-4">
                 <div className="space-y-4">
                   {/* NAME */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                  <Field spacing="tight" >
+                    <FieldLabel variant="field" >
                       Name <span className="ml-1 text-status-error">*</span>
-                    </label>
-                    <div className="relative group">
-                      <input
+                    </FieldLabel>
+                    <InputGroup variant="glow" motion="fast" >
+                      <Input variant="problem" className="w-full" aria-required="true"
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
-                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
-                                   text-foreground h-11"
                         placeholder="Enter the name of the problem"
                       />
-                      <div className="absolute inset-0 rounded-md border border-app-action-end/0
-                                      group-focus-within:border-app-action-end/30 pointer-events-none
-                                      transition-all duration-75 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)]
-                                      group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"
-                      />
-                    </div>
-                  </div>
+
+                    </InputGroup>
+                  </Field>
 
                   {/* QUESTION */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                  <Field spacing="tight" >
+                    <FieldLabel variant="field" >
                       Question <span className="ml-1 text-status-error">*</span>
-                    </label>
-                    <div className="relative group">
-                      <textarea
+                    </FieldLabel>
+                    <InputGroup variant="minimal" motion="fast" >
+                      <Textarea variant="problem" className="w-full" minSize="md" resizable aria-required="true"
                         value={question}
                         onChange={(e) => setQuestion(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
-                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
-                                   text-foreground min-h-[8rem] resize-y"
                         placeholder={`Copy/paste the actual question here. Use HTML tags (<code>, <pre>, <p>, etc.) if needed.`}
                       />
-                      <div className="absolute inset-0 rounded-md 
-                                      group-focus-within:border-app-action-end/30 pointer-events-none
-                                      transition-all duration-75"
-                      />
-                    </div>
-                  </div>
+
+                    </InputGroup>
+                  </Field>
 
                   {/* SOLUTION */}
-                  <div className="space-y-1.5">
+                  <Field spacing="tight" >
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground-soft flex items-center">
+                      <FieldLabel variant="field" >
                         Solution <span className="ml-1 text-status-error">*</span>
-                      </label>
-                      <button
+                      </FieldLabel>
+                      <Button variant="generate" size="small" loading={isGeneratingSolution}
                         type="button"
                         onClick={generateAISolution}
-                        disabled={isGeneratingSolution || !question.trim()}
-                        className={`
-                          flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium
-                          transition-all duration-200
-                          ${isGeneratingSolution || !question.trim()
-                            ? 'bg-border-subtle/50 text-foreground-quiet cursor-not-allowed'
-                            : 'bg-gradient-to-r from-app-action-start to-app-action-end text-foreground hover:from-app-action-dialog-hover-start hover:to-app-action-dialog-hover-end'
-                          }
-                        `}
-                      >
+                        disabled={isGeneratingSolution || !question.trim()}>
                         {isGeneratingSolution ? (
                           <>
-                            <div className="w-3 h-3 border-2 border-foreground border-t-transparent rounded-full animate-spin"></div>
+                            <Spinner variant="compact" />
                             <span>Generating...</span>
                           </>
                         ) : (
@@ -614,191 +563,96 @@ const ProblemModal = ({
                             <span>Generate Solution</span>
                           </>
                         )}
-                      </button>
+                      </Button>
                     </div>
-                    <div className="relative group">
-                      <textarea
+                    <InputGroup variant="minimal" motion="fast" >
+                      <Textarea variant="problem" className="w-full" minSize="lg" resizable aria-required="true"
                         value={solution}
                         onChange={(e) => setSolution(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
-                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
-                                   text-foreground min-h-[12rem] resize-y"
                         placeholder="Copy/paste the solution here (syntax highlighting is applied after creation)."
                       />
-                      <div className="absolute inset-0 rounded-md
-                                      group-focus-within:border-app-action-end/30 pointer-events-none
-                                      transition-all duration-75"
-                      />
-                    </div>
-                  </div>
+
+                    </InputGroup>
+                  </Field>
 
                   {/* FUNCTION SIGNATURE */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                  <Field spacing="tight" >
+                    <FieldLabel variant="field" >
                       Function Signature
-                    </label>
-                    <div className="relative group">
-                      <textarea
+                    </FieldLabel>
+                    <InputGroup variant="minimal" motion="fast" >
+                      <Textarea variant="problem" className="w-full" minSize="sm"
                         value={functionSignature}
                         onChange={(e) => setFunctionSignature(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
-                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
-                                   text-foreground min-h-[4rem]"
                         placeholder="Paste the boilerplate code or function signature here."
                       />
-                      <div className="absolute inset-0 rounded-md 
-                                      group-focus-within:border-app-action-end/30 pointer-events-none
-                                      transition-all duration-75 "
-                      />
-                    </div>
-                  </div>
+
+                    </InputGroup>
+                  </Field>
 
                   {/* PROGRAMMING LANGUAGE */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                  <Field spacing="tight" >
+                    <FieldLabel variant="field" >
                       Programming Language <span className="ml-1 text-status-error">*</span>
-                    </label>
-                    <div className="relative group">
-                      <select
+                    </FieldLabel>
+                    <InputGroup variant="glow" motion="fast" >
+                      <NativeSelect variant="problem" className="w-full"
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
-                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
-                                   text-foreground h-11"
                       >
                         <option value="javascript">JavaScript</option>
                         <option value="python">Python3</option>
                         <option value="c_cpp">C/C++</option>
                         <option value="java">Java</option>
-                      </select>
-                      <div className="absolute inset-0 rounded-md border border-app-action-end/0
-                                      group-focus-within:border-app-action-end/30 pointer-events-none
-                                      transition-all duration-75 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)]
-                                      group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"
-                      />
-                    </div>
-                  </div>
+                      </NativeSelect>
+
+                    </InputGroup>
+                  </Field>
 
                   {/* LINK */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                  <Field spacing="tight" >
+                    <FieldLabel variant="field" >
                       Link to Problem
-                    </label>
-                    <div className="relative group">
-                      <input
+                    </FieldLabel>
+                    <InputGroup variant="glow" motion="fast" >
+                      <Input variant="problem" className="w-full"
                         type="text"
                         value={link}
                         onChange={(e) => setLink(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
-                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
-                                   text-foreground h-11"
                         placeholder="https://leetcode.com/problems/two-sum/"
                       />
-                      <div className="absolute inset-0 rounded-md border border-app-action-end/0
-                                      group-focus-within:border-app-action-end/30 pointer-events-none
-                                      transition-all duration-75 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)]
-                                      group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"
-                      />
-                    </div>
-                  </div>
+
+                    </InputGroup>
+                  </Field>
 
                   {/* NOTES */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                  <Field spacing="tight" >
+                    <FieldLabel variant="field" >
                       Additional Notes
-                    </label>
-                    <div className="relative group">
-                      <textarea
+                    </FieldLabel>
+                    <InputGroup variant="minimal" motion="fast" >
+                      <Textarea variant="problem" className="w-full" minSize="sm"
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="w-full px-3 py-2 bg-surface-field border border-border-subtle/70
-                                   rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70
-                                   focus:ring-1 focus:ring-app-action-end/50 transition-colors duration-75
-                                   text-foreground min-h-[4rem]"
                         placeholder="- Add any notes for yourself about this problem"
                       />
-                      <div className="absolute inset-0 rounded-md 
-                                      group-focus-within:border-app-action-end/30 pointer-events-none
-                                      transition-all duration-75"
-                      />
-                    </div>
-                  </div>
+
+                    </InputGroup>
+                  </Field>
 
                   {/* DIFFICULTY */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground-soft flex items-center">
+                  <Field spacing="tight" >
+                    <FieldLabel variant="field" >
                       Difficulty <span className="ml-1 text-status-error">*</span>
-                    </label>
-                    <div className="flex gap-4 pt-2">
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          value="Easy"
-                          name="difficulty"
-                          checked={difficulty === 'Easy'}
-                          onChange={(e) => setDifficulty(e.target.value)}
-                          className="absolute opacity-0 w-0 h-0"
-                        />
-                        <span 
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
-                                     ${difficulty === 'Easy' 
-                                       ? 'text-difficulty-easy bg-difficulty-easy-background border-difficulty-easy-border'
-                                       : 'text-muted-foreground bg-border border-border'}
-                                     transition-all duration-200 cursor-pointer`}
-                        >
-                          <span className="material-icons mr-1.5 fill-current" style={{ fontSize: '12px' }}>circle</span>
-                          Easy
-                        </span>
-                      </label>
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          value="Medium"
-                          name="difficulty"
-                          checked={difficulty === 'Medium'}
-                          onChange={(e) => setDifficulty(e.target.value)}
-                          className="absolute opacity-0 w-0 h-0"
-                        />
-                        <span 
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
-                                     ${difficulty === 'Medium' 
-                                       ? 'text-difficulty-medium bg-difficulty-medium-background border-difficulty-medium-border'
-                                       : 'text-muted-foreground bg-border border-border'}
-                                     transition-all duration-200 cursor-pointer`}
-                        >
-                          <span className="material-icons mr-1.5 fill-current" style={{ fontSize: '12px' }}>circle</span>
-                          Medium
-                        </span>
-                      </label>
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          value="Hard"
-                          name="difficulty"
-                          checked={difficulty === 'Hard'}
-                          onChange={(e) => setDifficulty(e.target.value)}
-                          className="absolute opacity-0 w-0 h-0"
-                        />
-                        <span 
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
-                                     ${difficulty === 'Hard' 
-                                       ? 'text-difficulty-hard bg-difficulty-hard-background border-difficulty-hard-border'
-                                       : 'text-muted-foreground bg-border border-border'}
-                                     transition-all duration-200 cursor-pointer`}
-                        >
-                          <span className="material-icons mr-1.5 fill-current" style={{ fontSize: '12px' }}>circle</span>
-                          Hard
-                        </span>
-                      </label>
-                    </div>
-                  </div>
+                    </FieldLabel>
+                    <RadioGroup variant="pills" name="difficulty" value={difficulty} onValueChange={setDifficulty} orientation="horizontal"><RadioGroupItem variant="pill" tone="easy" value="Easy"><span className="material-icons mr-1.5 fill-current" aria-hidden="true" style={{ fontSize: '12px' }}>circle</span>Easy</RadioGroupItem>
+<RadioGroupItem variant="pill" tone="medium" value="Medium"><span className="material-icons mr-1.5 fill-current" aria-hidden="true" style={{ fontSize: '12px' }}>circle</span>Medium</RadioGroupItem>
+<RadioGroupItem variant="pill" tone="hard" value="Hard"><span className="material-icons mr-1.5 fill-current" aria-hidden="true" style={{ fontSize: '12px' }}>circle</span>Hard</RadioGroupItem></RadioGroup>
+                  </Field>
                 </div>
-              </div>
-            </div>
+              </CollapsibleContent>
+            </Card>
+            </Collapsible>
 
             {/* FOOTER / STATUS & BUTTONS */}
             <div className="border-t border-border-subtle/70 pt-4 flex items-center justify-between">
@@ -807,7 +661,7 @@ const ProblemModal = ({
                 {(() => {
                   const requiredFields = [name, question, solution];
                   const filledFields = requiredFields.filter(field => field.trim() !== '');
-                  
+
                   if (filledFields.length === 0) {
                     return (
                       <div className="flex items-center">
@@ -844,52 +698,25 @@ const ProblemModal = ({
 
               {/* Action Buttons */}
               <div className="flex gap-2">
-                <button
+                <Button variant="dialog" size="dialog" loading={isSubmitting}
                   type="submit"
-                  disabled={!name.trim() || !question.trim() || !solution.trim() || isSubmitting}
-                  className={`
-                    relative overflow-hidden bg-gradient-to-r from-app-action-start to-app-action-end
-                    text-foreground px-6 py-2 rounded-md transition-all duration-200
-                    ${(!name.trim() || !question.trim() || !solution.trim() || isSubmitting)
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:from-app-action-dialog-hover-start hover:to-app-action-dialog-hover-end"
-                    }
-                  `}
-                >
+                  disabled={!name.trim() || !question.trim() || !solution.trim() || isSubmitting}>
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-foreground inline-block"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
+                      <Spinner variant="button" />
                       {isEditMode ? 'Updating...' : 'Creating...'}
                     </div>
                   ) : (
                     isEditMode ? 'Update' : 'Create'
                   )}
                   <span className="absolute inset-0 w-full h-full bg-foreground/10 opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                </button>
+                </Button>
               </div>
             </div>
           </form>
-        </div>
-      </div>
+        </ScrollArea>
+      </DialogContent>
+      </Dialog>
     </>
   );
 };

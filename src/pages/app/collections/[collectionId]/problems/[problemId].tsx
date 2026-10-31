@@ -1,9 +1,10 @@
+import { Alert } from '@/components/ui/alert';
+import { LoadingState } from '@/components/ui/loading-state';
 import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext } from 'react';
-import '../../../../../app/globals.css'; 
-import SideBar from '@/components/app/SideBar';
+import { AppShell } from '@/components/layout/app-shell';
 import nookies from "nookies"; 
 import firebaseAdmin from "../../../../../../firebaseAdmin";
 import Problem from '@/components/app/Problem';
@@ -19,6 +20,10 @@ const ProblemDetailPage = () => {
   const [contentActive, setContentActive] = useState('question');
   const [editorContent, setEditorContent] = useState('');
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  useEffect(() => {
+    setContentActive('question');
+    setEditorContent('');
+  }, [problemId]);
 
   // to get the user ID to verify that user can only access problems they have created 
   const fetchUserSettings = async () => {
@@ -72,48 +77,14 @@ const ProblemDetailPage = () => {
   );
 
   return (
-    <div className="flex min-h-screen h-screen max-h-screen overflow-hidden bg-background">
-      <SideBar />
+    <AppShell locked>
       <div className="flex-1 overflow-hidden">
         {isLoadingCollection || isLoadingProblem || isLoadingUser ? (
             <div className="flex justify-center items-center h-[80vh]">
-            <div className="relative flex flex-col items-center">
-              {/* Outer glow effect */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start to-app-action-end blur-xl opacity-20 animate-pulse"></div>
-              
-              {/* Spinner container */}
-              <div className="relative">
-                {/* Gradient ring */}
-                <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                                bg-gradient-to-r from-app-action-start to-app-action-end opacity-20"></div>
-                
-                {/* Spinning gradient arc */}
-                <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
-                                rounded-full animate-spin duration-1000" 
-                      style={{
-                        borderTopColor: cssColor('app-action-start'),
-                        borderRightColor: cssColor('app-action-end'),
-                        animationDuration: '1s'
-                      }}>
-                </div>
-                
-                {/* Inner circle with logo or icon */}
-                
-              </div>
-              
-              {/* Loading text with shimmer effect */}
-              <div className="mt-4 text-sm font-medium text-muted-foreground relative overflow-hidden">
-                <span>Loading</span>
-                <span className="inline-flex overflow-hidden ml-1">
-                  <span className="animate-ellipsis">.</span>
-                  <span className="animate-ellipsis animation-delay-300">.</span>
-                  <span className="animate-ellipsis animation-delay-600">.</span>
-                </span>
-              </div>
-            </div>
+            <LoadingState />
           </div>
         ) : collectionError || problemError || userError ? (
-          <div className="text-foreground p-8">Error: {(collectionError as Error || problemError as Error || userError as Error).message}</div>
+          <Alert variant="error">Error: {(collectionError as Error || problemError as Error || userError as Error).message}</Alert>
         ) : (
           <>
             <VideoModal
@@ -132,7 +103,7 @@ const ProblemDetailPage = () => {
           </>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }
 

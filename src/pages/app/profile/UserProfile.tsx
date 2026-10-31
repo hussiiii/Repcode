@@ -1,7 +1,7 @@
+import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useContext } from 'react';
-import "../../../app/globals.css"; 
-import SideBar from '@/components/app/SideBar';
+import { AppShell } from '@/components/layout/app-shell';
 import nookies from "nookies"; 
 import firebaseAdmin from "../../../../firebaseAdmin"; 
 import Profile from '@/components/app/Profile';
@@ -10,17 +10,16 @@ const UserProfilePage = () => {
   const router = useRouter(); 
 
   return ( 
-    <div className="flex min-h-screen bg-background">
-      <SideBar />
+    <AppShell>
       <div className="flex-1 overflow-x-hidden">
       <div className="flex-grow p-8">
         <div className="text-foreground text-4xl font-bold mb-4 flex justify-center">Profile and Billing</div>
-        <hr className="border-border mb-8 transition-width duration-300"/>
+        <Separator decorative={false} variant="rule" className="mb-8 transition-width duration-300" />
         <Profile />
 
       </div>
       </div>
-    </div>
+    </AppShell>
   );
 };
 

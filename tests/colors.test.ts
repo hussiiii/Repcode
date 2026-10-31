@@ -5,7 +5,7 @@ import { cssColor, canvasColor, hexColor, collectionChartColor, withColorOpacity
 const originals = require('./fixtures/app-colors.json');
 
 beforeAll(() => {
-  const css = fs.readFileSync(path.join(process.cwd(), 'src/app/globals.css'), 'utf8');
+  const css = fs.readFileSync(path.join(process.cwd(), 'src/styles/globals.css'), 'utf8');
   const declarations = css.match(/:root\s*\{([\s\S]*?)\n  \}/)![1];
   const style = document.createElement('style');
   style.textContent = `:root {${declarations}}`;

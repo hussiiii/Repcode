@@ -1,9 +1,16 @@
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Empty } from '@/components/ui/empty';
+import { Spinner } from '@/components/ui/spinner';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from 'react-query';
 import { AuthContext } from '@/auth/AuthContext';
-import Toast from './Toast';
+import { useToast } from '@/components/ui/use-toast';
 
 interface RandomProblemModalProps {
   isOpen: boolean;
@@ -11,8 +18,7 @@ interface RandomProblemModalProps {
 }
 
 const RandomProblemModal = ({ isOpen, onClose }: RandomProblemModalProps) => {
-  const [toastMessage, setToastMessage] = useState('');
-  const [isToastVisible, setIsToastVisible] = useState(false);
+  const { toast: showToast } = useToast(3000);
   const [selectedCollections, setSelectedCollections] = useState<Set<number>>(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
   const { user } = useContext(AuthContext);
@@ -58,22 +64,9 @@ const RandomProblemModal = ({ isOpen, onClose }: RandomProblemModalProps) => {
   }, [isOpen, collections]);
 
   // Handle keyboard events (Escape to close)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
 
-  const showToast = (message: any) => {
-    setToastMessage(message);
-    setIsToastVisible(true);
-    setTimeout(() => setIsToastVisible(false), 3000);
-  };
+
 
   const toggleCollection = (collectionId: number) => {
     setSelectedCollections((prev) => {
@@ -97,6 +90,7 @@ const RandomProblemModal = ({ isOpen, onClose }: RandomProblemModalProps) => {
   };
 
   const handleSolve = async () => {
+    if (isSelecting) return;
     if (selectedCollections.size === 0) {
       showToast(
         <>
@@ -165,93 +159,60 @@ const RandomProblemModal = ({ isOpen, onClose }: RandomProblemModalProps) => {
   return (
     <>
       {/* Modal Backdrop */}
-      <div
-        className={`fixed inset-0 bg-overlay/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        onClick={onClose}
-      />
-      
+
+
       {/* Modal */}
-      <div
-        className={`fixed top-1/2 left-1/2 -translate-x-1/2 z-50 w-full max-w-md max-h-[85vh] rounded-xl shadow-[0_10px_40px_rgb(var(--overlay)/0.3)] transition-all duration-500 bg-gradient-to-b from-background to-surface-dialog-end border border-border-subtle/50 text-foreground overflow-hidden flex flex-col ${isOpen ? "opacity-100 -translate-y-1/2" : "opacity-0 -translate-y-[40%] pointer-events-none"}`}
-      >
+      <Dialog open={isOpen} onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent scroll="selection" dismissible={!isSelecting}>
         {/* Decorative accent line at top */}
         <div className="h-1 w-full bg-gradient-to-r from-app-action-start to-app-action-end flex-shrink-0"></div>
-        
+
         <div className="p-6 relative flex-1 flex flex-col overflow-hidden">
           {/* Modal Header */}
           <div className="flex items-center justify-between mb-4 flex-shrink-0">
-            <h2 className="text-xl font-semibold tracking-tight text-foreground">Solve Random Problem</h2>
-            <button
-              onClick={onClose}
-              className="h-8 w-8 rounded-full hover:bg-border-subtle/70 transition-colors duration-200 flex items-center justify-center"
-            >
+            <DialogTitle>Solve Random Problem</DialogTitle>
+            <Button variant="close" aria-label="Close dialog" disabled={isSelecting}
+              onClick={onClose}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </Button>
           </div>
-          
+
           <div className="space-y-4 flex-1 flex flex-col overflow-hidden">
             <p className="text-foreground-soft text-sm flex-shrink-0">
               Select the collections you want to choose from, then click Solve to get a random problem.
             </p>
-            
+
             {/* Select/Deselect All buttons */}
             <div className="flex gap-2 flex-shrink-0">
-              <button
-                onClick={selectAll}
-                className="text-xs px-3 py-1.5 bg-surface hover:bg-surface-emphasis text-muted-foreground hover:text-foreground rounded-md transition-colors duration-200"
-              >
+              <Button variant="selection" size="compact"
+                onClick={selectAll}>
                 Select All
-              </button>
-              <button
-                onClick={deselectAll}
-                className="text-xs px-3 py-1.5 bg-surface hover:bg-surface-emphasis text-muted-foreground hover:text-foreground rounded-md transition-colors duration-200"
-              >
+              </Button>
+              <Button variant="selection" size="compact"
+                onClick={deselectAll}>
                 Deselect All
-              </button>
+              </Button>
             </div>
-            
+
             {/* Collections List - Scrollable */}
-            <div className="space-y-2 overflow-y-auto pr-2 flex-1 min-h-0">
+            <ScrollArea direction="both" className="space-y-2  pr-2 flex-1 min-h-0">
               {(isLoading || !userSettings) ? (
                 <div className="flex justify-center items-center py-8">
-                  <svg
-                    className="animate-spin h-8 w-8 text-app-action-end"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+                  <Spinner variant="selection" />
                 </div>
               ) : collections.length === 0 ? (
-                <p className="text-center text-muted-foreground text-sm py-8">No collections found</p>
+                <Empty variant="inline">No collections found</Empty>
               ) : (
                 collections.map((collection: any) => {
                   const totalProblems = collection.newCount + collection.learningCount + collection.reviewCount;
                   return (
-                    <label
+                    <Label variant="option"
                       key={collection.id}
-                      className="flex items-center p-3 bg-surface hover:bg-surface-emphasis rounded-lg cursor-pointer transition-colors duration-200 group"
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox onCheckedChange={() => toggleCollection(collection.id)}
                         checked={selectedCollections.has(collection.id)}
-                        onChange={() => toggleCollection(collection.id)}
-                        className="w-4 h-4 rounded border-border-subtle bg-surface-field text-app-action-end focus:ring-2 focus:ring-app-action-end/50 cursor-pointer"
                       />
                       <div className="ml-3 flex-1">
                         <div className="flex items-center justify-between">
@@ -263,53 +224,32 @@ const RandomProblemModal = ({ isOpen, onClose }: RandomProblemModalProps) => {
                           </span>
                         </div>
                       </div>
-                    </label>
+                    </Label>
                   );
                 })
               )}
-            </div>
-            
+            </ScrollArea>
+
             {/* Modal Footer */}
             <div className="flex justify-end pt-4 flex-shrink-0">
-              <button 
+              <Button variant="dialog" size="dialog" emphasis="dialog" loading={isSelecting}
                 onClick={handleSolve}
-                disabled={selectedCollections.size === 0 || isSelecting || !userSettings}
-                className={`relative overflow-hidden bg-gradient-to-r from-app-action-start to-app-action-end hover:from-app-action-dialog-hover-start hover:to-app-action-dialog-hover-end text-foreground shadow-md transition-all duration-200 py-2 px-6 rounded-md ${(selectedCollections.size === 0 || isSelecting || !userSettings) ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
+                disabled={selectedCollections.size === 0 || isSelecting || !userSettings}>
                 {isSelecting ? (
                   <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-foreground inline-block"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
+                    <Spinner variant="button" />
                     Finding...
                   </>
                 ) : (
                   'Solve'
                 )}
                 <span className="absolute inset-0 w-full h-full bg-foreground/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
-      </div>
-      <Toast message={toastMessage} isVisible={isToastVisible} />
+      </DialogContent>
+      </Dialog>
     </>
   );
 };

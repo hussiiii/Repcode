@@ -1,17 +1,24 @@
+import { Badge } from '@/components/ui/Badge';
+import { DifficultyBadge, StudyStateBadge } from '@/components/app/ProblemBadges';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Heading } from '@/components/ui/typography';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { HelpTooltip } from '@/components/ui/tooltip';
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
+import { Card, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useRouter } from 'next/router';
 import { AuthContext } from '@/auth/AuthContext';
 import { useQuery } from 'react-query';
 import React, { useContext, useState, useEffect } from 'react';
-import "../../../app/globals.css"; 
-import SideBar from '@/components/app/SideBar';
+import { AppShell } from '@/components/layout/app-shell';
 import nookies from "nookies"; 
 import firebaseAdmin from "../../../../firebaseAdmin"; 
 import ProblemTypeInfo from '@/components/app/ProblemTypeInfo';
 import BarGraphWeek from '@/components/app/BarGraphWeek';
 import BarGraphMonth from '@/components/app/BarGraphMonth';
 import Link from 'next/link';
-import Badge from '@/components/ui/Badge';
 import StatsCharts from '@/components/app/StatsCharts';
 import StreakCalendar from '@/components/app/StreakCalendar';
 
@@ -149,23 +156,22 @@ const StudyProblemPage = () => {
   const estimatedStudyTime = calculateEstimatedStudyTime(dueTodayProblems);
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <SideBar />
+    <AppShell>
       <div className="flex-1 ml-0 transition-all duration-300">
         <div className="p-6 md:p-8 lg:p-10">
           <div className="max-w-6xl mx-auto">
             <header className="mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-2">
+              <Heading as="h1" size="page" weight="bold" tone="foreground" className="tracking-tight mb-2">
                 Study Dashboard
-              </h1>
+              </Heading>
               <p className="text-muted-foreground text-lg">
                 Track your progress and study efficiently
               </p>
             </header>
 
             {data && totalProblems === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-6">
-                <div className="max-w-md mx-auto text-center">
+              <Empty>
+                <EmptyHeader>
                   {/* Icon */}
                   <div className="mb-6 relative">
                     <div className="w-20 h-20 mx-auto bg-surface rounded-2xl flex items-center justify-center relative overflow-hidden">
@@ -182,14 +188,14 @@ const StudyProblemPage = () => {
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl font-semibold text-foreground mb-3">
+                  <EmptyTitle>
                     No Problems Tracked
-                  </h3>
+                  </EmptyTitle>
                   
                   {/* Message */}
-                  <p className="text-muted-foreground leading-relaxed mb-6">
+                  <EmptyDescription>
                     Create problems to access Study Mode and start tracking your progress!
-                  </p>
+                  </EmptyDescription>
                   
                   
                   {/* Decorative element */}
@@ -198,40 +204,21 @@ const StudyProblemPage = () => {
                     <div className="w-1 h-1 bg-metric-due rounded-full animate-pulse animation-delay-300"></div>
                     <div className="w-1 h-1 bg-app-action-end rounded-full animate-pulse animation-delay-600"></div>
                   </div>
-                </div>
-              </div>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <>
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-              <div className="bg-surface rounded-xl p-4 border border-border shadow-lg relative">
+              <Card padding="md" className="relative">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1">
-                    <h3 className="text-muted-foreground text-xs font-medium">
+                    <Heading as="h3" size="xs" weight="medium" tone="muted">
                       Daily Streak
-                    </h3>
-                    <div className="relative group">
-                      <HelpCircleIcon
-                        size={12}
-                        className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors"
-                      />
-
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-2 bg-background border border-border rounded-lg shadow-xl text-xs text-muted-foreground w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                        <div className="text-foreground font-medium mb-1">
-                          How streaks work
-                        </div>
-
-                        <p className="mb-2">
-                          Do activity (create a problem or give feedback) on consecutive days to build your streak.
-                        </p>
-
-                        <p className="text-muted-foreground/80">
-                          You have until the end of the next day to continue your streak.
-                        </p>
-
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-border"></div>
-                      </div>
-                    </div>
+                    </Heading>
+                    <HelpTooltip variant="dashboard" side="bottom" content={<><div className="text-foreground font-medium mb-1">How streaks work</div><p className="mb-2">Do activity (create a problem or give feedback) on consecutive days to build your streak.</p><p className="text-muted-foreground/80">You have until the end of the next day to continue your streak.</p></>}>
+                        <Button variant="help" size="natural" aria-label="About daily streaks"><HelpCircleIcon size={12} aria-hidden="true" /></Button>
+                      </HelpTooltip>
 
                   </div>
                   <div className="bg-difficulty-hard-background p-1.5 rounded-md">
@@ -254,13 +241,13 @@ const StudyProblemPage = () => {
                     {streakStatus.message}
                   </span>
                 </div>
-              </div>
+              </Card>
               
-              <div className="bg-surface rounded-xl p-4 border border-border shadow-lg">
+              <Card padding="md">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-muted-foreground text-xs font-medium">
+                  <Heading as="h3" size="xs" weight="medium" tone="muted">
                     Total Problems
-                  </h3>
+                  </Heading>
                   <div className="bg-metric-total/10 p-1.5 rounded-md">
                     <BarChart3Icon size={16} className="text-metric-total-foreground" />
                   </div>
@@ -271,13 +258,13 @@ const StudyProblemPage = () => {
                   </span>
                   <span className="ml-1 text-muted-foreground text-sm">tracked</span>
                 </div>
-              </div>
+              </Card>
               
-              <div className="bg-surface rounded-xl p-4 border border-border shadow-lg">
+              <Card padding="md">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-muted-foreground text-xs font-medium">
+                  <Heading as="h3" size="xs" weight="medium" tone="muted">
                     Due Today
-                  </h3>
+                  </Heading>
                   <div className="bg-status-warning-background p-1.5 rounded-md">
                     <TriangleAlertIcon size={16} className="text-study-learning" />
                   </div>
@@ -288,21 +275,17 @@ const StudyProblemPage = () => {
                   </span>
                   <span className="ml-1 text-muted-foreground text-sm">problems</span>
                 </div>
-              </div>
+              </Card>
               
-              <div className="bg-surface rounded-xl p-4 border border-border shadow-lg">
+              <Card padding="md">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1">
-                    <h3 className="text-muted-foreground text-xs font-medium">
+                    <Heading as="h3" size="xs" weight="medium" tone="muted">
                       Est. Study Time
-                    </h3>
-                    <div className="relative group">
-                      <HelpCircleIcon size={12} className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors" />
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-2 bg-background border border-border rounded-lg shadow-xl text-xs text-muted-foreground w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                        Calculated estimate based on the difficulty and type of each problem in your queue today.
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-border"></div>
-                      </div>
-                    </div>
+                    </Heading>
+                    <HelpTooltip variant="dashboard" side="bottom" content={<>Calculated estimate based on the difficulty and type of each problem in your queue today.</>}>
+                        <Button variant="help" size="natural" aria-label="About estimated study time"><HelpCircleIcon size={12} aria-hidden="true" /></Button>
+                      </HelpTooltip>
                   </div>
                   <div className="bg-metric-due/10 p-1.5 rounded-md">
                     <ClockIcon size={16} className="text-metric-due-foreground" />
@@ -314,21 +297,17 @@ const StudyProblemPage = () => {
                   </span>
                   <span className="ml-1 text-muted-foreground text-sm">today</span>
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-surface rounded-xl p-4 border border-border shadow-lg">
+              <Card padding="md">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1">
-                    <h3 className="text-muted-foreground text-xs font-medium">
+                    <Heading as="h3" size="xs" weight="medium" tone="muted">
                       Total Reviews
-                    </h3>
-                    <div className="relative group">
-                      <HelpCircleIcon size={12} className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors" />
-                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-background border border-border rounded-lg shadow-xl text-xs text-muted-foreground w-44 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                        Giving feedback to a problem in Study Mode increments this.
-                        <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-border"></div>
-                      </div>
-                    </div>
+                    </Heading>
+                    <HelpTooltip variant="dashboardCompact" side="top" content={<>Giving feedback to a problem in Study Mode increments this.</>}>
+                        <Button variant="help" size="natural" aria-label="About total reviews"><HelpCircleIcon size={12} aria-hidden="true" /></Button>
+                      </HelpTooltip>
                   </div>
                   <div className="bg-metric-streak/10 p-1.5 rounded-md">
                     <HeartPulseIcon size={16} className="text-metric-streak-foreground" />
@@ -342,7 +321,7 @@ const StudyProblemPage = () => {
                   </span>
                   <span className="ml-1 text-muted-foreground text-sm">total</span>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Main Content Grid */}
@@ -350,84 +329,72 @@ const StudyProblemPage = () => {
               {/* Charts Section - 2/3 width on large screens */}
               <div className="lg:col-span-2">
                 {/* Due Problems Chart */}
-                <div className="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
-                  <div className="p-5 border-b border-border">
+                <Tabs asChild value={timeRange} onValueChange={value => setTimeRange(value as "daily" | "monthly")}>
+                <Card className="overflow-hidden">
+                  <CardHeader variant="dashboard">
                     <div className="flex justify-between items-center">
-                      <h2 className="text-lg font-semibold text-foreground">
+                      <Heading as="h2" size="lg" weight="semibold" tone="foreground">
                         Due Problems
-                      </h2>
-                      <div className="flex bg-background rounded-lg p-1">
-                        <button
-                          className={`px-3 py-1 text-sm rounded-md transition-colors ${timeRange === "daily" ? "bg-gradient-to-r from-metric-due to-app-action-end text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                          onClick={() => setTimeRange("daily")}
-                        >
-                          7 Days
-                        </button>
-                        <button
-                          className={`px-3 py-1 text-sm rounded-md transition-colors ${timeRange === "monthly" ? "bg-gradient-to-r from-metric-due to-app-action-end text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                          onClick={() => setTimeRange("monthly")}
-                        >
-                          Monthly
-                        </button>
-                      </div>
+                      </Heading>
+                      <TabsList aria-label="Due problem time range" variant="range">
+                        <TabsTrigger value="daily" variant="range">7 Days</TabsTrigger>
+                        <TabsTrigger value="monthly" variant="range">Monthly</TabsTrigger>
+                      </TabsList>
                     </div>
-                  </div>
+                  </CardHeader>
                   <div className="p-5">
-                    {timeRange === "daily" ? <BarGraphWeek /> : <BarGraphMonth />}
+                    <TabsContent value="daily"><BarGraphWeek /></TabsContent>
+                    <TabsContent value="monthly"><BarGraphMonth /></TabsContent>
                   </div>
-                </div>
+                </Card>
+
+                </Tabs>
 
                 {/* Activity Calendar */}
-                <div className="bg-surface rounded-xl border border-border shadow-lg mt-6 overflow-hidden">
-                  <div className="p-5 border-b border-border">
+                <Card className="mt-6 overflow-hidden">
+                  <CardHeader variant="dashboard">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-1.5">
-                        <h2 className="text-lg font-semibold text-foreground">
+                        <Heading as="h2" size="lg" weight="semibold" tone="foreground">
                           Activity Calendar
-                        </h2>
-                        <div className="relative group">
-                          <HelpCircleIcon size={14} className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors" />
-                          <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-2 bg-background border border-border rounded-lg shadow-xl text-xs text-muted-foreground w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                            Tracks all the days you had any kind of activity (either created or reviewed a problem).
-                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-border"></div>
-                          </div>
-                        </div>
+                        </Heading>
+                        <HelpTooltip variant="dashboard" side="bottom" content={<>Tracks all the days you had any kind of activity (either created or reviewed a problem).</>}>
+                        <Button variant="help" size="natural" aria-label="About activity calendar"><HelpCircleIcon size={14} aria-hidden="true" /></Button>
+                      </HelpTooltip>
                       </div>
                       <div className="text-muted-foreground text-sm flex items-center">
                         <CalendarIcon size={14} className="mr-1" />
                         past year
                       </div>
                     </div>
-                  </div>
+                  </CardHeader>
                   <div className="p-5">
                     <StreakCalendar currentYear={new Date().getFullYear()} />
                   </div>
-                </div>
+                </Card>
 
               </div>
 
               {/* Due Today Section - 1/3 width on large screens */}
               <div className="lg:col-span-1">
-                <div className="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
-                  <div className="p-5 border-b border-border">
+                <Card className="overflow-hidden">
+                  <CardHeader variant="dashboard">
                     <div className="flex justify-between items-center">
-                      <h2 className="text-lg font-semibold text-foreground">
+                      <Heading as="h2" size="lg" weight="semibold" tone="foreground">
                         Due Today
-                      </h2>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-background text-muted-foreground">
+                      </Heading>
+                      <Badge variant="meta" size="default" >
                         {dueTodayCount} problems
-                      </span>
+                      </Badge>
                     </div>
-                  </div>
+                  </CardHeader>
                   <div className="p-3">
                     {dueTodayCount > 0 ? (
-                      <button
-                        onClick={goDueProblems}
-                        className="w-full bg-gradient-to-r from-metric-due to-app-action-end hover:from-app-action-hover-start hover:to-app-action-hover-end text-foreground py-3 px-4 rounded-lg font-medium flex items-center justify-center mb-4 transition-all duration-200 shadow-lg shadow-app-action-end/20 hover:shadow-app-action-end/30"
-                      >
+                      <Button variant="study" size="large" className="w-full mb-4"
+                        onClick={goDueProblems}>
                         <PlayIcon className="w-5 h-5 mr-2" />
                         Start Studying
-                      </button>
+                      </Button>
                     ) : (
                       <div className="text-center p-4 text-muted-foreground">
                         You don&apos;t have any problems due today. Maybe now is a good time to create some and learn some new stuff...
@@ -435,20 +402,17 @@ const StudyProblemPage = () => {
                     )}
                     
                     {dueTodayCount > 0 && (
-                      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                      <ScrollArea direction="both" className="space-y-3 max-h-[500px]  pr-1">
                         {dueTodayProblems.map((problem: any) => (
-                          <div
-                            key={problem.id}
-                            className="bg-background rounded-lg p-4 border border-border"
-                          >
+                          <Card surface="page" radius="lg" padding="md" elevation="none" key={problem.id}>
                             <div className="flex justify-between items-start">
-                              <h3 className="font-medium text-foreground mb-2 truncate max-w-[80%]" title={problem.name}>
+                              <HelpTooltip content={problem.name} variant="default"><Heading as="h3" weight="medium" tone="foreground" className="mb-2 truncate max-w-[80%]" tabIndex={0}>
                                 {problem.name.length > 30 ? `${problem.name.substring(0, 30)}...` : problem.name}
-                              </h3>
+                              </Heading></HelpTooltip>
                             </div>
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge type="difficulty" value={problem.difficulty} />
-                              <Badge type="problemType" value={problem.type} />
+                              <DifficultyBadge value={problem.difficulty} />
+                              <StudyStateBadge value={problem.type} />
                             </div>
                             {(() => {
                             const today = new Date();
@@ -479,20 +443,20 @@ const StudyProblemPage = () => {
                               </div>
                             );
                           })()}
-                          </div>
+                          </Card>
                         ))}
-                      </div>
+                      </ScrollArea>
                     )}
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
 
             {/* Stats Section - Full Width */}
             <div className="mt-8">
-              <h2 className="text-2xl font-bold text-foreground mb-2">
+              <Heading as="h2" size="2xl" weight="bold" tone="foreground" className="mb-2">
                 Stats
-              </h2>
+              </Heading>
               <p className="text-muted-foreground mb-6">
                 See various statistics and data related to your study habits
               </p>
@@ -503,7 +467,7 @@ const StudyProblemPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 };
 

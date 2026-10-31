@@ -4,10 +4,12 @@ const path = require('node:path');
 const postcss = require('postcss');
 const tailwind = require('tailwindcss');
 const config = require('../tailwind.config').default;
-const legacyColors = require('./fixtures/legacy-colors.json');
+const retired = require('./fixtures/retired-styling.json');
+const expectedRoles = { background: '#2A303C', foreground: '#FFFFFF', surface: '#343B4A', 'muted-foreground': '#B0B7C3', action: '#2563EB', accent: '#292929', border: '#3A4253', 'surface-inset': '#222526', 'surface-count': '#4A4A4A', 'difficulty-easy': '#34BF8F', 'study-new': '#60A5FA', 'status-overdue': '#FFA500' };
 
 const samples = [
-  ...Object.keys(legacyColors).flatMap(name => [`bg-${name}`, `text-${name}`]),
+  ...Object.keys(expectedRoles).flatMap(name => [`bg-${name}`, `text-${name}`]),
+  ...[...retired.colorAliases, ...retired.colorRoles].flatMap(name => [`bg-${name}`, `text-${name}`]),
   'text-white', 'text-black', 'bg-transparent', 'text-transparent', 'border-transparent',
   'from-transparent', 'bg-black/60', 'focus:border-blue-500',
   ...[50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].flatMap(shade => [
@@ -15,10 +17,9 @@ const samples = [
   ]),
   'bg-background', 'text-foreground', 'bg-surface', 'bg-surface-inset',
   'text-muted-foreground', 'bg-action', 'text-action-foreground',
-  'border-border', 'border-divide', 'border-input', 'ring-ring', 'text-primary-foreground',
-  'text-secondary-foreground', 'bg-accent', 'text-accent-foreground',
+  'border-border', 'divide-border', 'border-input', 'ring-ring', 'bg-accent', 'hover:bg-accent', 'text-accent-foreground',
   'bg-destructive', 'text-destructive-foreground',
-  'bg-base_100/40', 'text-secondary/50', 'bg-blue/20', 'border-divide/25',
+  'bg-background/40', 'text-muted-foreground/50', 'bg-action/20', 'border-border/25',
 ];
 
 let stylesheet;
@@ -27,8 +28,8 @@ let tokens;
 beforeAll(async () => {
   const result = await postcss([
     tailwind({ ...config, content: [{ raw: samples.join(' '), extension: 'html' }] }),
-  ]).process(fs.readFileSync(path.join(__dirname, '../src/app/globals.css'), 'utf8'), {
-    from: path.join(__dirname, '../src/app/globals.css'),
+  ]).process(fs.readFileSync(path.join(__dirname, '../src/styles/globals.css'), 'utf8'), {
+    from: path.join(__dirname, '../src/styles/globals.css'),
   });
   stylesheet = result.root;
   tokens = {};
@@ -80,11 +81,20 @@ test('standard Tailwind colors and full blue and neutral scales generate usable 
   expect(valueFor('focus:border-blue-500', 'border-color', {}, ':focus')).toBe('rgb(59 130 246 / 1)');
 });
 
-test('every legacy foreground and background alias retains its original palette value', () => {
-  for (const [name, hex] of Object.entries(legacyColors)) {
+test('canonical role utilities preserve the original design values', () => {
+  for (const [name, hex] of Object.entries(expectedRoles)) {
     const expected = `rgb(${channels(hex)} / 1)`;
     expect(valueFor(`text-${name}`, 'color')).toBe(expected);
     expect(valueFor(`bg-${name}`, 'background-color')).toBe(expected);
+  }
+  expect(valueFor('hover:bg-accent', 'background-color', {}, ':hover')).toBe('rgb(41 41 41 / 1)');
+});
+
+test('retired aliases are absent from custom colors and no longer generate bare utilities', () => {
+  for (const alias of [...retired.colorAliases, ...retired.colorRoles]) {
+    expect(config.theme.extend.colors).not.toHaveProperty(alias);
+    expect(rulesFor(`bg-${alias}`)).toHaveLength(0);
+    expect(rulesFor(`text-${alias}`)).toHaveLength(0);
   }
 });
 
@@ -95,27 +105,19 @@ test('transparent text, backgrounds, borders, and gradient stops are available',
   expect(rulesFor('from-transparent')).toHaveLength(1);
 });
 
-test('legacy colors support opacity modifiers through their shared CSS variables', () => {
-  expect(valueFor('bg-base_100/40', 'background-color')).toBe('rgb(42 48 60 / 0.4)');
-  expect(valueFor('text-secondary/50', 'color')).toBe('rgb(176 183 195 / 0.5)');
-  expect(valueFor('bg-blue/20', 'background-color')).toBe('rgb(37 99 235 / 0.2)');
-  expect(valueFor('border-divide/25', 'border-color')).toBe('rgb(58 66 83 / 0.25)');
+test('canonical roles support opacity modifiers through their shared CSS variables', () => {
+  expect(valueFor('bg-background/40', 'background-color')).toBe('rgb(42 48 60 / 0.4)');
+  expect(valueFor('text-muted-foreground/50', 'color')).toBe('rgb(176 183 195 / 0.5)');
+  expect(valueFor('bg-action/20', 'background-color')).toBe('rgb(37 99 235 / 0.2)');
+  expect(valueFor('border-border/25', 'border-color')).toBe('rgb(58 66 83 / 0.25)');
 });
 
-test('role utilities and compatibility aliases follow the same central color values', () => {
+test('text, action and border roles follow the central variables independently', () => {
   const foreground = { '--foreground': '12 34 56' };
   expect(valueFor('text-foreground', 'color', foreground)).toBe('rgb(12 34 56 / 1)');
-  expect(valueFor('text-primary', 'color', foreground)).toBe('rgb(12 34 56 / 1)');
   expect(valueFor('text-action-foreground', 'color', foreground)).toBe('rgb(12 34 56 / 1)');
-  const action = { '--action': '98 76 54' };
-  expect(valueFor('bg-action', 'background-color', action)).toBe('rgb(98 76 54 / 1)');
-  expect(valueFor('bg-blue', 'background-color', action)).toBe('rgb(98 76 54 / 1)');
-  expect(valueFor('border-border', 'border-color')).toBe(valueFor('border-divide', 'border-color'));
-});
-
-test('the dark picker surface is explicit and bg-grey has a single consistent definition', () => {
-  expect(valueFor('bg-surface-inset', 'background-color')).toBe('rgb(34 37 38 / 1)');
-  expect(valueFor('bg-grey', 'background-color')).toBe('rgb(165 169 174 / 1)');
+  expect(valueFor('bg-action', 'background-color', { '--action': '98 76 54' })).toBe('rgb(98 76 54 / 1)');
+  expect(valueFor('border-border', 'border-color')).toBe('rgb(58 66 83 / 1)');
 });
 
 test('restoring the default palette preserves the previous uncolored border behavior', () => {

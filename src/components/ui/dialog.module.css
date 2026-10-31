@@ -1,0 +1,13 @@
+.dialogEnter { animation: dialogEnter 500ms ease; }
+.overlayEnter { animation: overlayEnter 300ms ease; }
+@keyframes dialogEnter {
+  from { opacity: 0; transform: translate(-50%, -40%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+@keyframes overlayEnter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialogEnter, .overlayEnter { animation: none; }
+}

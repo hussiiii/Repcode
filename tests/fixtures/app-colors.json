@@ -75,9 +75,6 @@
     "calendar-inactive": "3a4150",
     "calendar-hover": "4a5160",
     "calendar-offset": "24272a",
-    "calendar-legacy-low": "166634",
-    "calendar-legacy-medium": "2f9a5f",
-    "calendar-legacy-high": "1a582e",
     "chart-tooltip": "1e1e1e",
     "chart-legend": "bdbdbd",
     "chart-grid": "ffffff",
@@ -111,19 +108,12 @@
     "drawing-ink-purple": "800080",
     "drawing-ink-green": "008000",
     "drawing-selection": "0066ff",
-    "drawing-legacy-selection": "0000ff",
     "drawing-tool-inactive": "e5e7eb",
     "provider-google-blue": "4285f4",
     "provider-google-green": "34a853",
     "provider-google-yellow": "fbbc05",
     "provider-google-red": "eb4335",
-    "warning-banner": "ffa500",
-    "media-shadow": "ffa500",
-    "animated-surface-start": "332211",
-    "animated-surface-top": "332000",
-    "animated-surface-middle": "332200",
-    "animated-surface-end": "332a11",
-    "animated-border": "ff8000"
+    "status-overdue": "ffa500"
   },
   "inline": [
     {

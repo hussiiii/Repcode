@@ -1,4 +1,7 @@
+import { MediaFrame } from '@/components/ui/media-frame';
+import { Button } from '@/components/ui/button';
 import React from 'react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 interface VideoModalProps {
   isOpen: boolean;
@@ -10,19 +13,18 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, videoId }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background bg-opacity-75 flex items-center justify-center z-50">
+    <Dialog open={isOpen} onOpenChange={open => { if (!open) onClose(); }}>
       {/* Modal Container */}
-      <div className="relative bg-surface-video rounded-lg shadow-xl w-[90%] max-w-4xl p-8">
+      <DialogContent variant="video" size="lg">
+        <DialogTitle className="sr-only">Video tutorial</DialogTitle>
         {/* Close Button */}
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-foreground hover:text-muted-foreground transition-colors duration-200"
-        >
+        <Button variant="icon" className="absolute top-4 right-4" tone="video" aria-label="Close video"
+          onClick={onClose}>
           <span className="material-icons text-3xl">close</span>
-        </button>
+        </Button>
 
         {/* Video Container with 16:9 aspect ratio */}
-        <div className="relative pt-[56.25%] mt-4">
+        <MediaFrame className="mt-4">
           <iframe
             className="absolute inset-0 w-full h-full rounded-lg"
             src={`https://www.youtube.com/embed/${videoId}`}
@@ -30,10 +32,10 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, videoId }) => 
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
-        </div>
-      </div>
-    </div>
+</MediaFrame>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default VideoModal; 
+export default VideoModal;

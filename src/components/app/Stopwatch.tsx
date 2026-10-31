@@ -1,3 +1,5 @@
+import { HelpTooltip } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Timer, Play, Pause, RotateCcw } from 'lucide-react';
 
@@ -73,23 +75,25 @@ export default function Stopwatch({ resetKey }: StopwatchProps) {
       >
         {formatTime(elapsedSeconds)}
       </span>
-      <button
+      <HelpTooltip content={isRunning ? 'Pause' : 'Resume'} variant="default">
+      <Button variant="icon" size="timer" tone="timer"
         onClick={() => setIsRunning((r) => !r)}
-        className="p-1 rounded hover:bg-background/50 transition-colors text-muted-foreground"
-        title={isRunning ? 'Pause' : 'Resume'}
+        aria-label={isRunning ? 'Pause' : 'Resume'}
       >
         {isRunning ? <Pause size={12} /> : <Play size={12} />}
-      </button>
-      <button
+      </Button>
+      </HelpTooltip>
+      <HelpTooltip content="Reset" variant="default">
+      <Button variant="icon" size="timer" tone="timer"
         onClick={() => {
           setElapsedSeconds(0);
           setIsRunning(true);
         }}
-        className="p-1 rounded hover:bg-background/50 transition-colors text-muted-foreground"
-        title="Reset"
+        aria-label="Reset"
       >
         <RotateCcw size={12} />
-      </button>
+      </Button>
+      </HelpTooltip>
     </div>
   );
 }

@@ -11,9 +11,11 @@ const originalColors = require('./fixtures/home-colors.json');
 const root = path.join(__dirname, '..');
 const files = [
   'src/pages/index.tsx',
+  'src/components/app/ProblemBadges.tsx',
   ...fs.readdirSync(path.join(root, 'src/components/home')).filter(name => name.endsWith('.tsx'))
     .map(name => `src/components/home/${name}`),
-  'src/components/ui/Badge.tsx',
+  ...fs.readdirSync(path.join(root, 'src/components/ui')).filter(name => /\.tsx?$/.test(name))
+    .map(name => `src/components/ui/${name}`),
 ];
 const sources = files.map(file => fs.readFileSync(path.join(root, file), 'utf8'));
 const colorClass = /^(?:(?:hover|focus|group-hover):)*(?:text|bg|border|from|via|to|fill|stroke|shadow|placeholder)-(?:marketing(?:-|$)|code-|difficulty-|study-|badge-|background$|surface(?:-|\/|$)|foreground(?:\/|$)|muted-foreground$|border$|placeholder$|dimmed(?:\/|$)|overlay(?:\/|$)|brand$)/;
@@ -40,8 +42,8 @@ beforeAll(async () => {
   const result = await postcss([tailwind({ ...config, content: [
     ...sources.map(raw => ({ raw, extension: 'tsx' })),
     { raw: probes, extension: 'html' },
-  ] })]).process(fs.readFileSync(path.join(root, 'src/app/globals.css'), 'utf8'), {
-    from: path.join(root, 'src/app/globals.css'),
+  ] })]).process(fs.readFileSync(path.join(root, 'src/styles/globals.css'), 'utf8'), {
+    from: path.join(root, 'src/styles/globals.css'),
   });
   stylesheet = result.root;
   variables = {};

@@ -1,3 +1,5 @@
+import { Heading } from '@/components/ui/typography';
+import { Card } from '@/components/ui/card';
 import React from 'react';
 import Image from 'next/image';
 import { CheckIcon, XIcon, StarIcon } from 'lucide-react';
@@ -57,9 +59,9 @@ const PlatformComparison = () => {
 
       <div className="container mx-auto px-6 relative">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <Heading as="h2" size="page" weight="bold" tone="foreground" className="mb-4">
             How Repcode Stacks Up
-          </h2>
+          </Heading>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             See how Repcode complements LeetCode and Neetcode to create the ultimate learning experience
           </p>
@@ -67,10 +69,8 @@ const PlatformComparison = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {platforms.map((platform, index) => (
-            <div
-              key={index}
-              className="relative bg-background rounded-2xl border border-border p-8 transition-all duration-300 hover:shadow-xl hover:shadow-marketing-comparison"
-            >
+            <Card surface="page" radius="2xl" padding="2xl" elevation="comparison" key={index}
+              className="relative">
 
               <div className="text-center mb-8">
                 <div className="mb-4">
@@ -82,7 +82,7 @@ const PlatformComparison = () => {
                     className="object-contain mx-auto"
                   />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">{platform.name}</h3>
+                <Heading as="h3" size="2xl" weight="bold" tone="foreground" className="mb-2">{platform.name}</Heading>
                 <p className="text-muted-foreground text-sm">{platform.description}</p>
               </div>
 
@@ -115,7 +115,7 @@ const PlatformComparison = () => {
                     </div>
                   </div>
                 )}
-              </div>
+              </Card>
           ))}
         </div>
 

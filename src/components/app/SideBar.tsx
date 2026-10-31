@@ -1,21 +1,22 @@
-import { cssColor } from '@/lib/colors';
+import { Heading } from '@/components/ui/typography';
+import { HelpTooltip } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useState, useContext } from 'react';
 import { auth } from '../../firebaseConfig';
 import { signOut } from "firebase/auth";
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import "../../app/globals.css";
-// import useDarkMode from '../../../useDarkMode';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { useSidebar } from '../../auth/SidebarContext';
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import { AuthContext } from '@/auth/AuthContext';
 import {
   FolderIcon,
   BookOpenIcon,
   Settings as SettingsIcon,
-  User as UserIcon,
   Home as HomeIcon,
   HelpCircle as HelpCircleIcon,
   LogOut as LogOutIcon,
@@ -23,8 +24,8 @@ import {
   ChevronRight as ChevronRightIcon,
   Bug as BugIcon,
 } from 'lucide-react';
-import ReportBugButton from './ReportBugButton';
 import ReportBugModal from './ReportBugModal';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 // SidebarItem component
 interface SidebarItemProps {
@@ -35,6 +36,7 @@ interface SidebarItemProps {
   onClick?: () => void;
   href?: string;
   tooltip?: string;
+  target?: string;
 }
 
 function SidebarItem({
@@ -45,6 +47,7 @@ function SidebarItem({
   onClick,
   href,
   tooltip,
+  target,
 }: SidebarItemProps) {
   // Create a fixed-height container with absolute positioning for the icon
   const content = (
@@ -63,41 +66,32 @@ function SidebarItem({
     </div>
   );
 
-  const className = `block w-full py-1.5 px-2 rounded-lg transition-all duration-300 ${active
-      ? "bg-gradient-to-r from-app-action-start to-app-action-end text-foreground"
-      : "text-placeholder hover:bg-surface hover:text-foreground"
-    }`;
-
   return (
     <li>
+      <HelpTooltip content={tooltip ?? text} side="right" variant="sidebar" disabled={expanded}>
       {href ? (
-        <Link href={href} className={className}>
-          {content}
-        </Link>
+        <Button asChild variant="sidebarNav" size="natural" data-active={active}>
+          <Link href={href} target={target} rel={target === '_blank' ? 'noopener noreferrer' : undefined} aria-current={active ? 'page' : undefined} aria-label={text}>
+            {content}
+          </Link>
+        </Button>
       ) : (
-        <button
-          className={className}
-          onClick={onClick}
-          {...(!expanded && tooltip ? { 'data-tooltip-id': 'sidebar-tooltip', 'data-tooltip-content': tooltip } : {})}
-        >
+        <Button variant="sidebarNav" size="natural" data-active={active} onClick={onClick} aria-label={text}>
           {content}
-        </button>
+        </Button>
       )}
+      </HelpTooltip>
     </li>
   );
 }
 
 const SideBar = () => {
   const [showReportBug, setShowReportBug] = useState(false);
-  // const [colorTheme, setTheme] = useDarkMode() as any; 
   const router = useRouter();
   const { isExpanded, setIsExpanded } = useSidebar() as any;
   const { user } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
-  const [masterCollectionsDropdownOpen, setMasterCollectionsDropdownOpen] = useState(false);
-  const [collections, setCollections] = useState<{ id: any; title: any; isLoading: boolean; problems: any }[]>([]);
-  const [expandedCollectionId, setExpandedCollectionId] = useState(null); // Track expanded collection
 
   // User settings query
   const fetchUserSettings = async () => {
@@ -113,79 +107,6 @@ const SideBar = () => {
     { enabled: !!user }
   );
 
-  // useEffect(() => {
-  //   // Listen for authentication state changes
-  //   const unsubscribe = auth.onAuthStateChanged(user => {
-  //     if (user) {
-  //       // Proceed to fetch collections if the user is authenticated
-  //       const fetchCollections = async () => {
-  //         try {
-  //           const response = await fetch(`/api/getUserCollections`);
-  //           if (!response.ok) {
-  //             throw new Error('Failed to fetch collections');
-  //           }
-  //           const data = await response.json();
-  //           const collectionsWithProblems = data.map((collection:any) => ({
-  //             ...collection,
-  //             problems: [],
-  //             isLoading: false,
-  //           }));
-  //           setCollections(collectionsWithProblems);
-  //         } catch (error) {
-  //           console.error('Failed to fetch collections', error);
-  //         }
-  //       };
-  //       fetchCollections();
-  //     } else {
-  //       // Handle user not signed in or other actions as necessary
-  //       console.log('User not signed in');
-  //       // Optionally clear collections
-  //       setCollections([]);
-  //     }
-  //   });
-
-  //   // Cleanup subscription on component unmount
-  //   return () => unsubscribe();
-  // }, []);
-
-  const fetchProblemsForCollection = async (collectionId: any) => {
-    // Find collection index
-    const collectionIndex = collections.findIndex(c => c.id === collectionId);
-    if (collectionIndex === -1) return;
-
-    // Set loading state for the collection
-    let updatedCollections = [...collections];
-    updatedCollections[collectionIndex].isLoading = true;
-    setCollections(updatedCollections);
-
-    const response = await authenticatedFetch(`/api/getCollectionProblems?collectionId=${collectionId}`);
-    if (response.ok) {
-      const problems = await response.json();
-      updatedCollections = updatedCollections.map(collection =>
-        collection.id === collectionId ? { ...collection, problems, isLoading: false } : collection
-      );
-      setCollections(updatedCollections);
-      // Expand or collapse collection view
-      setExpandedCollectionId(expandedCollectionId === collectionId ? null : collectionId);
-    } else {
-      console.error('Failed to fetch problems');
-      updatedCollections[collectionIndex].isLoading = false;
-      setCollections(updatedCollections);
-    }
-  };
-
-  const toggleMasterCollectionsDropdown = () => {
-    setMasterCollectionsDropdownOpen(!masterCollectionsDropdownOpen);
-    // Automatically expand the sidebar if the dropdown is being opened
-    if (!masterCollectionsDropdownOpen) {
-      setIsExpanded(true);
-    }
-  };
-
-  const goGuide = () => {
-    window.open('/guide', '_blank');
-  };
-
   const logOut = async () => {
     try {
       await signOut(auth);
@@ -197,8 +118,6 @@ const SideBar = () => {
       console.error('Logout failed', error);
     }
   };
-
-  const isActive = (path: string) => router.pathname === path;
 
   // Determine active page based on current route
   const getActivePage = () => {
@@ -220,6 +139,7 @@ const SideBar = () => {
   const avatarUrl = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
 
   return (
+    <Collapsible open={isExpanded} onOpenChange={setIsExpanded} asChild>
     <aside
       className={`h-screen bg-surface-sidebar border-r border-border transition-all duration-300 ease-in-out flex flex-col overflow-hidden ${isExpanded ? "w-64" : "w-[69px]"} sticky left-0 top-0 z-10`}
       style={{ flexShrink: 0 }}
@@ -234,20 +154,22 @@ const SideBar = () => {
               alt="Repcode"
               className="w-8 h-8 object-contain"
             />
-            <h2 className="text-xl font-bold text-foreground tracking-tight truncate">
+            <Heading as="h2" size="xl" weight="bold" tone="foreground" className="tracking-tight truncate">
               Repcode
-            </h2>
+            </Heading>
           </div>
         )}
-        <button
-          onClick={() => { setIsExpanded(!isExpanded); setMasterCollectionsDropdownOpen(false); }}
-          className="p-1.5 rounded-lg text-placeholder hover:text-foreground hover:bg-surface transition-colors flex-shrink-0"
+        <CollapsibleTrigger asChild>
+        <Button variant="sidebarCollapse" size="natural"
+          aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
         >
           {isExpanded ? <ChevronLeftIcon size={20} /> : <ChevronRightIcon size={20} />}
-        </button>
+        </Button>
+        </CollapsibleTrigger>
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3">
+      <ScrollArea asChild direction="vertical" className="flex-1 py-4 px-3">
+      <nav aria-label="Application navigation">
         <ul className="space-y-2">
           <SidebarItem
             icon={<FolderIcon size={20} />}
@@ -282,7 +204,8 @@ const SideBar = () => {
             text="Help"
             active={activePage === 'Help'}
             expanded={isExpanded}
-            onClick={goGuide}
+            href="/guide"
+            target="_blank"
           />
 
           
@@ -293,12 +216,12 @@ const SideBar = () => {
           expanded={isExpanded}
           onClick={() => setShowReportBug(true)}
         />
-        {showReportBug && <ReportBugModal isOpen={showReportBug} onClose={() => setShowReportBug(false)} />}
 
-      {showReportBug && <ReportBugModal isOpen={showReportBug} onClose={() => setShowReportBug(false)} />}
+
         </ul>
 
       </nav>
+      </ScrollArea>
 
       <div className="p-3 border-t border-border mt-auto overflow-hidden">
         <div
@@ -312,76 +235,50 @@ const SideBar = () => {
               {/* Add subtle glow and animation to the avatar */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start/40 to-app-action-end/40 blur-md opacity-70 animate-pulse"></div>
 
-              <div className="w-11 h-11 rounded-full overflow-hidden shadow-lg shadow-app-action-end/20 relative">
-                <img
+              <Avatar variant="sidebar">
+                <AvatarImage
                   src={avatarUrl}
                   alt={userName}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  variant="interactive"
                 />
-              </div>
+                <AvatarFallback role="img" aria-label={userName}>{userName.slice(0, 1).toUpperCase()}</AvatarFallback>
+              </Avatar>
               {isPro && !isExpanded && (
-                <div
-                  className={`
-                  absolute -bottom-1 left-1/2 -translate-x-1/2
-                  px-1.5 py-0.5 text-[10px] font-medium
-                  rounded-sm text-foreground
-                  bg-gradient-to-r from-app-action-start to-app-action-end
-                  border border-app-action-end/20
-                  hover:scale-110 transition-transform duration-200
-                  cursor-default
-                `}
-                >
-                  PRO
-                </div>
+                <Badge variant="membership" size="membership" asChild><div className="absolute -bottom-1 left-1/2 -translate-x-1/2">PRO</div></Badge>
               )}
             </div>
-            {isExpanded ? (
-              <div className="ml-3 overflow-hidden flex-1">
+            <CollapsibleContent asChild forceMount>
+              <div className={`ml-3 overflow-hidden flex-1 ${isExpanded ? '' : 'hidden'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-foreground truncate">{userName}</p>
                     {isPro && (
-                      <div
-                        className={`
-                        px-1.5 py-0.5 text-[10px] font-medium
-                        rounded-sm text-foreground
-                        bg-gradient-to-r from-app-action-start to-app-action-end
-                        border border-app-action-end/20
-                        hover:scale-110 transition-transform duration-200
-                        cursor-default
-                      `}
-                      >
-                        PRO
-                      </div>
+                      <Badge variant="membership" size="membership" asChild><div>PRO</div></Badge>
                     )}
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
               </div>
-            ) : null /* No content for collapsed state - just showing the avatar */}
+            </CollapsibleContent>
           </div>
         </div>
 
         {isExpanded && (
           <div className="mt-3">
-            <button
-              onClick={logOut}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-transparent border border-status-danger/30 text-status-danger hover:bg-status-danger/10 hover:border-status-danger/50 hover:text-status-danger-soft transition-all duration-200 text-sm font-medium"
-            >
+            <Button variant="signOut" size="comfortable" className="w-full"
+              onClick={logOut}>
               <LogOutIcon size={16} />
               Sign out
-            </button>
+            </Button>
           </div>
         )}
 
       </div>
 
-      <ReactTooltip
-        id="sidebar-tooltip"
-        place="right"
-        style={{ backgroundColor: cssColor('surface'), color: "primary" }}
-      />
+
+      {showReportBug && <ReportBugModal isOpen={showReportBug} onClose={() => setShowReportBug(false)} />}
     </aside>
+    </Collapsible>
   );
 };
 

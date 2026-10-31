@@ -1,3 +1,4 @@
+import { Heading } from '@/components/ui/typography';
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -33,7 +34,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-foreground font-medium mb-4">Product</h3>
+            <Heading as="h3" weight="medium" tone="foreground" className="mb-4">Product</Heading>
             <ul className="space-y-2">
               {[
                 { name: "Features", href: "#features" },
@@ -50,7 +51,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-foreground font-medium mb-4">Resources</h3>
+            <Heading as="h3" weight="medium" tone="foreground" className="mb-4">Resources</Heading>
             <ul className="space-y-2">
               {[
                 { name: "Changelog", href: "/changelog" },
@@ -79,7 +80,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-foreground font-medium mb-4">Company</h3>
+            <Heading as="h3" weight="medium" tone="foreground" className="mb-4">Company</Heading>
             <ul className="space-y-2">
               {[
                 { name: "Privacy Policy", href: "/privacy" },

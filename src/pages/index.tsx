@@ -1,3 +1,8 @@
+import { Heading } from '@/components/ui/typography';
+import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 // Home page, entry point of the application
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -12,9 +17,8 @@ import {
   Github,
   Star,
 } from "lucide-react";
-import NavBar from "@/components/home/NavBar";
+import { PublicShell } from '@/components/layout/public-shell';
 import ContactForm from "@/components/home/ContactForm";
-import Footer from "@/components/home/Footer";
 import FeatureCard from "@/components/home/FeatureCard";
 import ProblemListPreview from "@/components/home/ProblemListPreview";
 import StudyDashboardPreview from "@/components/home/StudyDashboardPreview";
@@ -22,7 +26,6 @@ import CodeEditorPreview from "@/components/home/CodeEditorPreview";
 import UserCounter from "@/components/home/UserCounter";
 import LogoScroller from "@/components/home/LogoScroller";
 import PlatformComparison from "@/components/home/PlatformComparison";
-import "../app/globals.css";
 
 export default function Home() {
   const [stars, setStars] = useState<number | null>(null);
@@ -34,8 +37,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <NavBar />
+    <PublicShell home>
 
       {/* Hero Section */}
       <section className="relative min-h-screen overflow-hidden">
@@ -126,12 +128,12 @@ function merge(left, right) {
         {/* Content */}
         <div className="relative container mx-auto px-6 pt-44 sm:pt-40 pb-24">
           <div className="max-w-5xl mx-auto text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-surface/80 backdrop-blur-sm rounded-full border border-border mb-8">
+            <Badge variant="hero" size="hero" asChild><div className="mb-8">
               <SparklesIcon className="w-4 h-4 text-marketing-welcome mr-2" />
-              <span className="text-muted-foreground">Welcome to Version 2.26</span>
-            </div>
+              <span className="text-muted-foreground">Welcome to Version 2.27</span>
+            </div></Badge>
             {/* Mobile heading */}
-            <h1 className="block sm:hidden text-4xl font-bold mb-4 leading-tight">
+            <Heading as="h1" size="4xl" weight="bold" className="block sm:hidden mb-4 leading-tight">
               <span className="text-foreground">Your Notebook</span>
               <br />
               <span
@@ -140,10 +142,10 @@ function merge(left, right) {
               >
                 For Leetcode
               </span>
-            </h1>
+            </Heading>
 
             {/* Desktop heading */}
-            <h1 className="hidden sm:block sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+            <Heading as="h1" size="hero" weight="bold" className="hidden sm:block mb-4 leading-tight">
               <span className="text-foreground">Your personalized notebook</span>
               <br />
               <span
@@ -152,7 +154,7 @@ function merge(left, right) {
               >
                 for everything LeetCode
               </span>
-            </h1>
+            </Heading>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
               <span className="block md:hidden">
@@ -171,33 +173,37 @@ function merge(left, right) {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
+              <Button asChild variant="marketing" size="hero" className="w-full sm:w-auto group" emphasis="marketingHero">
+                <Link
                 href="/login"
-                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-marketing-action-start to-marketing-action-end hover:from-marketing-action-hover-start hover:to-marketing-action-hover-end text-marketing-action-foreground rounded-lg font-medium transition-all duration-200 shadow-lg shadow-marketing-glow/20 hover:shadow-marketing-glow/30 flex items-center justify-center group"
+
               >
                 Get Started Free
                 <ArrowRightIcon className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
+                </Link>
+              </Button>
+              <Button asChild variant="repository" size="repository" className="w-full sm:w-auto">
+                <Link
                 href="https://github.com/hussiiii/repcode"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative overflow-hidden bg-background backdrop-blur-sm hover:bg-overlay/90 text-foreground font-semibold px-8 py-3 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 ease-out hover:scale-105 border border-foreground/10 w-full sm:w-auto flex items-center justify-center"
+
               >
                 <div className="flex items-center gap-3">
                   {stars !== null && (
-                    <span className="-ml-2 text-sm bg-foreground/10 px-2 py-0.5 rounded-lg">
+                    <Badge variant="counterLabel" size="counterLabel" className="-ml-2">
                       <span className="flex items-center justify-center gap-1">
                         <Star className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 text-marketing-rating fill-marketing-rating" />{" "}
                         {stars}
                       </span>
-                    </span>
+                    </Badge>
                   )}
                   <Github className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" />
                   <span className="text-lg">GitHub</span>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -220,9 +226,9 @@ function merge(left, right) {
       {/* Company Logos Section */}
       <section className="py-12 bg-surface border-y border-border">
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-8">
+          <Heading as="h2" size="page" weight="bold" tone="foreground" className="text-center mb-8">
             Ace the Technical Interview at Top Companies
-          </h2>
+          </Heading>
           <LogoScroller />
         </div>
       </section>
@@ -231,9 +237,9 @@ function merge(left, right) {
       <section id="features" className="py-20 bg-surface">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <Heading as="h2" size="page" weight="bold" tone="foreground" className="mb-4">
               Supercharge Your Leetcode Practice
-            </h2>
+            </Heading>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Repcode combines intelligent tracking, AI assistance, and proven
               learning techniques to help you master algorithms and data
@@ -289,12 +295,12 @@ function merge(left, right) {
         <div className="container mx-auto px-6 relative">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-background text-muted-foreground mb-4">
+              <Badge variant="meta" size="default" asChild><div className="mb-4">
                 ORGANIZE YOUR PROBLEMS
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              </div></Badge>
+              <Heading as="h2" size="page" weight="bold" tone="foreground" className="mb-6">
                 Organize and Customize Everything
-              </h2>
+              </Heading>
               <p className="text-muted-foreground mb-8">
                 No more excel spreadsheets! Use our friendly and intuitive UI to
                 store, organize, and customize Leetcode problems
@@ -316,9 +322,9 @@ function merge(left, right) {
               </ul>
             </div>
             <div className="lg:w-1/2">
-              <div className="bg-background rounded-xl border border-border shadow-xl overflow-hidden transform transition-all duration-500 hover:shadow-marketing-card hover:-translate-y-1">
+              <Card surface="page" elevation="preview" className="overflow-hidden">
                 <ProblemListPreview />
-              </div>
+              </Card>
             </div>
           </div>
         </div>
@@ -334,12 +340,12 @@ function merge(left, right) {
         <div className="container mx-auto px-6 relative">
           <div className="flex flex-col lg:flex-row-reverse items-center gap-12">
             <div className="lg:w-1/2">
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-surface text-muted-foreground mb-4">
+              <Badge variant="surface" size="default" asChild><div className="mb-4">
                 INTEGRATED CODING ENVIRONMENT
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              </div></Badge>
+              <Heading as="h2" size="page" weight="bold" tone="foreground" className="mb-6">
                 Solve problems with our custom all-in-one interface
-              </h2>
+              </Heading>
               <p className="text-muted-foreground mb-8">
                 Our integrated coding environment makes it easy to understand,
                 solve, and review Leetcode problems all in one place.
@@ -361,9 +367,9 @@ function merge(left, right) {
               </ul>
             </div>
             <div className="lg:w-1/2 w-full">
-              <div className="bg-surface rounded-xl border border-border shadow-xl overflow-hidden transform transition-all duration-500 hover:shadow-marketing-card hover:-translate-y-1 mx-auto max-w-full">
+              <Card elevation="preview" className="overflow-hidden mx-auto max-w-full">
                 <CodeEditorPreview />
-              </div>
+              </Card>
             </div>
           </div>
         </div>
@@ -379,12 +385,12 @@ function merge(left, right) {
         <div className="container mx-auto px-6 relative">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-surface text-muted-foreground mb-4">
+              <Badge variant="surface" size="default" asChild><div className="mb-4">
                 TRACK YOUR PROGRESS
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              </div></Badge>
+              <Heading as="h2" size="page" weight="bold" tone="foreground" className="mb-6">
                 Spatial Repetition Review
-              </h2>
+              </Heading>
               <p className="text-muted-foreground mb-8">
                 Each day, solve only the problems you need to so your brain
                 learns new strategies and reinforces key concepts in the most
@@ -407,9 +413,9 @@ function merge(left, right) {
               </ul>
             </div>
             <div className="lg:w-1/2">
-              <div className="bg-surface rounded-xl border border-border shadow-xl overflow-hidden transform transition-all duration-500 hover:shadow-marketing-card hover:-translate-y-1">
+              <Card elevation="preview" className="overflow-hidden">
                 <StudyDashboardPreview />
-              </div>
+              </Card>
             </div>
           </div>
         </div>
@@ -419,9 +425,9 @@ function merge(left, right) {
       <section className="py-20 bg-surface relative overflow-hidden">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <Heading as="h2" size="page" weight="bold" tone="foreground" className="mb-4">
               Loved by Developers
-            </h2>
+            </Heading>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               See what our users have to say about how Repcode has transformed
               their coding interview preparation.
@@ -467,10 +473,7 @@ function merge(left, right) {
                 title: "TPM @ Google",
               },
             ].map((testimonial, index) => (
-              <div
-                key={index}
-                className="bg-background rounded-xl p-6 border border-border shadow-lg"
-              >
+              <Card surface="page" padding="xl" key={index}>
                 <div className="mb-4">
                   {[...Array(5)].map((_, i) => (
                     <span key={i} className="text-marketing-rating mr-1">
@@ -482,19 +485,17 @@ function merge(left, right) {
                   &quot;{testimonial.quote}&quot;
                 </p>
                 <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-marketing-action-start to-marketing-action-end flex items-center justify-center text-marketing-action-foreground font-bold">
-                    {testimonial.name.charAt(0)}
-                  </div>
+                  <Avatar><AvatarFallback variant="testimonial" role="img" aria-label={testimonial.name}>{testimonial.name.charAt(0)}</AvatarFallback></Avatar>
                   <div className="ml-3">
-                    <h4 className="text-foreground font-medium">
+                    <Heading as="h4" weight="medium" tone="foreground">
                       {testimonial.name}
-                    </h4>
+                    </Heading>
                     <p className="text-muted-foreground text-sm">
                       {testimonial.title}
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -509,8 +510,6 @@ function merge(left, right) {
         </div>
       </section>
 
-      {/* Footer */}
-      <Footer />
-    </div>
+    </PublicShell>
   );
 }

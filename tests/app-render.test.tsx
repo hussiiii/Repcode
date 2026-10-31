@@ -1,6 +1,7 @@
 /** @jest-environment jsdom */
 /* Render representative app states with isolated data and no external-service calls. */
 import React from 'react';
+import { render, cleanup } from '@testing-library/react';
 const { renderToStaticMarkup } = require('react-dom/server.node');
 import fs from 'node:fs';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
@@ -96,7 +97,7 @@ const cases: [string, any][] = [
 beforeAll(() => {
   jest.useFakeTimers({ now: new Date('2026-10-27T12:00:00Z') });
   // CSS custom properties are loaded explicitly because next/jest stubs CSS imports.
-  const css = fs.readFileSync(path.join(process.cwd(), 'src/app/globals.css'), 'utf8');
+  const css = fs.readFileSync(path.join(process.cwd(), 'src/styles/globals.css'), 'utf8');
   const declarations = css.match(/:root\s*\{([\s\S]*?)\n  \}/)?.[1] || '';
   const style = document.createElement('style'); style.textContent = `:root {${declarations}}`; document.head.append(style);
 });
@@ -106,7 +107,19 @@ test.each(cases)('%s fixture', (name, Component) => {
   charts.length = 0;
   mockFixtureName = name;
   mockHookIndex = 0;
-  const html = renderToStaticMarkup(<Component />);
+  // Portal dialogs intentionally render only on the client; exercise their real
+  // mount path. Other fixtures remain SSR checks without running app effects.
+  const modal = ['collection-modal', 'problem-modal', 'problem-stats', 'random-problem', 'import', 'report-bug', 'onboarding'].includes(name);
+  let html: string;
+  if (modal) { render(<Component />); html = document.body.innerHTML; }
+  else {
+    const previous = console.error;
+    const warning = jest.spyOn(console, 'error').mockImplementation((message, ...args) => {
+      if (String(message).includes('useLayoutEffect does nothing on the server')) return;
+      previous(message, ...args);
+    });
+    try { html = renderToStaticMarkup(<Component />); } finally { warning.mockRestore(); }
+  }
   expect(html.length).toBeGreaterThan(100);
   expect(authenticatedFetch).not.toHaveBeenCalled();
   if (name.startsWith('queue-')) expect(html).toContain('Two Sum');
@@ -115,8 +128,11 @@ test.each(cases)('%s fixture', (name, Component) => {
     const expectedType = chart === 'creationDate' || view === 'individual' ? 'scatter' : chart === 'lapses' ? 'donut' : 'bar';
     expect(charts[0]?.type).toBe(expectedType);
   }
-  const expected = originalChartColors[name] || {};
+  // Closed statistics dialogs no longer mount invisible charts. Their palette
+  // remains covered by the open problem-stats fixture above.
+  const expected = name === 'problem' ? {} : originalChartColors[name] || {};
   expect(colorSnapshot(charts)).toEqual(expected);
+  cleanup();
 });
 
 function normalizeColor(value: string): string {

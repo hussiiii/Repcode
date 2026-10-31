@@ -13,7 +13,7 @@ let mockLegacyInk: string | undefined;
 
 beforeEach(() => {
   mockLegacyInk = undefined;
-  const css = fs.readFileSync(path.join(process.cwd(), 'src/app/globals.css'), 'utf8');
+  const css = fs.readFileSync(path.join(process.cwd(), 'src/styles/globals.css'), 'utf8');
   const style = document.createElement('style');
   style.textContent = `:root {${css.match(/:root\s*\{([\s\S]*?)\n  \}/)![1]}}`;
   document.head.append(style);
@@ -63,4 +63,20 @@ test('a legacy hex ink selection continues drawing and saving in its existing fo
   fireEvent.mouseUp(canvas);
   const saved = setElements.mock.calls.find(([value]) => Array.isArray(value) && value[0]?.type === 'path')![0][0];
   expect(saved.color).toBe('#FFA500');
+});
+
+test('changing stroke width through the shared slider reaches newly saved paths', () => {
+  canvasContext();
+  const setElements = jest.fn();
+  const { container, getByRole } = render(<Whiteboard elements={[]} setElements={setElements} />);
+  const slider = getByRole('slider', { name: 'Stroke width' });
+  fireEvent.keyDown(slider, { key: 'End' });
+  expect(slider).toHaveAttribute('aria-valuenow', '10');
+  const canvas = container.querySelector('canvas')!;
+  jest.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ x: 0, y: 0, left: 0, top: 0, right: 300, bottom: 150, width: 300, height: 150, toJSON: () => ({}) });
+  fireEvent.mouseDown(canvas, { clientX: 10, clientY: 10 });
+  fireEvent.mouseMove(canvas, { clientX: 20, clientY: 20 });
+  fireEvent.mouseUp(canvas);
+  const saved = setElements.mock.calls.find(([value]) => Array.isArray(value) && value[0]?.type === 'path')![0][0];
+  expect(saved.strokeWidth).toBe(10);
 });

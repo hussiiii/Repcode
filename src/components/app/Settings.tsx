@@ -1,10 +1,18 @@
+import { Heading } from '@/components/ui/typography';
+import { Spinner } from '@/components/ui/spinner';
+import { Card } from '@/components/ui/card';
+import { LoadingState } from '@/components/ui/loading-state';
+import { Input } from '@/components/ui/input';
+import { FieldLabel, Field, FieldDescription } from '@/components/ui/field';
+import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
+import { Button } from '@/components/ui/button';
 import { cssColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import { useState, useContext, useEffect } from 'react';
 import { auth } from '../../firebaseConfig';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { AuthContext } from '@/auth/AuthContext';
-import Toast from './Toast';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Save as SaveIcon,
   Loader2 as SpinnerIcon,
@@ -16,10 +24,9 @@ import {
 import { motion } from 'framer-motion';
 
 const Settings = () => {
+  const { toast: showToast } = useToast(3000);
   const queryClient = useQueryClient();
   const { user } = useContext(AuthContext);
-  const [toastMessage, setToastMessage] = useState('');
-  const [isToastVisible, setIsToastVisible] = useState(false);
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -82,11 +89,7 @@ const Settings = () => {
     if (updateSettingsMutation.isSuccess) setLastSaved(new Date());
   }, [updateSettingsMutation.isSuccess]);
 
-  const showToast = (message: any) => {
-    setToastMessage(message);
-    setIsToastVisible(true);
-    setTimeout(() => setIsToastVisible(false), 3000);
-  };
+
 
   const toggleApiKeyVisibility = () => {
     setIsApiKeyVisible(!isApiKeyVisible);
@@ -170,18 +173,7 @@ const Settings = () => {
   const validateDecimal = (value: any) => /^\d+(\.\d+)?$/.test(value);
 
   // Create a reusable input field component with the same styling as CollectionModal
-  const StyledInput = ({ id, defaultValue, type = "text" }: { id: string, defaultValue: any, type?: string }) => (
-    <div className="relative group">
-      <input
-        type={type}
-        id={id}
-        defaultValue={defaultValue}
-        className="w-full px-3 py-2 bg-background border border-border-subtle/70 rounded-md shadow-sm outline-none focus:outline-none focus:border-app-action-start/70 focus:ring-1 focus:ring-app-action-end/50 transition-all duration-200 text-foreground h-11"
-        style={{ outline: 'none' }}
-      />
-      <div className="absolute inset-0 rounded-md border border-app-action-end/0 group-focus-within:border-app-action-end/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)] group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"></div>
-    </div>
-  );
+
 
   if (error) {
     return <div className="text-status-danger-soft">Error: {(error as Error).message}</div>;
@@ -189,40 +181,7 @@ const Settings = () => {
   if (isLoading || !data) {
     return (
         <div className="flex justify-center items-center h-[60vh]">
-          <div className="relative flex flex-col items-center">
-            {/* Outer glow effect */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-app-action-start to-app-action-end blur-xl opacity-20 animate-pulse"></div>
-            
-            {/* Spinner container */}
-            <div className="relative">
-              {/* Gradient ring */}
-              <div className="w-16 h-16 rounded-full border-2 border-transparent 
-                             bg-gradient-to-r from-app-action-start to-app-action-end opacity-20"></div>
-              
-              {/* Spinning gradient arc */}
-              <div className="absolute top-0 left-0 w-16 h-16 border-2 border-transparent 
-                             rounded-full animate-spin duration-1000" 
-                   style={{
-                     borderTopColor: cssColor('app-action-start'),
-                     borderRightColor: cssColor('app-action-end'),
-                     animationDuration: '1s'
-                   }}>
-              </div>
-              
-              {/* Inner circle with logo or icon */}
-              
-            </div>
-            
-            {/* Loading text with shimmer effect */}
-            <div className="mt-4 text-sm font-medium text-muted-foreground relative overflow-hidden">
-              <span>Loading</span>
-              <span className="inline-flex overflow-hidden ml-1">
-                <span className="animate-ellipsis">.</span>
-                <span className="animate-ellipsis animation-delay-300">.</span>
-                <span className="animate-ellipsis animation-delay-600">.</span>
-              </span>
-            </div>
-          </div>
+          <LoadingState />
         </div>
       );
   }
@@ -231,197 +190,192 @@ const Settings = () => {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* New Cards Section */}
-        <div className="bg-surface border-border rounded-xl border p-6 shadow-lg space-y-6">
+        <Card padding="xl" className="space-y-6">
           <div className="flex items-center mb-4">
             <BrainIcon className="w-5 h-5 mr-2" style={{ color: cssColor('app-action-end') }} />
-            <h2 className="text-lg font-medium text-foreground">New Cards</h2>
+            <Heading as="h2" size="lg" weight="medium" tone="foreground">New Cards</Heading>
           </div>
           
           <div className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="learnSteps" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="learnSteps" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="learnSteps" >
                 Learning Steps
-              </label>
-              <StyledInput id="learnSteps" defaultValue={data.learnSteps} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="learnSteps" defaultValue={data.learnSteps} /></InputGroup>
+              <FieldDescription >
                 One or more delays, separated by spaces. Example: &apos;10m 3d&apos;.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
             
-            <div className="space-y-2">
-              <label htmlFor="graduatingInterval" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="graduatingInterval" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="graduatingInterval" >
                 Graduating Interval
-              </label>
-              <StyledInput id="graduatingInterval" defaultValue={data.graduatingInterval} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="graduatingInterval" defaultValue={data.graduatingInterval} /></InputGroup>
+              <FieldDescription >
                 Days to wait after the final learning step.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
             
-            <div className="space-y-2">
-              <label htmlFor="easyInterval" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="easyInterval" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="easyInterval" >
                 Easy Interval
-              </label>
-              <StyledInput id="easyInterval" defaultValue={data.easyInterval} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="easyInterval" defaultValue={data.easyInterval} /></InputGroup>
+              <FieldDescription >
                 Days to wait if you press Easy.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
           </div>
-        </div>
+        </Card>
 
         {/* Lapses Section */}
-        <div className="bg-surface border-border rounded-xl border p-6 shadow-lg space-y-6">
+        <Card padding="xl" className="space-y-6">
           <div className="flex items-center mb-4">
             <RefreshIcon className="w-5 h-5 mr-2" style={{ color: cssColor('settings-lapses') }} />
-            <h2 className="text-lg font-medium text-foreground">Lapses</h2>
+            <Heading as="h2" size="lg" weight="medium" tone="foreground">Lapses</Heading>
           </div>
           
           <div className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="relearnSteps" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="relearnSteps" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="relearnSteps" >
                 Relearning Steps
-              </label>
-              <StyledInput id="relearnSteps" defaultValue={data.relearnSteps} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="relearnSteps" defaultValue={data.relearnSteps} /></InputGroup>
+              <FieldDescription >
                 Steps for a problem after pressing Again.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
             
-            <div className="space-y-2">
-              <label htmlFor="relearnGraduatingInterval" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="relearnGraduatingInterval" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="relearnGraduatingInterval" >
                 New Interval
-              </label>
-              <StyledInput id="relearnGraduatingInterval" defaultValue={data.relearnGraduatingInterval} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="relearnGraduatingInterval" defaultValue={data.relearnGraduatingInterval} /></InputGroup>
+              <FieldDescription >
                 Multiplier when answering Again on a review problem.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
           </div>
-        </div>
+        </Card>
 
         {/* Advanced Section */}
-        <div className="bg-surface border-border rounded-xl border p-6 shadow-lg space-y-6">
+        <Card padding="xl" className="space-y-6">
           <div className="flex items-center mb-4">
             <CogIcon className="w-5 h-5 mr-2" style={{ color: cssColor('settings-advanced') }} />
-            <h2 className="text-lg font-medium text-foreground">Advanced</h2>
+            <Heading as="h2" size="lg" weight="medium" tone="foreground">Advanced</Heading>
           </div>
           
           <div className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="maximumInterval" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="maximumInterval" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="maximumInterval" >
                 Maximum Interval
-              </label>
-              <StyledInput id="maximumInterval" defaultValue={data.maximumInterval} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="maximumInterval" defaultValue={data.maximumInterval} /></InputGroup>
+              <FieldDescription >
                 Maximum days a review problem can be scheduled.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
             
-            <div className="space-y-2">
-              <label htmlFor="startingEase" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="startingEase" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="startingEase" >
                 Starting Ease
-              </label>
-              <StyledInput id="startingEase" defaultValue={data.startingEase} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="startingEase" defaultValue={data.startingEase} /></InputGroup>
+              <FieldDescription >
                 Default ease multiplier new problems start with.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
             
-            <div className="space-y-2">
-              <label htmlFor="easyBonus" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="easyBonus" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="easyBonus" >
                 Easy Bonus
-              </label>
-              <StyledInput id="easyBonus" defaultValue={data.easyBonus} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="easyBonus" defaultValue={data.easyBonus} /></InputGroup>
+              <FieldDescription >
                 Extra multiplier when rating Easy.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
             
-            <div className="space-y-2">
-              <label htmlFor="intervalModifier" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="intervalModifier" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="intervalModifier" >
                 Interval Modifier
-              </label>
-              <StyledInput id="intervalModifier" defaultValue={data.intervalModifier} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="intervalModifier" defaultValue={data.intervalModifier} /></InputGroup>
+              <FieldDescription >
                 A multiplier to adjust algorithm aggressiveness.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
             
-            <div className="space-y-2">
-              <label htmlFor="overdueWarningThreshold" className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="overdueWarningThreshold" spacing="normal" >
+              <FieldLabel variant="settings" htmlFor="overdueWarningThreshold" >
                 Overdue Warning Threshold (months)
-              </label>
-              <StyledInput id="overdueWarningThreshold" defaultValue={data.overdueWarningThreshold} />
-              <p className="text-xs text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="glow"><Input variant="settings" className="w-full" id="overdueWarningThreshold" defaultValue={data.overdueWarningThreshold} /></InputGroup>
+              <FieldDescription >
                 Problems overdue by this many months will show a lapse warning in Study Mode
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
           </div>
-        </div>
+        </Card>
 
         {/* API Settings Section */}
-        <div className="bg-surface border-border rounded-xl border p-6 shadow-lg space-y-6">
+        <Card padding="xl" className="space-y-6">
           <div className="flex items-center mb-4">
             <KeyIcon className="w-5 h-5 mr-2" style={{ color: cssColor('settings-api') }} />
-            <h2 className="text-lg font-medium text-foreground">API Settings</h2>
+            <Heading as="h2" size="lg" weight="medium" tone="foreground">API Settings</Heading>
           </div>
           
           <div className="space-y-5">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-muted-foreground">
+            <Field controlId="apiKey" spacing="normal" >
+              <FieldLabel variant="settings" >
                 OpenAI API Key
-              </label>
-              <div className="relative">
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-app-action-start/10 to-app-action-end/10" />
-                <div className="relative flex rounded-lg overflow-hidden transition-colors border border-border-subtle/70 group">
-                  <span className="inline-flex items-center px-4 border-r border-border bg-background/50 text-placeholder">
+              </FieldLabel>
+              <InputGroup variant="credential" >
+
+
+                  <InputGroupAddon >
                     <KeyIcon className="w-4 h-4" />
-                  </span>
-                  <input
+                  </InputGroupAddon>
+                  <Input variant="credential" className="flex-1"
                     type={isApiKeyVisible ? "text" : "password"}
                     id="apiKey"
                     defaultValue=""
                     placeholder={data.hasApiKey ? 'Saved key — enter a replacement' : 'Enter your OpenAI API key'}
                     autoComplete="off"
-                    className="flex-1 px-4 py-2.5 bg-surface-field text-foreground focus:outline-none focus:border-app-action-start/70 focus:ring-1 focus:ring-app-action-end/50 transition-all duration-200 h-11"
-                    style={{ outline: 'none' }}
                   />
-                  <button
+                  <Button variant="text" size="fieldAccessory" tone="placeholder" aria-label={isApiKeyVisible ? "Hide API key" : "Show API key"}
                     type="button"
-                    onClick={toggleApiKeyVisibility}
-                    className="px-3 text-placeholder hover:text-foreground transition-colors"
-                  >
+                    onClick={toggleApiKeyVisibility}>
                     {isApiKeyVisible ? 'Hide' : 'Show'}
-                  </button>
-                  <div className="absolute inset-0 rounded-lg border border-app-action-end/0 group-focus-within:border-app-action-end/30 pointer-events-none transition-all duration-300 shadow-[0_0_0_0_rgb(var(--app-action-end)/0)] group-focus-within:shadow-[0_0_10px_1px_rgb(var(--app-action-end)/0.2)]"></div>
-                </div>
-              </div>
-              <p className="text-xs text-placeholder">
+                  </Button>
+
+
+              </InputGroup>
+              <FieldDescription >
                 {data.hasApiKey
                   ? 'A key is saved. Leave this field blank to keep it.'
                   : 'Enter your OpenAI API key to enable AI-based features.'}
-              </p>
+              </FieldDescription>
               {data.hasApiKey && (
-                <button
+                <Button variant="bare" tone="remove"
                   type="button"
                   disabled={isSaving}
                   onClick={() => {
                     setIsSaving(true);
                     updateSettingsMutation.mutate({ apiKey: null });
                   }}
-                  className="text-xs text-status-error hover:underline disabled:opacity-50"
                 >
                   Remove saved key
-                </button>
+                </Button>
               )}
-            </div>
+            </Field>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Save Button */}
-      <div className="mt-6 bg-surface border-border rounded-xl border p-4 shadow-lg flex justify-between items-center">
+      <Card padding="md" className="mt-6 flex justify-between items-center">
         {lastSaved ? (
           <span className="text-sm text-placeholder">
             Saved
@@ -431,23 +385,12 @@ const Settings = () => {
             Not yet saved
           </span>
         )}
-        <button
+        <Button variant="save" size="action" loading={isSaving}
           onClick={handleSave}
-          disabled={isSaving}
-          className={`
-            flex items-center px-4 py-2 rounded-lg shadow-lg transition-all duration-200 text-foreground
-            ${isSaving 
-              ? 'bg-app-action-end/50 cursor-not-allowed'
-              : 'bg-gradient-to-r from-app-action-start to-app-action-end hover:from-app-action-hover-start hover:to-app-action-hover-end cursor-pointer'}
-          `}
-        >
+          disabled={isSaving}>
           {isSaving ? (
             <>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="w-4 h-4 rounded-full mr-2 border-2 border-foreground/30 border-t-foreground"
-              />
+              <Spinner variant="save" />
               Saving...
             </>
           ) : (
@@ -456,10 +399,8 @@ const Settings = () => {
               Save Changes
             </>
           )}
-        </button>
-      </div>
-
-      <Toast message={toastMessage} isVisible={isToastVisible} />
+        </Button>
+      </Card>
     </>
   );
 };

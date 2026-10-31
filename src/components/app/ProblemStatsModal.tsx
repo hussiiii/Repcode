@@ -1,9 +1,18 @@
+import { DifficultyBadge, StudyStateBadge } from '@/components/app/ProblemBadges';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Heading } from '@/components/ui/typography';
+import { HelpTooltip } from '@/components/ui/tooltip';
+import { Empty } from '@/components/ui/empty';
+import { Separator } from '@/components/ui/separator';
+import { Card } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { canvasColor } from '@/lib/colors';
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import React, { useEffect, useContext } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { X, Calendar, Clock, BarChart3, Tag, Percent, ArrowRight, RefreshCw, PieChart, AlertTriangle, RotateCcw, HelpCircleIcon } from 'lucide-react';
-import Badge from '../ui/Badge';
 import DonutChart from './DonutChart';
 import { useMutation, useQueryClient } from 'react-query';
 import { AuthContext } from '@/auth/AuthContext';
@@ -46,16 +55,7 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
     }
   );
   // Handle keyboard events (Escape to close)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
 
   // Don't render the modal content if problem is null
   if (!problem) return null;
@@ -105,36 +105,26 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
   return (
     <>
       {/* Modal Backdrop */}
-      <div
-        className={`fixed inset-0 bg-overlay/60 backdrop-blur-sm z-50 transition-all duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        onClick={onClose}
-      />
+
 
       {/* Modal Container - Centered with animation */}
-      <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-500 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+
         {/* Modal */}
-        <div
-          className={`w-full max-w-4xl rounded-xl shadow-[0_10px_40px_rgb(var(--overlay)/0.3)]
-                     transition-all duration-500 max-h-[90vh] overflow-hidden
-                     bg-gradient-to-b from-background to-surface-dialog-end border border-border-subtle/50 text-foreground
-                     relative ${isOpen ? "opacity-100 -translate-y-0" : "opacity-0 -translate-y-[40px]"}`}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <Dialog open={isOpen} onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent size="lg" scroll="frame" className="w-[calc(100%-2rem)]" dismissible={!manualLapseMutation.isLoading}>
           {/* Decorative accent line at top */}
           <div className="h-1 w-full bg-gradient-to-r from-app-action-start to-app-action-end"></div>
 
           {/* Scrollable content area */}
-          <div className="overflow-y-auto max-h-[calc(90vh-1px)]">
+          <ScrollArea direction="both" className="max-h-[calc(90vh-1px)]">
             <div className="p-6">
               {/* Modal Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold tracking-tight">{problem.name}</h2>
-                <button
-                  onClick={onClose}
-                  className="h-8 w-8 rounded-full hover:bg-border-subtle/70 transition-colors duration-200 flex items-center justify-center"
-                >
+                <DialogTitle>{problem.name}</DialogTitle>
+                <Button variant="close" aria-label="Close dialog" disabled={manualLapseMutation.isLoading}
+                  onClick={onClose}>
                   <X className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
 
               {/* Modal Content */}
@@ -143,37 +133,37 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                 <div className="space-y-6">
                   {/* Basic Info */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-foreground-soft">Basic Information</h3>
+                    <Heading as="h3" size="sm" weight="medium" tone="soft" >Basic Information</Heading>
                     <div className="grid grid-cols-2 gap-4">
-                      <StatItem 
-                        icon={<Calendar className="h-4 w-4" />} 
-                        label="Date Created" 
-                        value={formatDate(problem.creationDate)} 
+                      <StatItem
+                        icon={<Calendar className="h-4 w-4" />}
+                        label="Date Created"
+                        value={formatDate(problem.creationDate)}
                       />
-                      <StatItem 
-                        icon={<Clock className="h-4 w-4" />} 
-                        label="Next Due" 
-                        value={formatDate(problem.originalDueDate || problem.dueDate)} 
+                      <StatItem
+                        icon={<Clock className="h-4 w-4" />}
+                        label="Next Due"
+                        value={formatDate(problem.originalDueDate || problem.dueDate)}
                       />
-                      <StatItem 
-                        icon={<BarChart3 className="h-4 w-4" />} 
+                      <StatItem
+                        icon={<BarChart3 className="h-4 w-4" />}
                         label="Difficulty"
-                        customValue={<Badge type="difficulty" value={problem.difficulty} />}
+                        customValue={<DifficultyBadge value={problem.difficulty} />}
                       />
-                      <StatItem 
-                        icon={<Tag className="h-4 w-4" />} 
-                        label="Type" 
-                        customValue={<Badge type="problemType" value={problem.type} />}
+                      <StatItem
+                        icon={<Tag className="h-4 w-4" />}
+                        label="Type"
+                        customValue={<StudyStateBadge value={problem.type} />}
                       />
                     </div>
                   </div>
 
                   {/* Divider */}
-                  <div className="h-px bg-gradient-to-r from-transparent via-border-subtle/70 to-transparent" />
+                  <Separator variant="gradient" />
 
                   {/* Advanced Stats */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-foreground-soft">Advanced Statistics</h3>
+                    <Heading as="h3" size="sm" weight="medium" tone="soft" >Advanced Statistics</Heading>
                     <div className="grid grid-cols-2 gap-4">
                       <StatItem
                         icon={<Percent className="h-4 w-4" />}
@@ -201,59 +191,52 @@ const ProblemStatsModal = ({ isOpen, onClose, problem }: { isOpen: boolean, onCl
                   {/* Manual Lapse Action - only enabled for Review problems */}
                   <div className="pt-2">
                     <div className="flex items-center gap-2">
-                      <button
+                      <Button variant="lapse" size="comfortable" loading={manualLapseMutation.isLoading}
                         onClick={() => manualLapseMutation.mutate(problem.id)}
                         disabled={manualLapseMutation.isLoading || problem.type !== 'Review'}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-status-error-border text-status-error hover:bg-status-error-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                       >
                         <RotateCcw className="h-4 w-4" />
                         {manualLapseMutation.isLoading ? 'Lapsing...' : 'Lapse Manually'}
-                      </button>
-                      <div className="relative group">
-                        <HelpCircleIcon
-                          size={14}
-                          className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors"
-                        />
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-background border border-border rounded-lg shadow-xl text-xs text-muted-foreground w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                          Manually lapse this problem to reset due date and cap intervals at your max setting.
-                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-border"></div>
-                        </div>
-                      </div>
+                      </Button>
+                      <HelpTooltip content="Manually lapse this problem to reset due date and cap intervals at your max setting.">
+                        <Button variant="bare" aria-label="About manual lapses"><HelpCircleIcon size={14} className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors" /></Button>
+                      </HelpTooltip>
                     </div>
                     {manualLapseMutation.isError && (
-                      <p className="mt-2 text-xs text-status-error">Failed to lapse. Please try again.</p>
+                      <Alert variant="inlineError" className="mt-2">Failed to lapse. Please try again.</Alert>
                     )}
                   </div>
                 </div>
 
                 {/* Right Column - Feedback Breakdown Chart */}
-                <div className="border border-border-subtle/70 bg-surface-field rounded-lg h-full flex flex-col">
+                <Card surface="field" radius="lg" border="field" elevation="none" className="h-full flex flex-col">
                   <div className="p-4 flex-1 flex flex-col">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-sm font-medium text-foreground-soft">Feedback Breakdown</h3>
+                      <Heading as="h3" size="sm" weight="medium" tone="soft" >Feedback Breakdown</Heading>
                       <PieChart className="h-4 w-4 text-app-action-end" />
                     </div>
 
                     <div className="flex-1 flex justify-center items-center">
                       {isDataEmpty ? (
                         <div className="h-full flex items-center justify-center">
-                          <p className="text-foreground-quiet text-sm">No data available yet</p>
+                          <Empty variant="chartInline">No data available yet</Empty>
                         </div>
                       ) : (
-                        <DonutChart 
-                          labels={chartLabels} 
-                          data={chartData} 
-                          backgroundColors={chartColors} 
+                        <DonutChart
+                          labels={chartLabels}
+                          data={chartData}
+                          backgroundColors={chartColors}
                         />
                       )}
                     </div>
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
     </>
   );
 };
